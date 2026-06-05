@@ -7,12 +7,14 @@
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
     <style>
         :root {
-            --bg-color: #0b0c10;
-            --surface-color: #1a1c23;
-            --primary-accent: #FF6B00;
-            --primary-glow: rgba(255, 107, 0, 0.2);
-            --text-main: #f8fafc;
-            --text-muted: #94a3b8;
+            --bg-void: #0A0A0F;
+            --bg-panel: #12121A;
+            --bg-cell: #1A1A24;
+            --border-dim: #2A2A35;
+            --koda-orange: #FF6B00;
+            --koda-orange-glow: rgba(255, 107, 0, 0.1);
+            --txt-primary: #F0F0F0;
+            --txt-secondary: #8A8A9A;
         }
 
         * {
@@ -23,14 +25,15 @@
 
         body {
             font-family: 'Inter', sans-serif;
-            background-color: var(--bg-color);
-            color: var(--text-main);
+            background-color: var(--bg-void);
+            color: var(--txt-primary);
             line-height: 1.6;
             -webkit-font-smoothing: antialiased;
         }
 
         h1, h2, h3 {
             font-family: 'Outfit', sans-serif;
+            letter-spacing: -0.02em;
         }
 
         /* Navigation */
@@ -39,19 +42,19 @@
             justify-content: space-between;
             align-items: center;
             padding: 20px 5%;
-            background-color: rgba(11, 12, 16, 0.8);
-            backdrop-filter: blur(10px);
+            background-color: rgba(10, 10, 15, 0.85);
+            backdrop-filter: blur(12px);
             position: sticky;
             top: 0;
             z-index: 100;
-            border-bottom: 1px solid rgba(255,255,255,0.05);
+            border-bottom: 1px solid var(--border-dim);
         }
 
         .logo {
             font-family: 'Outfit', sans-serif;
             font-size: 1.5rem;
             font-weight: 800;
-            color: #fff;
+            color: var(--txt-primary);
             text-decoration: none;
             display: flex;
             align-items: center;
@@ -59,11 +62,11 @@
         }
 
         .logo span {
-            color: var(--primary-accent);
+            color: var(--koda-orange);
         }
 
         .nav-links a {
-            color: var(--text-muted);
+            color: var(--txt-secondary);
             text-decoration: none;
             margin-left: 30px;
             font-weight: 500;
@@ -71,12 +74,12 @@
         }
 
         .nav-links a:hover {
-            color: var(--primary-accent);
+            color: var(--koda-orange);
         }
 
         /* Hero Section */
         header {
-            padding: 100px 5%;
+            padding: 120px 5%;
             text-align: center;
             position: relative;
             overflow: hidden;
@@ -89,47 +92,45 @@
             transform: translateX(-50%);
             width: 800px;
             height: 800px;
-            background: radial-gradient(circle, var(--primary-glow) 0%, transparent 70%);
+            background: radial-gradient(circle, var(--koda-orange-glow) 0%, transparent 60%);
             z-index: -1;
+            pointer-events: none;
         }
 
         header h1 {
-            font-size: 4rem;
+            font-size: 4.5rem;
             line-height: 1.1;
-            margin-bottom: 20px;
-            background: linear-gradient(to right, #fff, #cbd5e1);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
+            margin-bottom: 24px;
+            color: var(--txt-primary);
         }
 
         header p {
             font-size: 1.25rem;
-            color: var(--text-muted);
+            color: var(--txt-secondary);
             max-width: 600px;
             margin: 0 auto 40px auto;
         }
 
         .cta-button {
             display: inline-block;
-            background-color: var(--primary-accent);
+            background-color: var(--koda-orange);
             color: #fff;
-            padding: 15px 35px;
-            border-radius: 30px;
+            padding: 16px 40px;
+            border-radius: 8px;
             font-weight: 600;
             text-decoration: none;
             font-family: 'Outfit', sans-serif;
-            transition: transform 0.2s, box-shadow 0.2s;
-            box-shadow: 0 4px 15px var(--primary-glow);
+            transition: transform 0.2s, background-color 0.2s;
         }
 
         .cta-button:hover {
             transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(255, 107, 0, 0.4);
+            background-color: #e66000;
         }
 
         /* Features Section */
         .features {
-            padding: 80px 5%;
+            padding: 100px 5%;
             max-width: 1200px;
             margin: 0 auto;
         }
@@ -138,49 +139,59 @@
             text-align: center;
             font-size: 2.5rem;
             margin-bottom: 60px;
+            color: var(--txt-primary);
         }
 
         .features-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 30px;
+            gap: 24px;
         }
 
         .feature-card {
-            background-color: var(--surface-color);
+            background-color: var(--bg-panel);
             padding: 40px 30px;
-            border-radius: 20px;
-            border: 1px solid rgba(255,255,255,0.03);
+            border-radius: 12px;
+            border: 1px solid var(--border-dim);
             transition: transform 0.3s, border-color 0.3s;
+            display: flex;
+            flex-direction: column;
         }
 
         .feature-card:hover {
-            transform: translateY(-5px);
-            border-color: rgba(255, 107, 0, 0.3);
+            transform: translateY(-4px);
+            border-color: var(--koda-orange);
         }
 
-        .feature-icon {
-            font-size: 2.5rem;
-            margin-bottom: 20px;
+        .feature-icon-svg {
+            width: 32px;
+            height: 32px;
+            fill: none;
+            stroke: var(--koda-orange);
+            stroke-width: 2;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+            margin-bottom: 24px;
         }
 
         .feature-card h3 {
             font-size: 1.5rem;
-            margin-bottom: 15px;
-            color: #fff;
+            margin-bottom: 12px;
+            color: var(--txt-primary);
         }
 
         .feature-card p {
-            color: var(--text-muted);
+            color: var(--txt-secondary);
             font-size: 0.95rem;
+            line-height: 1.5;
         }
 
         /* Privacy Policy Section */
         .privacy-section {
-            background-color: var(--surface-color);
+            background-color: var(--bg-cell);
             padding: 80px 5%;
-            margin-top: 80px;
-            border-top: 1px solid rgba(255,255,255,0.05);
+            margin-top: 60px;
+            border-top: 1px solid var(--border-dim);
         }
 
         .privacy-content {
@@ -191,7 +202,7 @@
         .privacy-content h2 {
             font-size: 2.5rem;
             margin-bottom: 10px;
-            color: var(--primary-accent);
+            color: var(--koda-orange);
         }
 
         .privacy-content h3 {
@@ -199,12 +210,12 @@
             margin-top: 40px;
             margin-bottom: 15px;
             padding-bottom: 10px;
-            border-bottom: 1px solid rgba(255,255,255,0.1);
+            border-bottom: 1px solid var(--border-dim);
         }
 
         .privacy-content p, .privacy-content ul {
             margin-bottom: 20px;
-            color: var(--text-muted);
+            color: var(--txt-secondary);
         }
 
         .privacy-content li {
@@ -213,14 +224,15 @@
         }
 
         .privacy-content strong {
-            color: #e2e8f0;
+            color: var(--txt-primary);
         }
 
         footer {
             text-align: center;
             padding: 40px 20px;
-            color: var(--text-muted);
-            border-top: 1px solid rgba(255,255,255,0.05);
+            color: var(--txt-secondary);
+            border-top: 1px solid var(--border-dim);
+            background-color: var(--bg-void);
         }
 
         @media (max-width: 768px) {
@@ -250,37 +262,52 @@
         <h2 class="section-title">Everything you need to host.</h2>
         <div class="features-grid">
             <div class="feature-card">
-                <div class="feature-icon">🎮</div>
+                <svg class="feature-icon-svg" viewBox="0 0 24 24">
+                    <rect x="2" y="6" width="20" height="12" rx="2" ry="2"></rect>
+                    <path d="M6 12h4m-2-2v4m8-2h.01M16 10h.01"></path>
+                </svg>
                 <h3>True Crossplay</h3>
                 <p>Natively supports both Java and Bedrock editions. PC, console, and mobile gamers can join the exact same server and play together seamlessly.</p>
             </div>
             
             <div class="feature-card">
-                <div class="feature-icon">🌍</div>
+                <svg class="feature-icon-svg" viewBox="0 0 24 24">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
+                </svg>
                 <h3>No Port Forwarding</h3>
                 <p>Built-in tunneling technology means you don't have to touch your router settings. Share your generated public IP and play instantly with friends.</p>
             </div>
 
             <div class="feature-card">
-                <div class="feature-icon">💻</div>
+                <svg class="feature-icon-svg" viewBox="0 0 24 24">
+                    <polyline points="4 17 10 11 4 5"></polyline>
+                    <line x1="12" y1="19" x2="20" y2="19"></line>
+                </svg>
                 <h3>Live Console</h3>
                 <p>Keep track of your server in real-time. View live chat, manage players, and execute commands directly from the interactive app console.</p>
             </div>
 
             <div class="feature-card">
-                <div class="feature-icon">📈</div>
+                <svg class="feature-icon-svg" viewBox="0 0 24 24">
+                    <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
+                </svg>
                 <h3>Performance Monitor</h3>
                 <p>Always know how your device is holding up. Track CPU and RAM usage live to ensure a lag-free experience for your entire community.</p>
             </div>
 
             <div class="feature-card">
-                <div class="feature-icon">📁</div>
+                <svg class="feature-icon-svg" viewBox="0 0 24 24">
+                    <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
+                </svg>
                 <h3>File Management</h3>
                 <p>Upload your old worlds, install custom maps, or edit configuration files manually. You have full root access to your server's directory.</p>
             </div>
 
             <div class="feature-card">
-                <div class="feature-icon">⚡</div>
+                <svg class="feature-icon-svg" viewBox="0 0 24 24">
+                    <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
+                </svg>
                 <h3>One-Time Purchase</h3>
                 <p>Say goodbye to expensive monthly subscriptions. Buy the app once and host as many servers as you want directly from your device.</p>
             </div>
