@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Privacy Policy - KodaHosting</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-void: #1B1613;
+            --bg-panel: #241C18;
+            --koda-orange: #FF6B00;
+            --border-dim: #332A24;
+            --txt-primary: #FFFFFF;
+            --txt-secondary: #888899;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-void);
+            color: var(--txt-primary);
+            line-height: 1.6;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        h1, h2, h3 { font-family: 'Outfit', sans-serif; letter-spacing: -0.02em; }
+
+        nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 5%;
+            background-color: rgba(27, 22, 19, 0.85);
+            backdrop-filter: blur(12px);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            border-bottom: 1px solid var(--border-dim);
+        }
+
+        .logo {
+            font-family: 'Outfit', sans-serif;
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: var(--txt-primary);
+            text-decoration: none;
+            display: flex; align-items: center; gap: 10px;
+        }
+        .logo span { color: var(--koda-orange); }
+
+        .nav-links a {
+            color: var(--txt-secondary);
+            text-decoration: none;
+            margin-left: 30px;
+            font-weight: 500;
+            transition: color 0.3s;
+        }
+        .nav-links a:hover { color: var(--koda-orange); }
+
+        .privacy-section {
+            padding: 80px 5%;
+            min-height: 80vh;
+        }
+
+        .privacy-content {
+            max-width: 800px;
+            margin: 0 auto;
+            background-color: var(--bg-panel);
+            padding: 40px;
+            border-radius: 16px;
+            border: 1px solid var(--border-dim);
+        }
+
+        .privacy-content h2 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            color: var(--koda-orange);
+        }
+
+        .privacy-content h3 {
+            font-size: 1.4rem;
+            margin-top: 40px;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid var(--border-dim);
+            color: var(--txt-primary);
+        }
+
+        .privacy-content p, .privacy-content ul {
+            margin-bottom: 20px;
+            color: var(--txt-secondary);
+        }
+
+        .privacy-content li {
+            margin-bottom: 10px;
+            margin-left: 20px;
+        }
+
+        .privacy-content strong {
+            color: var(--txt-primary);
+        }
+
+        footer {
+            text-align: center;
+            padding: 40px 20px;
+            color: var(--txt-secondary);
+            border-top: 1px solid var(--border-dim);
+        }
+
+        @media (max-width: 768px) {
+            .nav-links { display: none; }
+            .privacy-content { padding: 20px; }
+        }
+    </style>
+</head>
+<body>
+
+    <nav>
+        <a href="/" class="logo">Koda<span>Hosting</span></a>
+        <div class="nav-links">
+            <a href="/">Home</a>
+            <a href="/privacy">Privacy Policy</a>
+        </div>
+    </nav>
+
+    <section class="privacy-section">
+        <div class="privacy-content">
+            <h2>Privacy Policy</h2>
+            <p style="font-size: 0.9rem;">Last Updated: June 2026</p>
+
+            <h3>1. Introduction</h3>
+            <p>Welcome to <strong>KodaHosting</strong>. We respect your privacy and are committed to protecting any information that may be processed while you use our mobile application. This Privacy Policy explains what information we collect, how we use it, and your rights regarding your data.</p>
+
+            <h3>2. Information We Collect & Process</h3>
+            <p>KodaHosting processes certain data to function correctly:</p>
+            <ul>
+                <li><strong>Account Information:</strong> When you register or log in, we securely process your email address and authentication details to manage your personal KodaHosting account.</li>
+                <li><strong>Local Data:</strong> Your Minecraft server files, worlds, plugins, and configurations are stored purely locally on your device.</li>
+                <li><strong>Biometric Data:</strong> If you enable Biometric Security in the app settings, your device's fingerprint or face scan is used. This data <strong>never leaves your device</strong> and is processed securely by Android's local biometric system.</li>
+                <li><strong>Device Information:</strong> We check your device architecture (e.g., ARM64) and Android version locally to download the correct Java runtime environments and binary files.</li>
+                <li><strong>IP Privacy:</strong> Your personal home IP address is <strong>never</strong> leaked. All multiplayer traffic is routed through our central VPS infrastructure. Players connecting to your server will only ever see the IP address of our secure proxy.</li>
+            </ul>
+
+            <h3>3. Third-Party Services</h3>
+            <p>The App utilizes certain third-party services that may collect information used to identify you or provide core functionalities:</p>
+            <ul>
+                <li><strong>Google Play Services:</strong> For app distribution, crash reporting, and standard analytics.</li>
+                <li><strong>Modrinth API / Spigot:</strong> To search and download server plugins directly within the app.</li>
+                <li><strong>GitHub Releases:</strong> Used to download essential server binaries like Java and secure tunnel clients.</li>
+                <li><strong>Bore / FRP (Fast Reverse Proxy):</strong> Used exclusively to create the secure network tunnels between your device and our VPS infrastructure.</li>
+            </ul>
+
+            <h3>4. Data Security</h3>
+            <p>We value your trust in using our App. Since the core functionality is local server hosting, your personal server data remains entirely on your device. Any data transmitted to APIs (like plugin search queries) is sent over secure, encrypted connections (HTTPS).</p>
+
+            <h3>5. Changes to This Privacy Policy</h3>
+            <p>We may update our Privacy Policy from time to time. We will notify you of any changes by posting the new Privacy Policy on this page. You are advised to review this Privacy Policy periodically for any changes.</p>
+
+            <h3>6. Contact Us</h3>
+            <p>If you have any questions or suggestions about our Privacy Policy, do not hesitate to contact us at the support email provided in the Google Play Store listing.</p>
+        </div>
+    </section>
+
+    <footer>
+        <p>&copy; 2026 KodaHosting. All rights reserved.</p>
+    </footer>
+
+</body>
+</html>
