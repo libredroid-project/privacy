@@ -159,9 +159,8 @@
         }
 
         .feature-card:hover {
-            transform: translateY(-4px);
             border-color: var(--koda-orange);
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            background-color: #2A211D;
         }
 
         .feature-icon-svg {
@@ -324,18 +323,23 @@
             <h3>1. Introduction</h3>
             <p>Welcome to <strong>KodaHosting</strong>. We respect your privacy and are committed to protecting any information that may be processed while you use our mobile application. This Privacy Policy explains what information we collect, how we use it, and your rights regarding your data.</p>
 
-            <h3>2. Information We Collect & IP Anonymization</h3>
-            <p>KodaHosting is designed to run locally on your device with maximum network security:</p>
+            <h3>2. Information We Collect & Process</h3>
+            <p>KodaHosting processes certain data to function correctly:</p>
             <ul>
                 <li><strong>Local Data:</strong> Your Minecraft server files, worlds, plugins, and configurations are stored purely locally on your device.</li>
-                <li><strong>IP Privacy:</strong> Your personal home IP address is <strong>never</strong> leaked or exposed to players. All server traffic is routed through our central VPS infrastructure. Players connecting to your server will only ever see the IP address of our secure proxy.</li>
+                <li><strong>Biometric Data:</strong> If you enable Biometric Security in the app settings, your device's fingerprint or face scan is used. This data <strong>never leaves your device</strong> and is processed securely by Android's local biometric system.</li>
+                <li><strong>Device Information:</strong> We check your device architecture (e.g., ARM64) and Android version locally to download the correct Java runtime environments and binary files.</li>
+                <li><strong>AI Prompts:</strong> Text prompts entered into the "AI Server Builder" are transmitted securely to Google's Gemini API to generate the requested server configuration.</li>
+                <li><strong>IP Privacy:</strong> Your personal home IP address is <strong>never</strong> leaked. All multiplayer traffic is routed through our central VPS infrastructure. Players connecting to your server will only ever see the IP address of our secure proxy.</li>
             </ul>
 
             <h3>3. Third-Party Services</h3>
             <p>The App utilizes certain third-party services that may collect information used to identify you or provide core functionalities:</p>
             <ul>
                 <li><strong>Google Play Services:</strong> For app distribution, crash reporting, and standard analytics.</li>
+                <li><strong>Google Gemini API:</strong> Processes your text inputs for the AI Server Builder.</li>
                 <li><strong>Modrinth API / Spigot:</strong> To search and download server plugins directly within the app.</li>
+                <li><strong>GitHub Releases:</strong> Used to download essential server binaries like Java and secure tunnel clients.</li>
                 <li><strong>Bore / FRP (Fast Reverse Proxy):</strong> Used exclusively to create the secure network tunnels between your device and our VPS infrastructure.</li>
             </ul>
 
