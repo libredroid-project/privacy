@@ -3,354 +3,207 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>KodaHosting - Minecraft Server Hosting on Android</title>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <title>KodaHosting - About & Privacy</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
     <style>
-        :root {
-            --bg-void: #0A0A0F;
-            --bg-panel: #12121A;
-            --bg-cell: #1A1A24;
-            --border-dim: #2A2A35;
-            --koda-orange: #FF6B00;
-            --koda-orange-glow: rgba(255, 107, 0, 0.1);
-            --txt-primary: #F0F0F0;
-            --txt-secondary: #8A8A9A;
-        }
-
         * {
-            margin: 0;
-            padding: 0;
             box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
         }
 
-        body {
-            font-family: 'Inter', sans-serif;
-            background-color: var(--bg-void);
-            color: var(--txt-primary);
-            line-height: 1.6;
-            -webkit-font-smoothing: antialiased;
+        body { 
+            background: #1B1613; 
+            color: #FFFFFF; 
+            font-family: 'Roboto', sans-serif; 
+            margin: 0; 
+            padding: 0; 
+            display: flex; 
+            justify-content: center; 
         }
 
-        h1, h2, h3 {
-            font-family: 'Outfit', sans-serif;
-            letter-spacing: -0.02em;
+        .app-container { 
+            width: 100%; 
+            max-width: 600px; 
+            min-height: 100vh; 
+            background: #1B1613; 
+            position: relative; 
         }
 
-        /* Navigation */
-        nav {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 20px 5%;
-            background-color: rgba(10, 10, 15, 0.85);
-            backdrop-filter: blur(12px);
-            position: sticky;
-            top: 0;
-            z-index: 100;
-            border-bottom: 1px solid var(--border-dim);
+        .top-bar { 
+            display: flex; 
+            align-items: center; 
+            height: 56px; 
+            padding: 0 16px; 
+            background: #1B1613; 
+            position: sticky; 
+            top: 0; 
+            z-index: 10; 
         }
 
-        .logo {
-            font-family: 'Outfit', sans-serif;
-            font-size: 1.5rem;
-            font-weight: 800;
-            color: var(--txt-primary);
-            text-decoration: none;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .logo span {
-            color: var(--koda-orange);
-        }
-
-        .nav-links a {
-            color: var(--txt-secondary);
-            text-decoration: none;
-            margin-left: 30px;
-            font-weight: 500;
-            transition: color 0.3s;
-        }
-
-        .nav-links a:hover {
-            color: var(--koda-orange);
-        }
-
-        /* Hero Section */
-        header {
-            padding: 120px 5%;
-            text-align: center;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .hero-glow {
+        .top-bar::after {
+            content: '';
             position: absolute;
-            top: -50%;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 800px;
-            height: 800px;
-            background: radial-gradient(circle, var(--koda-orange-glow) 0%, transparent 60%);
-            z-index: -1;
-            pointer-events: none;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: #241C18;
         }
 
-        header h1 {
-            font-size: 4.5rem;
-            line-height: 1.1;
-            margin-bottom: 24px;
-            color: var(--txt-primary);
+        .back-btn { 
+            width: 40px; 
+            height: 40px; 
+            display: flex; 
+            align-items: center; 
+            color: #F0F0F0; 
+            font-size: 22px; 
+            cursor: pointer; 
         }
 
-        header p {
-            font-size: 1.25rem;
-            color: var(--txt-secondary);
-            max-width: 600px;
-            margin: 0 auto 40px auto;
+        .title { 
+            font-size: 20px; 
+            font-weight: 500; 
+            flex-grow: 1; 
+            color: #FFFFFF;
         }
 
-        .cta-button {
-            display: inline-block;
-            background-color: var(--koda-orange);
-            color: #fff;
-            padding: 16px 40px;
-            border-radius: 8px;
-            font-weight: 600;
-            text-decoration: none;
-            font-family: 'Outfit', sans-serif;
-            transition: transform 0.2s, background-color 0.2s;
+        .version { 
+            color: #888899; 
+            font-size: 11px; 
+        }
+        
+        .content { 
+            padding: 16px; 
+        }
+        
+        .card { 
+            background: #241C18; 
+            border-radius: 12px; 
+            padding: 16px; 
+            margin-bottom: 16px; 
         }
 
-        .cta-button:hover {
-            transform: translateY(-2px);
-            background-color: #e66000;
+        .card-danger {
+            background: #2A1010;
         }
 
-        /* Features Section */
-        .features {
-            padding: 100px 5%;
-            max-width: 1200px;
-            margin: 0 auto;
+        .card-header { 
+            color: #FF6B00; 
+            font-size: 11px; 
+            font-weight: 700; 
+            letter-spacing: 0.1em; 
+            margin-bottom: 16px; 
+            text-transform: uppercase; 
         }
 
-        .section-title {
-            text-align: center;
-            font-size: 2.5rem;
-            margin-bottom: 60px;
-            color: var(--txt-primary);
+        .card-header-danger {
+            color: #FF4444;
+        }
+        
+        .item { 
+            margin-bottom: 16px; 
         }
 
-        .features-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 24px;
+        .item:last-child { 
+            margin-bottom: 0; 
         }
 
-        .feature-card {
-            background-color: var(--bg-panel);
-            padding: 40px 30px;
-            border-radius: 12px;
-            border: 1px solid var(--border-dim);
-            transition: transform 0.3s, border-color 0.3s;
-            display: flex;
-            flex-direction: column;
+        .item-title { 
+            font-size: 14px; 
+            font-weight: 500; 
+            color: #FFFFFF; 
+            margin-bottom: 6px; 
         }
 
-        .feature-card:hover {
-            transform: translateY(-4px);
-            border-color: var(--koda-orange);
+        .item-title-danger {
+            color: #FF4444;
         }
 
-        .feature-icon-svg {
-            width: 32px;
-            height: 32px;
-            fill: none;
-            stroke: var(--koda-orange);
-            stroke-width: 2;
-            stroke-linecap: round;
-            stroke-linejoin: round;
-            margin-bottom: 24px;
+        .item-desc { 
+            font-size: 13px; 
+            color: #888899; 
+            line-height: 1.5; 
         }
 
-        .feature-card h3 {
-            font-size: 1.5rem;
-            margin-bottom: 12px;
-            color: var(--txt-primary);
+        .divider { 
+            height: 1px; 
+            background: #332A24; 
+            margin: 16px 0; 
         }
 
-        .feature-card p {
-            color: var(--txt-secondary);
-            font-size: 0.95rem;
-            line-height: 1.5;
-        }
-
-        /* Privacy Policy Section */
-        .privacy-section {
-            background-color: var(--bg-cell);
-            padding: 80px 5%;
-            margin-top: 60px;
-            border-top: 1px solid var(--border-dim);
-        }
-
-        .privacy-content {
-            max-width: 800px;
-            margin: 0 auto;
-        }
-
-        .privacy-content h2 {
-            font-size: 2.5rem;
-            margin-bottom: 10px;
-            color: var(--koda-orange);
-        }
-
-        .privacy-content h3 {
-            font-size: 1.4rem;
-            margin-top: 40px;
-            margin-bottom: 15px;
-            padding-bottom: 10px;
-            border-bottom: 1px solid var(--border-dim);
-        }
-
-        .privacy-content p, .privacy-content ul {
-            margin-bottom: 20px;
-            color: var(--txt-secondary);
-        }
-
-        .privacy-content li {
-            margin-bottom: 10px;
-            margin-left: 20px;
-        }
-
-        .privacy-content strong {
-            color: var(--txt-primary);
-        }
-
-        footer {
-            text-align: center;
-            padding: 40px 20px;
-            color: var(--txt-secondary);
-            border-top: 1px solid var(--border-dim);
-            background-color: var(--bg-void);
-        }
-
-        @media (max-width: 768px) {
-            header h1 { font-size: 2.8rem; }
-            .nav-links { display: none; }
-        }
     </style>
 </head>
 <body>
-
-    <nav>
-        <a href="#" class="logo">Koda<span>Hosting</span></a>
-        <div class="nav-links">
-            <a href="#features">Features</a>
-            <a href="#privacy">Privacy Policy</a>
+    <div class="app-container">
+        <!-- TOP BAR -->
+        <div class="top-bar">
+            <div class="back-btn">←</div>
+            <div class="title">KodaHosting</div>
+            <div class="version">v1.8472</div>
         </div>
-    </nav>
 
-    <header>
-        <div class="hero-glow"></div>
-        <h1>Your Minecraft Server<br>in Your Pocket.</h1>
-        <p>Transform your Android device into a fully functional Minecraft server. Pay once for the app and host forever without monthly fees.</p>
-        <a href="#features" class="cta-button">Discover Features</a>
-    </header>
+        <div class="content">
+            
+            <!-- FEATURES CARD -->
+            <div class="card">
+                <div class="card-header">App Features</div>
+                
+                <div class="item">
+                    <div class="item-title">True Crossplay</div>
+                    <div class="item-desc">Natively supports both Java and Bedrock editions. PC, console, and mobile gamers can join the exact same server and play together seamlessly.</div>
+                </div>
+                <div class="divider"></div>
+                <div class="item">
+                    <div class="item-title">No Port Forwarding</div>
+                    <div class="item-desc">Built-in tunneling technology (Bore / FRP) means you don't have to touch your router settings. Share your generated public IP and play instantly with friends.</div>
+                </div>
+                <div class="divider"></div>
+                <div class="item">
+                    <div class="item-title">Live Console & Monitor</div>
+                    <div class="item-desc">Keep track of your server in real-time. View live chat, manage players, execute commands, and track CPU/RAM usage directly from the app.</div>
+                </div>
+                <div class="divider"></div>
+                <div class="item">
+                    <div class="item-title">File Management</div>
+                    <div class="item-desc">Upload worlds, install custom maps, or edit configuration files manually. You have full root access to your server's directory.</div>
+                </div>
+            </div>
 
-    <section id="features" class="features">
-        <h2 class="section-title">Everything you need to host.</h2>
-        <div class="features-grid">
-            <div class="feature-card">
-                <svg class="feature-icon-svg" viewBox="0 0 24 24">
-                    <rect x="2" y="6" width="20" height="12" rx="2" ry="2"></rect>
-                    <path d="M6 12h4m-2-2v4m8-2h.01M16 10h.01"></path>
-                </svg>
-                <h3>True Crossplay</h3>
-                <p>Natively supports both Java and Bedrock editions. PC, console, and mobile gamers can join the exact same server and play together seamlessly.</p>
+            <!-- PRIVACY POLICY CARD -->
+            <div class="card">
+                <div class="card-header">Privacy Policy</div>
+                
+                <div class="item">
+                    <div class="item-title">1. Introduction</div>
+                    <div class="item-desc">Welcome to KodaHosting. We respect your privacy and are committed to protecting any information processed while using our application.</div>
+                </div>
+                <div class="divider"></div>
+                <div class="item">
+                    <div class="item-title">2. Information We Collect</div>
+                    <div class="item-desc">Your Minecraft server files, worlds, plugins, and configurations are stored purely locally on your device. The app utilizes tunneling services, meaning your assigned IP address may be exposed to the players you share your server address with, which is standard for hosting any game server.</div>
+                </div>
+                <div class="divider"></div>
+                <div class="item">
+                    <div class="item-title">3. Third-Party Services</div>
+                    <div class="item-desc">The App utilizes certain third-party services that may collect information used to identify you or provide core functionalities: Google Play Services, Modrinth API / Spigot, and Bore / FRP (Fast Reverse Proxy) to create secure network tunnels.</div>
+                </div>
+                <div class="divider"></div>
+                <div class="item">
+                    <div class="item-title">4. Data Security</div>
+                    <div class="item-desc">Since the core functionality is local server hosting, your personal server data remains entirely on your device. Any data transmitted to APIs (like plugin searches) is sent over secure, encrypted connections (HTTPS).</div>
+                </div>
+            </div>
+
+            <!-- DANGER ZONE CARD -->
+            <div class="card card-danger">
+                <div class="card-header card-header-danger">Contact & Support</div>
+                <div class="item">
+                    <div class="item-title item-title-danger">Get in touch</div>
+                    <div class="item-desc">If you have any questions or suggestions about our Privacy Policy or features, do not hesitate to contact us at the support email provided in the Google Play Store listing.</div>
+                </div>
             </div>
             
-            <div class="feature-card">
-                <svg class="feature-icon-svg" viewBox="0 0 24 24">
-                    <circle cx="12" cy="12" r="10"></circle>
-                    <path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
-                </svg>
-                <h3>No Port Forwarding</h3>
-                <p>Built-in tunneling technology means you don't have to touch your router settings. Share your generated public IP and play instantly with friends.</p>
-            </div>
-
-            <div class="feature-card">
-                <svg class="feature-icon-svg" viewBox="0 0 24 24">
-                    <polyline points="4 17 10 11 4 5"></polyline>
-                    <line x1="12" y1="19" x2="20" y2="19"></line>
-                </svg>
-                <h3>Live Console</h3>
-                <p>Keep track of your server in real-time. View live chat, manage players, and execute commands directly from the interactive app console.</p>
-            </div>
-
-            <div class="feature-card">
-                <svg class="feature-icon-svg" viewBox="0 0 24 24">
-                    <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
-                </svg>
-                <h3>Performance Monitor</h3>
-                <p>Always know how your device is holding up. Track CPU and RAM usage live to ensure a lag-free experience for your entire community.</p>
-            </div>
-
-            <div class="feature-card">
-                <svg class="feature-icon-svg" viewBox="0 0 24 24">
-                    <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
-                </svg>
-                <h3>File Management</h3>
-                <p>Upload your old worlds, install custom maps, or edit configuration files manually. You have full root access to your server's directory.</p>
-            </div>
-
-            <div class="feature-card">
-                <svg class="feature-icon-svg" viewBox="0 0 24 24">
-                    <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
-                </svg>
-                <h3>One-Time Purchase</h3>
-                <p>Say goodbye to expensive monthly subscriptions. Buy the app once and host as many servers as you want directly from your device.</p>
-            </div>
         </div>
-    </section>
-
-    <section id="privacy" class="privacy-section">
-        <div class="privacy-content">
-            <h2>Privacy Policy</h2>
-            <p style="font-size: 0.9rem;">Last Updated: June 2026</p>
-
-            <h3>1. Introduction</h3>
-            <p>Welcome to <strong>KodaHosting</strong>. We respect your privacy and are committed to protecting any information that may be processed while you use our mobile application. This Privacy Policy explains what information we collect, how we use it, and your rights regarding your data.</p>
-
-            <h3>2. Information We Collect</h3>
-            <p>KodaHosting is designed to run locally on your device and minimizes data collection:</p>
-            <ul>
-                <li><strong>Local Data:</strong> Your Minecraft server files, worlds, plugins, and configurations are stored purely locally on your device.</li>
-                <li><strong>Network Information:</strong> To provide multiplayer capabilities without port forwarding, the app utilizes tunneling services. Your assigned IP address may be exposed to the players you share your server address with, which is standard for hosting any game server.</li>
-            </ul>
-
-            <h3>3. Third-Party Services</h3>
-            <p>The App utilizes certain third-party services that may collect information used to identify you or provide core functionalities:</p>
-            <ul>
-                <li><strong>Google Play Services:</strong> For app distribution, crash reporting, and standard analytics.</li>
-                <li><strong>Modrinth API / Spigot:</strong> To search and download server plugins directly within the app.</li>
-                <li><strong>Bore / FRP / Playit:</strong> To create secure network tunnels for multiplayer connectivity.</li>
-            </ul>
-
-            <h3>4. Data Security</h3>
-            <p>We value your trust in using our App. Since the core functionality is local server hosting, your personal server data remains entirely on your device. Any data transmitted to APIs (like plugin search queries) is sent over secure, encrypted connections (HTTPS).</p>
-
-            <h3>5. Changes to This Privacy Policy</h3>
-            <p>We may update our Privacy Policy from time to time. We will notify you of any changes by posting the new Privacy Policy on this page. You are advised to review this Privacy Policy periodically for any changes.</p>
-
-            <h3>6. Contact Us</h3>
-            <p>If you have any questions or suggestions about our Privacy Policy, do not hesitate to contact us at the support email provided in the Google Play Store listing.</p>
-        </div>
-    </section>
-
-    <footer>
-        <p>&copy; 2026 KodaHosting. All rights reserved.</p>
-    </footer>
-
+    </div>
 </body>
 </html>
