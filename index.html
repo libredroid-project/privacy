@@ -270,6 +270,37 @@
                 padding: 40px;
             }
         }
+        @media (max-width: 768px) {
+            nav {
+                flex-direction: column;
+                gap: 15px;
+            }
+            .nav-links {
+                display: flex;
+                flex-wrap: wrap;
+                justify-content: center;
+                gap: 15px;
+            }
+            .nav-links a {
+                margin: 0;
+            }
+            header h1 {
+                font-size: 2.8rem;
+            }
+            header p {
+                font-size: 1.1rem;
+            }
+            .btn-primary {
+                width: 100%;
+                text-align: center;
+            }
+            .features-grid, .pricing-grid {
+                grid-template-columns: 1fr;
+            }
+            .feature-card:nth-child(1) { grid-row: auto; }
+            .feature-card:nth-child(3) { grid-row: auto; }
+            .feature-card.wide { grid-column: span 1; }
+        }
     </style>
 </head>
 <body>
