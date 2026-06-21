@@ -345,7 +345,7 @@
     <script>
         const SUPABASE_URL = 'https://scsezpfrrmpyuapblbxk.supabase.co';
         const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNjc2V6cGZycm1weXVhcGJsYnhrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY5NDE4MjYsImV4cCI6MjA5MjUxNzgyNn0.rHro6kQpXHAnxEaFxozYzsKY8IHIUlot-7-Q4LNbZT8';
-        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
         const loginView = document.getElementById('login-view');
         const dashboardView = document.getElementById('dashboard-view');
@@ -357,7 +357,7 @@
 
         // Init
         async function checkSession() {
-            const { data: { session } } = await supabase.auth.getSession();
+            const { data: { session } } = await supabaseClient.auth.getSession();
             if (session) {
                 currentUser = session.user;
                 showDashboard();
@@ -365,7 +365,7 @@
                 showLogin();
             }
 
-            supabase.auth.onAuthStateChange((_event, session) => {
+            supabaseClient.auth.onAuthStateChange((_event, session) => {
                 if (session) {
                     currentUser = session.user;
                     showDashboard();
@@ -381,7 +381,7 @@
             loginView.style.display = 'block';
             dashboardView.style.display = 'none';
             btnLogout.style.display = 'none';
-            if (serversChannel) supabase.removeChannel(serversChannel);
+            if (serversChannel) supabaseClient.removeChannel(serversChannel);
         }
 
         function showDashboard() {
@@ -398,7 +398,7 @@
             const password = document.getElementById('input-password').value;
             errorMsg.style.display = 'none';
 
-            const { data, error } = await supabase.auth.signInWithPassword({
+            const { data, error } = await supabaseClient.auth.signInWithPassword({
                 email: email,
                 password: password
             });
@@ -410,13 +410,13 @@
         });
 
         document.getElementById('btn-login-google').addEventListener('click', async () => {
-            const { data, error } = await supabase.auth.signInWithOAuth({
+            const { data, error } = await supabaseClient.auth.signInWithOAuth({
                 provider: 'google',
             });
         });
 
         btnLogout.addEventListener('click', async () => {
-            await supabase.auth.signOut();
+            await supabaseClient.auth.signOut();
         });
 
         document.getElementById('btn-refresh').addEventListener('click', fetchServers);
@@ -424,7 +424,7 @@
         // Fetch Servers
         async function fetchServers() {
             // Check if user has an entry in koda_users
-            const { data: userData } = await supabase
+            const { data: userData } = await supabaseClient
                 .from('koda_users')
                 .select('app_uuid')
                 .eq('auth_id', currentUser.id)
@@ -435,7 +435,7 @@
                 uuidFilter = userData.app_uuid;
             }
 
-            const { data: servers, error } = await supabase
+            const { data: servers, error } = await supabaseClient
                 .from('koda_servers')
                 .select('*')
                 .eq('owner_app_uuid', uuidFilter)
@@ -452,7 +452,7 @@
 
         // Realtime sync
         async function setupRealtime() {
-            const { data: userData } = await supabase
+            const { data: userData } = await supabaseClient
                 .from('koda_users')
                 .select('app_uuid')
                 .eq('auth_id', currentUser.id)
@@ -461,7 +461,7 @@
             let uuidFilter = currentUser.id;
             if (userData && userData.app_uuid) uuidFilter = userData.app_uuid;
 
-            serversChannel = supabase.channel('custom-all-channel')
+            serversChannel = supabaseClient.channel('custom-all-channel')
                 .on('postgres_changes', { event: '*', schema: 'public', table: 'koda_servers', filter: `owner_app_uuid=eq.${uuidFilter}` }, (payload) => {
                     fetchServers();
                 })
@@ -518,7 +518,7 @@
         }
 
         async function sendCommand(serverId, command) {
-            await supabase
+            await supabaseClient
                 .from('koda_servers')
                 .update({ server_version: `CMD:${command}` })
                 .eq('id', serverId);
