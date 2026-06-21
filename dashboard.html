@@ -96,6 +96,27 @@
             .mobile-nav { display: flex; }
             .main-content { padding-top: 80px; }
         }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 10px; height: 10px; }
+        ::-webkit-scrollbar-track { background: var(--bg-void); border-radius: 4px; }
+        ::-webkit-scrollbar-thumb { background: var(--border-dim); border-radius: 4px; border: 2px solid var(--bg-void); }
+        ::-webkit-scrollbar-thumb:hover { background: var(--koda-orange); }
+
+        /* Accordion */
+        .accordion { border: 1px solid var(--border-dim); border-radius: 8px; margin-bottom: 15px; overflow: hidden; background: var(--bg-void); }
+        .accordion-header { padding: 15px 20px; background: var(--bg-panel); color: var(--txt-primary); font-weight: 600; cursor: pointer; display: flex; justify-content: space-between; align-items: center; transition: 0.2s; }
+        .accordion-header:hover { background: var(--bg-panel-hover); color: var(--koda-orange); }
+        .accordion-content { padding: 0 20px; max-height: 0; overflow-y: auto; transition: max-height 0.3s ease, padding 0.3s ease; color: var(--txt-secondary); font-size: 0.85rem; line-height: 1.5; white-space: pre-wrap; font-family: monospace; }
+        .accordion.active .accordion-content { padding: 20px; max-height: 400px; border-top: 1px solid var(--border-dim); }
+        .accordion-header::after { content: '+'; font-size: 1.5rem; transition: 0.3s; font-weight: 300; }
+        .accordion.active .accordion-header::after { content: '−'; transform: rotate(180deg); color: var(--koda-orange); }
+
+        /* Legal Content Styling */
+        .legal-box { flex: 1; background: var(--bg-panel); padding: 30px; border-radius: 12px; border: 1px solid var(--border-dim); color: var(--txt-secondary); max-height: 70vh; overflow-y: auto; }
+        .legal-box h3 { color: var(--txt-primary); margin-bottom: 15px; font-size: 1.5rem; border-bottom: 2px solid var(--border-dim); padding-bottom: 10px; }
+        .legal-text-content { font-size: 0.95rem; line-height: 1.6; color: #BBB; }
+        .legal-h4 { color: var(--koda-orange); margin-top: 20px; margin-bottom: 8px; font-size: 1.1rem; font-family: 'Outfit', sans-serif; font-weight: 600; }
     </style>
 </head>
 <body>
@@ -188,7 +209,7 @@
         <!-- Licenses Tab -->
         <div id="tab-licenses" class="view-section">
             <div class="page-header"><h2 class="page-title">Open Source Licenses</h2></div>
-            <div id="licenses-content" style="background: var(--bg-panel); padding: 30px; border-radius: 12px; border: 1px solid var(--border-dim); color: var(--txt-secondary); white-space: pre-wrap; font-family: monospace; max-height: 70vh; overflow-y: auto;">
+            <div id="licenses-content" style="background: var(--bg-panel); padding: 30px; border-radius: 12px; border: 1px solid var(--border-dim); max-height: 75vh; overflow-y: auto;">
                 Loading licenses...
             </div>
         </div>
@@ -196,14 +217,14 @@
         <!-- Legal Tab -->
         <div id="tab-legal" class="view-section">
             <div class="page-header"><h2 class="page-title">Legal & Privacy</h2></div>
-            <div style="display: flex; gap: 20px;">
-                <div style="flex: 1; background: var(--bg-panel); padding: 30px; border-radius: 12px; border: 1px solid var(--border-dim); color: var(--txt-secondary); max-height: 70vh; overflow-y: auto;">
-                    <h3 style="color: var(--txt-primary); margin-bottom: 15px;">Terms of Service</h3>
-                    <div id="legal-tos-content" style="white-space: pre-wrap; font-size: 0.9rem;">Loading...</div>
+            <div style="display: flex; gap: 20px; flex-wrap: wrap;">
+                <div class="legal-box">
+                    <h3>Terms of Service</h3>
+                    <div id="legal-tos-content" class="legal-text-content">Loading...</div>
                 </div>
-                <div style="flex: 1; background: var(--bg-panel); padding: 30px; border-radius: 12px; border: 1px solid var(--border-dim); color: var(--txt-secondary); max-height: 70vh; overflow-y: auto;">
-                    <h3 style="color: var(--txt-primary); margin-bottom: 15px;">Privacy Policy</h3>
-                    <div id="legal-privacy-content" style="white-space: pre-wrap; font-size: 0.9rem;">Loading...</div>
+                <div class="legal-box">
+                    <h3>Privacy Policy</h3>
+                    <div id="legal-privacy-content" class="legal-text-content">Loading...</div>
                 </div>
             </div>
         </div>
@@ -396,25 +417,65 @@
             }
         }
 
+        function formatLegalText(raw) {
+            return raw.split('\\n').map(line => {
+                const t = line.trim();
+                if (t.length === 0) return '<br>';
+                // If it looks like a header (starts with number or is short and capitalized)
+                if ((/^\\d+\\.\\s/.test(t) || (t.length < 50 && !t.endsWith('.') && t.length > 3)) && t !== 'Terms of Service' && !t.startsWith('Last Updated')) {
+                    return `<div class="legal-h4">${t}</div>`;
+                }
+                return `<span>${line}</span><br>`;
+            }).join('');
+        }
+
+        function toggleAccordion(element) {
+            element.parentElement.classList.toggle('active');
+        }
+
         async function loadLegalTexts() {
             try {
                 const resTos = await fetch('tos.txt');
-                if (resTos.ok) document.getElementById('legal-tos-content').textContent = await resTos.text();
+                if (resTos.ok) {
+                    let text = await resTos.text();
+                    document.getElementById('legal-tos-content').innerHTML = formatLegalText(text);
+                }
                 
                 const resPriv = await fetch('privacy.txt');
-                if (resPriv.ok) document.getElementById('legal-privacy-content').textContent = await resPriv.text();
+                if (resPriv.ok) {
+                    let text = await resPriv.text();
+                    document.getElementById('legal-privacy-content').innerHTML = formatLegalText(text);
+                }
                 
                 // Licenses
                 const licenses = ['frp.txt', 'mariadb.txt', 'openjdk.txt', 'press_start_2p.txt', 'redis.txt'];
-                let licensesText = "";
+                const licenseTitles = {
+                    'frp.txt': 'Fast Reverse Proxy (FRP)',
+                    'mariadb.txt': 'MariaDB Database',
+                    'openjdk.txt': 'OpenJDK (Java Runtime)',
+                    'press_start_2p.txt': 'Press Start 2P (Font)',
+                    'redis.txt': 'Redis In-Memory Data Store'
+                };
+                
+                let licensesHtml = "";
                 for (const file of licenses) {
                     const res = await fetch(file);
                     if (res.ok) {
-                        licensesText += "=== " + file + " ===\\n";
-                        licensesText += await res.text() + "\\n\\n";
+                        const content = await res.text();
+                        const title = licenseTitles[file] || file;
+                        licensesHtml += `
+                            <div class="accordion">
+                                <div class="accordion-header" onclick="toggleAccordion(this)">
+                                    ${title}
+                                </div>
+                                <div class="accordion-content">
+${content.replace(/</g, '&lt;').replace(/>/g, '&gt;')}
+                                </div>
+                            </div>
+                        `;
                     }
                 }
-                document.getElementById('licenses-content').textContent = licensesText;
+                document.getElementById('licenses-content').innerHTML = licensesHtml;
             } catch (e) {
                 console.error("Failed to load legal texts", e);
             }

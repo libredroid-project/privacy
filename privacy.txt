@@ -4,13 +4,15 @@ Last Updated: June 2026
 
 1. Introduction
 
-Welcome to KodaHosting. We respect your privacy and are committed to protecting any information that may be processed while you use our mobile application. This Privacy Policy explains what information we collect, how we use it, and your rights regarding your data.
+Welcome to KodaHosting. We respect your privacy and are committed to protecting any information that may be processed while you use our mobile application and the accompanying Web Dashboard. This Privacy Policy explains what information we collect, how we use it, and your rights regarding your data.
 
 2. Information We Collect & Process
 
 KodaHosting processes certain data to function correctly:
 
 - Account Information: When you register or log in, we securely process your email address and authentication details to manage your personal KodaHosting account. Authentication is handled securely by our partner, Supabase.
+
+- Web Dashboard & Remote Control: When using the Web Dashboard, we process your authentication tokens and proxy server commands securely via our API to allow remote management of your Android-hosted servers.
 
 - Local Data: Your Minecraft server files, worlds, plugins, and configurations are stored purely locally on your device.
 
