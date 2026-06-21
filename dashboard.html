@@ -109,6 +109,15 @@
     <!-- Sidebar -->
     <div class="sidebar" id="sidebar">
         <a href="/" class="logo" style="display: block;">Koda<span>Hosting</span></a>
+        
+        <div id="app-status-indicator" style="background: var(--bg-void); padding: 10px 15px; border-radius: 8px; margin-bottom: 20px; border: 1px solid var(--border-dim); font-size: 0.9rem;">
+            <div style="display: flex; align-items: center; justify-content: space-between;">
+                <span style="color: var(--txt-secondary);">App Status</span>
+                <span id="app-status-badge" style="background: var(--bg-panel); color: var(--txt-muted); padding: 3px 8px; border-radius: 4px; font-weight: bold; font-size: 0.8rem;">OFFLINE</span>
+            </div>
+            <div id="app-status-desc" style="font-size: 0.8rem; color: var(--txt-muted); margin-top: 5px;">Not connected</div>
+        </div>
+
         <div class="nav-item active" onclick="switchTab('servers')">Servers</div>
         <div class="nav-item" onclick="switchTab('databases')">Databases</div>
         <div class="nav-item" onclick="switchTab('tickets')">Support Tickets</div>
@@ -179,22 +188,23 @@
         <!-- Licenses Tab -->
         <div id="tab-licenses" class="view-section">
             <div class="page-header"><h2 class="page-title">Open Source Licenses</h2></div>
-            <div style="background: var(--bg-panel); padding: 30px; border-radius: 12px; border: 1px solid var(--border-dim); color: var(--txt-secondary);">
-                <h3>PRoot / proot-distro</h3>
-                <p style="margin-top: 10px;">PRoot is licensed under the GNU General Public License v2.0 or later.</p>
-                <h3 style="margin-top: 20px;">PaperMC</h3>
-                <p style="margin-top: 10px;">Paper is licensed under the MIT License and GPLv3.</p>
+            <div id="licenses-content" style="background: var(--bg-panel); padding: 30px; border-radius: 12px; border: 1px solid var(--border-dim); color: var(--txt-secondary); white-space: pre-wrap; font-family: monospace; max-height: 70vh; overflow-y: auto;">
+                Loading licenses...
             </div>
         </div>
 
         <!-- Legal Tab -->
         <div id="tab-legal" class="view-section">
             <div class="page-header"><h2 class="page-title">Legal & Privacy</h2></div>
-            <div style="background: var(--bg-panel); padding: 30px; border-radius: 12px; border: 1px solid var(--border-dim); color: var(--txt-secondary);">
-                <h3>Terms of Service</h3>
-                <p style="margin-top: 10px;">KodaHosting remote control features are provided 'as is'. You are responsible for the content hosted on your local servers.</p>
-                <h3 style="margin-top: 20px;">Privacy Policy</h3>
-                <p style="margin-top: 10px;">We only store your email, Google ID, and remote control commands to facilitate communication between the Web Dashboard and your Android App.</p>
+            <div style="display: flex; gap: 20px;">
+                <div style="flex: 1; background: var(--bg-panel); padding: 30px; border-radius: 12px; border: 1px solid var(--border-dim); color: var(--txt-secondary); max-height: 70vh; overflow-y: auto;">
+                    <h3 style="color: var(--txt-primary); margin-bottom: 15px;">Terms of Service</h3>
+                    <div id="legal-tos-content" style="white-space: pre-wrap; font-size: 0.9rem;">Loading...</div>
+                </div>
+                <div style="flex: 1; background: var(--bg-panel); padding: 30px; border-radius: 12px; border: 1px solid var(--border-dim); color: var(--txt-secondary); max-height: 70vh; overflow-y: auto;">
+                    <h3 style="color: var(--txt-primary); margin-bottom: 15px;">Privacy Policy</h3>
+                    <div id="legal-privacy-content" style="white-space: pre-wrap; font-size: 0.9rem;">Loading...</div>
+                </div>
             </div>
         </div>
     </div>
@@ -265,6 +275,7 @@
                 document.getElementById('login-view').style.display = 'none';
                 fetchServers();
                 setupRealtime();
+                loadLegalTexts();
             } else {
                 document.getElementById('login-view').style.display = 'flex';
             }
@@ -275,6 +286,7 @@
                     document.getElementById('login-view').style.display = 'none';
                     fetchServers();
                     setupRealtime();
+                    loadLegalTexts();
                 } else {
                     currentUser = null;
                     document.getElementById('login-view').style.display = 'flex';
@@ -320,8 +332,12 @@
         // Fetch Data
         async function fetchServers() {
             if (!currentUser) return;
-            const { data: userData } = await supabaseClient.from('koda_users').select('app_uuid').eq('auth_id', currentUser.id).single();
+            const { data: userData } = await supabaseClient.from('koda_users').select('app_uuid, app_state, app_last_ping').eq('auth_id', currentUser.id).single();
             const uuidFilter = (userData && userData.app_uuid) ? userData.app_uuid : currentUser.id;
+
+            if (userData) {
+                updateAppStatusBadge(userData.app_state, userData.app_last_ping);
+            }
 
             const { data: servers, error } = await supabaseClient
                 .from('koda_servers')
@@ -348,7 +364,60 @@
                 .on('postgres_changes', { event: '*', schema: 'public', table: 'koda_servers', filter: `owner_app_uuid=eq.${uuidFilter}` }, () => {
                     fetchServers();
                 })
+                .on('postgres_changes', { event: '*', schema: 'public', table: 'koda_users', filter: `auth_id=eq.${currentUser.id}` }, (payload) => {
+                    if (payload.new) updateAppStatusBadge(payload.new.app_state, payload.new.app_last_ping);
+                })
                 .subscribe();
+        }
+
+        function updateAppStatusBadge(state, lastPingStr) {
+            const badge = document.getElementById('app-status-badge');
+            const desc = document.getElementById('app-status-desc');
+            if (!state || !lastPingStr) return;
+            
+            const lastPing = new Date(lastPingStr).getTime();
+            const now = Date.now();
+            const diffSecs = (now - lastPing) / 1000;
+            
+            if (diffSecs > 35) {
+                state = 'OFFLINE';
+            }
+            
+            badge.textContent = state;
+            if (state === 'FOREGROUND') {
+                badge.style.color = '#00E676'; // Online green
+                desc.textContent = "KodaHosting App is active on your device";
+            } else if (state === 'BACKGROUND') {
+                badge.style.color = '#FFB800'; // Warn orange
+                desc.textContent = "App is running in the background";
+            } else {
+                badge.style.color = 'var(--txt-muted)';
+                desc.textContent = "Not connected";
+            }
+        }
+
+        async function loadLegalTexts() {
+            try {
+                const resTos = await fetch('tos.txt');
+                if (resTos.ok) document.getElementById('legal-tos-content').textContent = await resTos.text();
+                
+                const resPriv = await fetch('privacy.txt');
+                if (resPriv.ok) document.getElementById('legal-privacy-content').textContent = await resPriv.text();
+                
+                // Licenses
+                const licenses = ['frp.txt', 'mariadb.txt', 'openjdk.txt', 'press_start_2p.txt', 'redis.txt'];
+                let licensesText = "";
+                for (const file of licenses) {
+                    const res = await fetch(file);
+                    if (res.ok) {
+                        licensesText += "=== " + file + " ===\\n";
+                        licensesText += await res.text() + "\\n\\n";
+                    }
+                }
+                document.getElementById('licenses-content').textContent = licensesText;
+            } catch (e) {
+                console.error("Failed to load legal texts", e);
+            }
         }
 
         function getStatusDetails(ver) {
