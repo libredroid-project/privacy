@@ -809,7 +809,7 @@ ${content.replace(/</g, '&lt;').replace(/>/g, '&gt;')}
                 const title = item.host;
                 const controls = isMinecraft ? `
                     <div class="controls-grid" style="grid-template-columns: 1fr;">
-                        <button class="btn-outline" onclick='openServerDetail(${JSON.stringify(item).replace(/'/g, "&apos;")})'>Manage Server</button>
+                        <button class="btn-outline" onclick="window.location.href='manage.html?id=${item.id}'">Manage Server</button>
                     </div>
                 ` : `
                     <div class="controls-grid">
