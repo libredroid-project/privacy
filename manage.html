@@ -286,12 +286,6 @@
                         <button class="btn-outline" onclick="sendCommand('RESTART')">🔄 Restart</button>
                         <button class="btn-outline" onclick="sendCommand('HIBERNATE')">⏸ Hibernate</button>
                     </div>
-                    
-                    <h3>Console Command</h3>
-                    <div style="display: flex; gap: 10px;">
-                        <input type="text" id="cmd-input" placeholder="say Hello" style="flex:1; background:rgba(0,0,0,0.3); border:1px solid var(--border); color:#fff; padding:10px; border-radius:8px;">
-                        <button class="btn" onclick="sendConsole()">Send</button>
-                    </div>
                 </div>
 
                 <div class="card">
@@ -394,10 +388,9 @@
     </div>
 
     <script>
-        const supabaseUrl = 'https://tvuxtmctmmyyfxwubrqi.supabase.co';
-        // USE THE KEY FROM DASHBOARD.HTML
-        const supabaseKey = 'sbp_0212374e0ed4113c05dab67284296507ae3c1b57';
-        const supabase = supabase.createClient(supabaseUrl, supabaseKey);
+        const supabaseUrl = 'https://scsezpfrrmpyuapblbxk.supabase.co';
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNjc2V6cGZycm1weXVhcGJsYnhrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY5NDE4MjYsImV4cCI6MjA5MjUxNzgyNn0.rHro6kQpXHAnxEaFxozYzsKY8IHIUlot-7-Q4LNbZT8';
+        const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
 
         const urlParams = new URLSearchParams(window.location.search);
         const serverId = urlParams.get('id');
