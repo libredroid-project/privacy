@@ -471,7 +471,10 @@
         }
 
         // Sidebar & UI
+        
         let currentAppState = 'OFFLINE';
+        let currentAvailableRam = 2048;
+
         
         function toggleSidebar() {
             document.getElementById('sidebar').classList.toggle('open');
@@ -512,7 +515,7 @@
         // Fetch Data
         async function fetchServers() {
             if (!currentUser) return;
-            const { data: userData } = await supabaseClient.from('koda_users').select('app_uuid, app_state, app_last_ping').eq('auth_id', currentUser.id).single();
+            const { data: userData } = await supabaseClient.from('koda_users').select('app_uuid, app_state, app_last_ping, device_ram_mb').eq('auth_id', currentUser.id).single();
             const uuidFilter = (userData && userData.app_uuid) ? userData.app_uuid : currentUser.id;
 
             if (userData) {
@@ -765,6 +768,7 @@ ${content.replace(/</g, '&lt;').replace(/>/g, '&gt;')}
         }
 
         // Creation
+        // Dynamic Versions
         const VERSIONS = {
             "FABRIC": ["1.21.4","1.21.3","1.21.1","1.20.6","1.20.4","1.20.1","1.19.4"],
             "VANILLA": ["1.21.4","1.21.3","1.21.1","1.20.6","1.20.4","1.20.1","1.19.4","1.18.2","1.17.1","1.16.5"],
@@ -832,25 +836,78 @@ ${content.replace(/</g, '&lt;').replace(/>/g, '&gt;')}
             }
         }
         
-        function selectWizardEngine(engine, el) {
+        
+        async function fetchVersions(engine) {
+            try {
+                let res, json;
+                switch (engine) {
+                    case 'PAPER':
+                    case 'FOLIA':
+                    case 'VELOCITY':
+                        res = await fetch('https://api.papermc.io/v2/projects/' + engine.toLowerCase());
+                        json = await res.json();
+                        return json.versions.reverse().slice(0, 50);
+                    case 'PURPUR':
+                        res = await fetch('https://api.purpurmc.org/v2/purpur');
+                        json = await res.json();
+                        return json.versions.reverse().slice(0, 50);
+                    case 'FABRIC':
+                        res = await fetch('https://meta.fabricmc.net/v2/versions/game');
+                        json = await res.json();
+                        return json.filter(v => v.stable).map(v => v.version).slice(0, 50);
+                    default:
+                        return ["1.21.4", "1.21.3", "1.20.4", "1.20.1", "1.19.4", "1.12.2", "1.8.8"];
+                }
+            } catch (e) {
+                console.error("Failed fetching versions for", engine, e);
+                return VERSIONS[engine] || ["1.21.4"];
+            }
+        }
+
+        async function selectWizardEngine(engine, el) {
             wizEngine = engine;
             document.querySelectorAll('.software-card').forEach(c => c.classList.remove('active'));
             el.classList.add('active');
             
             const verSelect = document.getElementById('wizard-version');
+            verSelect.innerHTML = '<option>Loading...</option>';
+            verSelect.disabled = true;
+            
+            const list = await fetchVersions(engine);
+            
             verSelect.innerHTML = '';
-            const list = VERSIONS[engine] || ["1.21.4"];
             list.forEach(v => {
                 const opt = document.createElement('option');
                 opt.value = v;
                 opt.textContent = v;
                 verSelect.appendChild(opt);
             });
+            verSelect.disabled = false;
         }
         
+        
         function updateWizardRam() {
-            const idx = document.getElementById('wizard-ram-slider').value;
-            const ram = RAM_STEPS[idx];
+            const slider = document.getElementById('wizard-ram-slider');
+            const idx = slider.value;
+            let ram = RAM_STEPS[idx];
+            
+            // Limit to max safe RAM (device_ram - 1024)
+            const maxSafeRam = currentAvailableRam - 1024;
+            if (ram > maxSafeRam) {
+                ram = maxSafeRam;
+                // find closest valid index
+                let validIdx = 0;
+                for (let i=0; i<RAM_STEPS.length; i++) {
+                    if (RAM_STEPS[i] <= maxSafeRam) validIdx = i;
+                }
+                slider.value = validIdx;
+                if (validIdx === 0 && maxSafeRam < RAM_STEPS[0]) {
+                    ram = RAM_STEPS[0];
+                } else {
+                    ram = RAM_STEPS[validIdx];
+                }
+            }
+            
             document.getElementById('wizard-ram-label').textContent = ram + " MB";
         }
         
