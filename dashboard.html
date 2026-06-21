@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KodaHosting - Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
+    <style>
+        :root {
+            --bg-void: #1B1613;
+            --bg-panel: #241C18;
+            --bg-panel-hover: #2D231E;
+            --koda-orange: #FF6B00;
+            --border-dim: #332A24;
+            --txt-primary: #FFFFFF;
+            --txt-secondary: #888899;
+            --btn-hover: #E55D00;
+            --success: #00E676;
+            --error: #FF5252;
+            --sidebar-width: 250px;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Inter', sans-serif; background-color: var(--bg-void); color: var(--txt-primary); overflow-x: hidden; display: flex; height: 100vh; }
+        h1, h2, h3 { font-family: 'Outfit', sans-serif; }
+        
+        /* Top Navbar (Mobile only) */
+        .mobile-nav { display: none; padding: 15px 20px; background: var(--bg-panel); border-bottom: 1px solid var(--border-dim); align-items: center; justify-content: space-between; width: 100%; position: fixed; top: 0; z-index: 100; }
+        .menu-btn { background: none; border: none; color: var(--txt-primary); font-size: 1.5rem; cursor: pointer; }
+        
+        /* Sidebar */
+        .sidebar { width: var(--sidebar-width); background-color: var(--bg-panel); border-right: 1px solid var(--border-dim); display: flex; flex-direction: column; padding: 20px 0; transition: transform 0.3s ease; z-index: 99; }
+        .sidebar .logo { font-family: 'Outfit', sans-serif; font-size: 1.8rem; font-weight: 800; color: var(--txt-primary); text-decoration: none; padding: 0 20px 30px 20px; display: block; border-bottom: 1px solid var(--border-dim); margin-bottom: 20px; }
+        .sidebar .logo span { color: var(--koda-orange); }
+        .nav-item { padding: 15px 20px; color: var(--txt-secondary); text-decoration: none; display: block; font-weight: 500; transition: all 0.2s; cursor: pointer; border-left: 3px solid transparent; }
+        .nav-item:hover, .nav-item.active { background-color: var(--bg-panel-hover); color: var(--koda-orange); border-left-color: var(--koda-orange); }
+        .sidebar-bottom { margin-top: auto; border-top: 1px solid var(--border-dim); padding-top: 20px; }
+        
+        /* Main Content */
+        .main-content { flex: 1; padding: 40px 5%; overflow-y: auto; }
+        
+        /* Views */
+        .view-section { display: none; }
+        .view-section.active { display: block; }
+        #login-view { display: flex; flex-direction: column; align-items: center; justify-content: center; width: 100%; height: 100%; background: var(--bg-void); position: absolute; z-index: 1000; top: 0; left: 0; }
+        
+        /* Login Card */
+        .login-card { background-color: var(--bg-panel); border: 1px solid var(--border-dim); border-radius: 16px; padding: 40px; width: 100%; max-width: 400px; text-align: center; box-shadow: 0 8px 30px rgba(0,0,0,0.5); }
+        .login-card h2 { margin-bottom: 24px; font-size: 2rem; }
+        .input-group { margin-bottom: 20px; text-align: left; }
+        .input-group label { display: block; margin-bottom: 8px; color: var(--txt-secondary); font-size: 0.9rem; }
+        .input-group input, select { width: 100%; padding: 14px; background-color: var(--bg-void); border: 1px solid var(--border-dim); border-radius: 8px; color: var(--txt-primary); font-family: 'Inter', sans-serif; font-size: 1rem; }
+        .input-group input:focus, select:focus { outline: none; border-color: var(--koda-orange); }
+        .btn { background-color: var(--koda-orange); color: #fff; padding: 14px 24px; border-radius: 8px; font-weight: 600; border: none; cursor: pointer; font-size: 1rem; transition: 0.2s; display: inline-block; }
+        .btn:hover { background-color: var(--btn-hover); }
+        .btn-full { width: 100%; }
+        .error-msg { color: var(--error); margin-top: 15px; font-size: 0.9rem; display: none; }
+        
+        /* Header */
+        .page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
+        .page-title { font-size: 2rem; }
+        
+        /* Grid */
+        .items-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 24px; }
+        
+        /* Card */
+        .item-card { background-color: var(--bg-panel); border: 1px solid var(--border-dim); border-radius: 12px; padding: 24px; display: flex; flex-direction: column; gap: 16px; }
+        .item-header { display: flex; justify-content: space-between; align-items: flex-start; }
+        .item-title { font-size: 1.3rem; font-weight: 600; word-break: break-all; }
+        .status-badge { padding: 4px 12px; border-radius: 20px; font-size: 0.75rem; font-weight: 600; text-transform: uppercase; }
+        .status-online { background-color: rgba(0, 230, 118, 0.15); color: var(--success); }
+        .status-offline { background-color: rgba(255, 82, 82, 0.15); color: var(--error); }
+        .status-pending { background-color: rgba(255, 107, 0, 0.15); color: var(--koda-orange); }
+        .item-details { display: flex; flex-direction: column; gap: 6px; color: var(--txt-secondary); font-size: 0.9rem; }
+        .controls-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: auto; }
+        .btn-outline { background: transparent; border: 1px solid var(--border-dim); color: var(--txt-primary); padding: 8px; border-radius: 6px; cursor: pointer; transition: 0.2s; font-size: 0.85rem; }
+        .btn-outline:hover { border-color: var(--koda-orange); color: var(--koda-orange); }
+        .console-input { display: flex; gap: 10px; margin-top: 10px; }
+        .console-input input { flex: 1; padding: 8px 12px; background: var(--bg-void); border: 1px solid var(--border-dim); border-radius: 6px; color: #fff; }
+        .console-input button { background: var(--border-dim); color: #fff; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; transition: 0.2s; }
+        .console-input button:hover { background: var(--koda-orange); }
+
+        /* Modal */
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 2000; align-items: center; justify-content: center; backdrop-filter: blur(5px); }
+        .modal.active { display: flex; }
+        .modal-content { background: var(--bg-panel); padding: 30px; border-radius: 12px; width: 100%; max-width: 450px; border: 1px solid var(--border-dim); }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .modal-close { background: none; border: none; color: var(--txt-secondary); font-size: 1.5rem; cursor: pointer; }
+        .modal-close:hover { color: #fff; }
+
+        @media (max-width: 768px) {
+            body { flex-direction: column; }
+            .sidebar { position: fixed; height: 100%; transform: translateX(-100%); }
+            .sidebar.open { transform: translateX(0); }
+            .mobile-nav { display: flex; }
+            .main-content { padding-top: 80px; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Mobile Nav -->
+    <div class="mobile-nav">
+        <div class="logo">Koda<span>Hosting</span></div>
+        <button class="menu-btn" onclick="toggleSidebar()">☰</button>
+    </div>
+
+    <!-- Sidebar -->
+    <div class="sidebar" id="sidebar">
+        <a href="/" class="logo" style="display: block;">Koda<span>Hosting</span></a>
+        <div class="nav-item active" onclick="switchTab('servers')">Servers</div>
+        <div class="nav-item" onclick="switchTab('databases')">Databases</div>
+        <div class="nav-item" onclick="switchTab('tickets')">Support Tickets</div>
+        <div class="nav-item" onclick="switchTab('licenses')">Licenses</div>
+        <div class="nav-item" onclick="switchTab('legal')">Legal</div>
+        <div class="sidebar-bottom">
+            <div class="nav-item" onclick="logout()" style="color: var(--error);">Logout</div>
+        </div>
+    </div>
+
+    <!-- Login Overlay -->
+    <div id="login-view">
+        <div class="login-card">
+            <h1 class="logo" style="justify-content: center; margin-bottom: 30px;">Koda<span>Hosting</span></h1>
+            <h2>Sign In</h2>
+            <div class="input-group">
+                <label>Email Address</label>
+                <input type="email" id="input-email" placeholder="you@example.com">
+            </div>
+            <div class="input-group">
+                <label>Password</label>
+                <input type="password" id="input-password" placeholder="••••••••">
+            </div>
+            <button class="btn btn-full" id="btn-login-email">Sign In with Email</button>
+            <p id="login-error" class="error-msg">Invalid credentials.</p>
+            
+            <div style="margin: 24px 0; color: var(--txt-secondary); position: relative;">
+                <span style="background: var(--bg-panel); padding: 0 10px; position: relative; z-index: 1;">OR</span>
+                <div style="position: absolute; top: 50%; left: 0; right: 0; border-top: 1px solid var(--border-dim); z-index: 0;"></div>
+            </div>
+
+            <div id="g_id_onload" data-client_id="558083145632-fbhjb8j1k4m8r14ui97shd9dnng0rlum.apps.googleusercontent.com" data-context="signin" data-ux_mode="popup" data-callback="handleGoogleLogin" data-auto_prompt="false"></div>
+            <div class="g_id_signin" data-type="standard" data-shape="rectangular" data-theme="outline" data-text="signin_with" data-size="large" data-logo_alignment="left" style="display: flex; justify-content: center; margin-top: 16px;"></div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <!-- Servers Tab -->
+        <div id="tab-servers" class="view-section active">
+            <div class="page-header">
+                <h2 class="page-title">Minecraft Servers</h2>
+                <button class="btn" onclick="openModal('modal-create-server')">+ New Server</button>
+            </div>
+            <div class="items-grid" id="servers-container"></div>
+        </div>
+
+        <!-- Databases Tab -->
+        <div id="tab-databases" class="view-section">
+            <div class="page-header">
+                <h2 class="page-title">MariaDB Databases</h2>
+                <button class="btn" onclick="openModal('modal-create-database')">+ New Database</button>
+            </div>
+            <div class="items-grid" id="databases-container"></div>
+        </div>
+
+        <!-- Tickets Tab -->
+        <div id="tab-tickets" class="view-section">
+            <div class="page-header">
+                <h2 class="page-title">Support Tickets</h2>
+            </div>
+            <div style="background: var(--bg-panel); padding: 30px; border-radius: 12px; border: 1px solid var(--border-dim); text-align: center; color: var(--txt-secondary);">
+                <p>Support Ticket management is fully integrated into the KodaHosting Android App.</p>
+                <p style="margin-top: 10px;">Please use the app to open and manage tickets directly.</p>
+            </div>
+        </div>
+
+        <!-- Licenses Tab -->
+        <div id="tab-licenses" class="view-section">
+            <div class="page-header"><h2 class="page-title">Open Source Licenses</h2></div>
+            <div style="background: var(--bg-panel); padding: 30px; border-radius: 12px; border: 1px solid var(--border-dim); color: var(--txt-secondary);">
+                <h3>PRoot / proot-distro</h3>
+                <p style="margin-top: 10px;">PRoot is licensed under the GNU General Public License v2.0 or later.</p>
+                <h3 style="margin-top: 20px;">PaperMC</h3>
+                <p style="margin-top: 10px;">Paper is licensed under the MIT License and GPLv3.</p>
+            </div>
+        </div>
+
+        <!-- Legal Tab -->
+        <div id="tab-legal" class="view-section">
+            <div class="page-header"><h2 class="page-title">Legal & Privacy</h2></div>
+            <div style="background: var(--bg-panel); padding: 30px; border-radius: 12px; border: 1px solid var(--border-dim); color: var(--txt-secondary);">
+                <h3>Terms of Service</h3>
+                <p style="margin-top: 10px;">KodaHosting remote control features are provided 'as is'. You are responsible for the content hosted on your local servers.</p>
+                <h3 style="margin-top: 20px;">Privacy Policy</h3>
+                <p style="margin-top: 10px;">We only store your email, Google ID, and remote control commands to facilitate communication between the Web Dashboard and your Android App.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modals -->
+    <div class="modal" id="modal-create-server">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Create Minecraft Server</h3>
+                <button class="modal-close" onclick="closeModal('modal-create-server')">×</button>
+            </div>
+            <div class="input-group">
+                <label>Subdomain (e.g. survival)</label>
+                <input type="text" id="create-srv-name" placeholder="survival">
+            </div>
+            <div class="input-group">
+                <label>Software</label>
+                <select id="create-srv-engine">
+                    <option value="paper">PaperMC (Recommended)</option>
+                    <option value="vanilla">Vanilla</option>
+                </select>
+            </div>
+            <div class="input-group">
+                <label>RAM (MB)</label>
+                <input type="number" id="create-srv-ram" value="1500">
+            </div>
+            <button class="btn btn-full" onclick="submitCreateServer()">Install via Android App</button>
+            <p style="color: var(--txt-secondary); font-size: 0.8rem; margin-top: 15px; text-align: center;">The server will be created on your connected Android device automatically.</p>
+        </div>
+    </div>
+
+    <div class="modal" id="modal-create-database">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Create Database</h3>
+                <button class="modal-close" onclick="closeModal('modal-create-database')">×</button>
+            </div>
+            <div class="input-group">
+                <label>Database Name</label>
+                <input type="text" id="create-db-name" placeholder="mydatabase">
+            </div>
+            <div class="input-group">
+                <label>Username</label>
+                <input type="text" id="create-db-user" placeholder="root">
+            </div>
+            <div class="input-group">
+                <label>Password</label>
+                <input type="password" id="create-db-pass" placeholder="********">
+            </div>
+            <button class="btn btn-full" onclick="submitCreateDatabase()">Create Database</button>
+            <p style="color: var(--txt-secondary); font-size: 0.8rem; margin-top: 15px; text-align: center;">MariaDB will be provisioned on your Android device.</p>
+        </div>
+    </div>
+
+    <script>
+        const SUPABASE_URL = 'https://scsezpfrrmpyuapblbxk.supabase.co';
+        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNjc2V6cGZycm1weXVhcGJsYnhrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY5NDE4MjYsImV4cCI6MjA5MjUxNzgyNn0.rHro6kQpXHAnxEaFxozYzsKY8IHIUlot-7-Q4LNbZT8';
+        const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+        let currentUser = null;
+        let serversChannel = null;
+
+        // Init
+        async function checkSession() {
+            const { data: { session } } = await supabaseClient.auth.getSession();
+            if (session) {
+                currentUser = session.user;
+                document.getElementById('login-view').style.display = 'none';
+                fetchServers();
+                setupRealtime();
+            } else {
+                document.getElementById('login-view').style.display = 'flex';
+            }
+
+            supabaseClient.auth.onAuthStateChange((_event, session) => {
+                if (session) {
+                    currentUser = session.user;
+                    document.getElementById('login-view').style.display = 'none';
+                    fetchServers();
+                    setupRealtime();
+                } else {
+                    currentUser = null;
+                    document.getElementById('login-view').style.display = 'flex';
+                }
+            });
+        }
+
+        // Sidebar & UI
+        function toggleSidebar() {
+            document.getElementById('sidebar').classList.toggle('open');
+        }
+
+        function switchTab(tabId) {
+            document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+            document.getElementById('tab-' + tabId).classList.add('active');
+            event.target.classList.add('active');
+            if (window.innerWidth <= 768) toggleSidebar();
+        }
+
+        function openModal(id) { document.getElementById(id).classList.add('active'); }
+        function closeModal(id) { document.getElementById(id).classList.remove('active'); }
+
+        // Login
+        document.getElementById('btn-login-email').addEventListener('click', async () => {
+            const email = document.getElementById('input-email').value;
+            const password = document.getElementById('input-password').value;
+            const errorMsg = document.getElementById('login-error');
+            errorMsg.style.display = 'none';
+            const { error } = await supabaseClient.auth.signInWithPassword({ email, password });
+            if (error) { errorMsg.textContent = error.message; errorMsg.style.display = 'block'; }
+        });
+
+        async function handleGoogleLogin(response) {
+            const errorMsg = document.getElementById('login-error');
+            errorMsg.style.display = 'none';
+            const { error } = await supabaseClient.auth.signInWithIdToken({ provider: 'google', token: response.credential });
+            if (error) { errorMsg.textContent = "Google Login Error: " + error.message; errorMsg.style.display = 'block'; }
+        }
+
+        async function logout() { await supabaseClient.auth.signOut(); }
+
+        // Fetch Data
+        async function fetchServers() {
+            if (!currentUser) return;
+            const { data: userData } = await supabaseClient.from('koda_users').select('app_uuid').eq('auth_id', currentUser.id).single();
+            const uuidFilter = (userData && userData.app_uuid) ? userData.app_uuid : currentUser.id;
+
+            const { data: servers, error } = await supabaseClient
+                .from('koda_servers')
+                .select('*')
+                .eq('owner_app_uuid', uuidFilter)
+                .not('host', 'like', 'deleted_%')
+                .order('created_at', { ascending: false });
+
+            if (error) return;
+
+            const mcServers = servers.filter(s => s.server_version !== 'CMD:INSTALL_DB');
+            const dbServers = servers.filter(s => s.server_version === 'CMD:INSTALL_DB' || s.host.startsWith('db_'));
+
+            renderItems(mcServers, 'servers-container', true);
+            renderItems(dbServers, 'databases-container', false);
+        }
+
+        async function setupRealtime() {
+            if (serversChannel) supabaseClient.removeChannel(serversChannel);
+            const { data: userData } = await supabaseClient.from('koda_users').select('app_uuid').eq('auth_id', currentUser.id).single();
+            const uuidFilter = (userData && userData.app_uuid) ? userData.app_uuid : currentUser.id;
+
+            serversChannel = supabaseClient.channel('custom-all-channel')
+                .on('postgres_changes', { event: '*', schema: 'public', table: 'koda_servers', filter: `owner_app_uuid=eq.${uuidFilter}` }, () => {
+                    fetchServers();
+                })
+                .subscribe();
+        }
+
+        function getStatusDetails(ver) {
+            if (!ver || ver === 'HIBERNATED') return { label: 'Hibernated', class: 'status-offline' };
+            if (ver.startsWith('CMD:')) return { label: 'Command Pending...', class: 'status-pending' };
+            if (ver === 'DELETED') return { label: 'Deleted', class: 'status-offline' };
+            return { label: 'Active', class: 'status-online' };
+        }
+
+        function renderItems(items, containerId, isMinecraft) {
+            const container = document.getElementById(containerId);
+            container.innerHTML = '';
+            if (!items || items.length === 0) {
+                container.innerHTML = '<p style="color: var(--txt-secondary);">No items found.</p>';
+                return;
+            }
+            items.forEach(item => {
+                const status = getStatusDetails(item.server_version);
+                const title = item.host;
+                const controls = isMinecraft ? `
+                    <div class="controls-grid">
+                        <button class="btn-outline" onclick="sendCommand('${item.id}', 'START')">Start</button>
+                        <button class="btn-outline" onclick="sendCommand('${item.id}', 'STOP')">Stop</button>
+                        <button class="btn-outline" onclick="sendCommand('${item.id}', 'RESTART')">Restart</button>
+                        <button class="btn-outline" onclick="sendCommand('${item.id}', 'HIBERNATE')">Hibernate</button>
+                    </div>
+                    <div class="console-input">
+                        <input type="text" id="cmd-${item.id}" placeholder="say Hello World">
+                        <button onclick="sendConsoleCommand('${item.id}')">Send</button>
+                    </div>
+                ` : `
+                    <div class="controls-grid">
+                        <button class="btn-outline" onclick="sendCommand('${item.id}', 'START')">Start Database</button>
+                        <button class="btn-outline" onclick="sendCommand('${item.id}', 'STOP')">Stop Database</button>
+                    </div>
+                `;
+
+                container.innerHTML += `
+                    <div class="item-card">
+                        <div class="item-header">
+                            <div class="item-title">${title}</div>
+                            <div class="status-badge ${status.class}">${status.label}</div>
+                        </div>
+                        <div class="item-details">
+                            <span>Version: ${item.server_version && !item.server_version.startsWith('CMD:') ? item.server_version : 'Unknown'}</span>
+                            <span>RAM: ${item.ram_mb || 0} MB</span>
+                        </div>
+                        ${controls}
+                    </div>
+                `;
+            });
+        }
+
+        async function sendCommand(id, cmd) {
+            await supabaseClient.from('koda_servers').update({ server_version: `CMD:${cmd}` }).eq('id', id);
+        }
+        async function sendConsoleCommand(id) {
+            const input = document.getElementById(`cmd-${id}`);
+            if (!input.value.trim()) return;
+            await sendCommand(id, `EXEC_${input.value.trim()}`);
+            input.value = '';
+        }
+
+        // Creation
+        async function submitCreateServer() {
+            const name = document.getElementById('create-srv-name').value;
+            const engine = document.getElementById('create-srv-engine').value;
+            const ram = parseInt(document.getElementById('create-srv-ram').value);
+            
+            const { data: userData } = await supabaseClient.from('koda_users').select('app_uuid').eq('auth_id', currentUser.id).single();
+            const uuid = (userData && userData.app_uuid) ? userData.app_uuid : currentUser.id;
+
+            await supabaseClient.from('koda_servers').insert([{
+                owner_app_uuid: uuid,
+                host: name,
+                ram_mb: ram,
+                server_version: `CMD:INSTALL_${engine.toUpperCase()}`,
+                is_banned: false
+            }]);
+            closeModal('modal-create-server');
+            fetchServers();
+        }
+
+        async function submitCreateDatabase() {
+            const name = document.getElementById('create-db-name').value;
+            const { data: userData } = await supabaseClient.from('koda_users').select('app_uuid').eq('auth_id', currentUser.id).single();
+            const uuid = (userData && userData.app_uuid) ? userData.app_uuid : currentUser.id;
+
+            await supabaseClient.from('koda_servers').insert([{
+                owner_app_uuid: uuid,
+                host: `db_${name}`,
+                ram_mb: 512,
+                server_version: `CMD:INSTALL_DB`,
+                is_banned: false
+            }]);
+            closeModal('modal-create-database');
+            fetchServers();
+        }
+
+        checkSession();
+    </script>
+</body>
+</html>
