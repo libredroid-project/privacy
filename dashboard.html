@@ -124,6 +124,37 @@
         .danger-rule ul { color: #FFEEEE; margin-left: 20px; margin-top: 10px; }
         .legal-list { margin-left: 20px; margin-bottom: 15px; color: var(--txt-secondary); }
         .legal-list li { margin-bottom: 10px; }
+    
+        /* Wizard CSS */
+        .wizard-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg-void); z-index: 3000; display: none; align-items: center; justify-content: center; overflow: hidden; opacity: 0; transition: opacity 0.3s; }
+        .wizard-overlay.active { display: flex; opacity: 1; }
+        .blob { position: absolute; border-radius: 50%; filter: blur(100px); opacity: 0.4; z-index: 0; pointer-events: none; }
+        .blob-1 { width: 400px; height: 400px; background: var(--koda-orange); top: -100px; left: -100px; animation: float 10s infinite alternate; }
+        .blob-2 { width: 300px; height: 300px; background: #602000; bottom: -50px; right: -50px; animation: float 8s infinite alternate-reverse; }
+        @keyframes float { 0% { transform: translate(0, 0); } 100% { transform: translate(100px, 50px); } }
+        
+        .wizard-container { background: rgba(36, 28, 24, 0.85); backdrop-filter: blur(20px); border: 1px solid var(--border-dim); border-radius: 20px; width: 100%; max-width: 600px; padding: 40px; z-index: 1; box-shadow: 0 20px 50px rgba(0,0,0,0.5); position: relative; }
+        .wizard-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-dim); padding-bottom: 20px; margin-bottom: 30px; }
+        .wizard-header h2 { font-family: 'Outfit', sans-serif; font-size: 2rem; color: #fff; }
+        .wizard-step { display: none; animation: fadeIn 0.4s; }
+        .wizard-step.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        
+        .cards-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+        .software-card { background: rgba(0,0,0,0.3); border: 1px solid var(--border-dim); border-radius: 12px; padding: 15px; cursor: pointer; transition: 0.2s; }
+        .software-card:hover { border-color: var(--koda-orange); background: rgba(255,107,0,0.05); }
+        .software-card.active { border-color: var(--koda-orange); background: rgba(255,107,0,0.1); box-shadow: 0 0 15px rgba(255,107,0,0.2); }
+        .software-card h4 { color: #fff; font-size: 1.1rem; margin-bottom: 5px; font-family: 'Outfit'; }
+        .software-card p { color: var(--txt-secondary); font-size: 0.8rem; }
+        
+        .wizard-footer { display: flex; justify-content: space-between; margin-top: 40px; gap: 15px; }
+        .color-dot { width: 30px; height: 30px; border-radius: 50%; cursor: pointer; border: 2px solid transparent; transition: 0.2s; }
+        .color-dot:hover { transform: scale(1.1); }
+        .color-dot.active { border-color: #fff; transform: scale(1.1); }
+        
+        input[type="range"] { -webkit-appearance: none; width: 100%; height: 6px; background: var(--border-dim); border-radius: 3px; outline: none; }
+        input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; width: 20px; height: 20px; border-radius: 50%; background: var(--koda-orange); cursor: pointer; box-shadow: 0 0 10px rgba(255,107,0,0.5); }
+
     </style>
 </head>
 <body>
@@ -231,6 +262,113 @@
             <div class="legal-document">
                 <h1 class="legal-doc-title">Privacy Policy</h1>
                 <div id="legal-privacy-content">Loading...</div>
+            </div>
+        </div>
+    </div>
+
+    
+    <!-- Fullscreen Create Server Wizard -->
+    <div id="wizard-create-server" class="wizard-overlay">
+        <!-- Animated Background Blobs -->
+        <div class="blob blob-1"></div>
+        <div class="blob blob-2"></div>
+        
+        <div class="wizard-container">
+            <div class="wizard-header">
+                <h2>Create Minecraft Server</h2>
+                <button class="modal-close" onclick="closeWizard()">�</button>
+            </div>
+            
+            <!-- Step 1: Software -->
+            <div class="wizard-step active" id="wizard-step-1">
+                <h3>Select Software</h3>
+                <div class="cards-grid">
+                    <div class="software-card" onclick="selectWizardEngine('PAPER', this)">
+                        <h4>PaperMC</h4><p>High Performance, Plugins</p>
+                    </div>
+                    <div class="software-card" onclick="selectWizardEngine('PURPUR', this)">
+                        <h4>Purpur</h4><p>Features & Optimization</p>
+                    </div>
+                    <div class="software-card" onclick="selectWizardEngine('FABRIC', this)">
+                        <h4>Fabric</h4><p>Lightweight Mods</p>
+                    </div>
+                    <div class="software-card" onclick="selectWizardEngine('FORGE', this)">
+                        <h4>Forge</h4><p>Classic Mods</p>
+                    </div>
+                    <div class="software-card" onclick="selectWizardEngine('VANILLA', this)">
+                        <h4>Vanilla</h4><p>Original Game</p>
+                    </div>
+                    <div class="software-card" onclick="selectWizardEngine('VELOCITY', this)">
+                        <h4>Velocity</h4><p>Modern Proxy</p>
+                    </div>
+                </div>
+                
+                <div class="input-group" style="margin-top: 30px; max-width: 300px;">
+                    <label>Version</label>
+                    <select id="wizard-version" style="background: rgba(0,0,0,0.3); border-color: var(--border-dim); color: #fff; padding: 10px; border-radius: 8px; width: 100%;"></select>
+                </div>
+                
+                <div class="wizard-footer">
+                    <div></div>
+                    <button class="btn btn-full" onclick="nextWizardStep(2)" style="width: auto; padding: 10px 30px;">Continue</button>
+                </div>
+            </div>
+
+            <!-- Step 2: Resources -->
+            <div class="wizard-step" id="wizard-step-2">
+                <h3>Server Name & RAM</h3>
+                <div class="input-group" style="margin-top: 20px;">
+                    <label>Subdomain / Name (e.g. survival)</label>
+                    <input type="text" id="wizard-name" placeholder="survival" onkeyup="validateWizardName()" style="background: rgba(0,0,0,0.3); border: 1px solid var(--border-dim); color: #fff; padding: 10px; border-radius: 8px; width: 100%;">
+                    <p id="wizard-name-error" style="color: #FF4444; font-size: 0.8rem; display: none; margin-top: 5px;">Invalid name! Only a-z, 0-9 and hyphens.</p>
+                </div>
+                
+                <div class="input-group" style="margin-top: 30px;">
+                    <label>Allocated RAM: <span id="wizard-ram-label" style="color: var(--koda-orange);">2048 MB</span></label>
+                    <input type="range" id="wizard-ram-slider" min="0" max="6" value="2" oninput="updateWizardRam()">
+                    <div style="display: flex; justify-content: space-between; font-size: 0.8rem; color: var(--txt-muted); margin-top: 5px;">
+                        <span>512MB</span><span>8GB</span>
+                    </div>
+                </div>
+                
+                <div class="wizard-footer">
+                    <button class="btn" style="background: transparent; border: 1px solid var(--border-dim); width: auto; padding: 10px 30px;" onclick="nextWizardStep(1)">Back</button>
+                    <button class="btn btn-full" onclick="nextWizardStep(3)" id="btn-wiz-next-2" style="width: auto; padding: 10px 30px;">Continue</button>
+                </div>
+            </div>
+
+            <!-- Step 3: Setup & Security -->
+            <div class="wizard-step" id="wizard-step-3">
+                <h3>KodaHosting Setup & Rules</h3>
+                
+                <div id="wizard-setup-box" style="background: rgba(255,107,0,0.1); border: 1px solid var(--koda-orange); padding: 20px; border-radius: 12px; margin-bottom: 20px;">
+                    <h4 style="color: var(--koda-orange); margin-bottom: 10px; font-family: 'Outfit';">Auto Design (Optional)</h4>
+                    <p style="font-size: 0.9rem; color: var(--txt-secondary); margin-bottom: 15px;">Automatically installs UI plugins and applies a theme color to your server.</p>
+                    <label style="display: flex; align-items: center; gap: 10px; cursor: pointer; color: #fff;">
+                        <input type="checkbox" id="wizard-enable-setup" style="width: 20px; height: 20px; accent-color: var(--koda-orange);">
+                        <span>Enable Auto Design</span>
+                    </label>
+                    
+                    <div id="wizard-color-picker" style="margin-top: 15px; display: none;">
+                        <p style="font-size: 0.85rem; margin-bottom: 10px; color: #fff;">Select Theme Color:</p>
+                        <div style="display: flex; gap: 10px;">
+                            <div class="color-dot active" style="background: #FF6B00;" onclick="selectWizardColor('#FF6B00', this)"></div>
+                            <div class="color-dot" style="background: #00E676;" onclick="selectWizardColor('#00E676', this)"></div>
+                            <div class="color-dot" style="background: #2979FF;" onclick="selectWizardColor('#2979FF', this)"></div>
+                            <div class="color-dot" style="background: #E040FB;" onclick="selectWizardColor('#E040FB', this)"></div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div style="background: #2A1010; border-left: 4px solid #FF4444; padding: 15px; border-radius: 4px; font-size: 0.9rem;">
+                    <p style="color: #FFEEEE; font-weight: bold; margin-bottom: 5px;">Security & EULA</p>
+                    <p style="color: #FFEEEE;">By creating this server, you agree to the Minecraft EULA and our Acceptable Use Policy. Hosting illegal proxy tunnels is strictly prohibited.</p>
+                </div>
+                
+                <div class="wizard-footer">
+                    <button class="btn" style="background: transparent; border: 1px solid var(--border-dim); width: auto; padding: 10px 30px;" onclick="nextWizardStep(2)">Back</button>
+                    <button class="btn btn-full" onclick="submitWizardServer()" style="width: auto; padding: 10px 30px;">Start Server!</button>
+                </div>
             </div>
         </div>
     </div>
@@ -350,13 +488,7 @@
         function openModal(id) { document.getElementById(id).classList.add('active'); }
         function closeModal(id) { document.getElementById(id).classList.remove('active'); }
         
-        function openModalIfOnline(id) {
-            if (currentAppState === 'OFFLINE') {
-                alert("Please open the KodaHosting App on your Android device first and wait for it to connect.");
-                return;
-            }
-            openModal(id);
-        }
+        
 
         // Login
         document.getElementById('btn-login-email').addEventListener('click', async () => {
@@ -659,6 +791,122 @@ ${content.replace(/</g, '&lt;').replace(/>/g, '&gt;')}
         
         // Initial setup
         window.addEventListener('DOMContentLoaded', updateVersionOptions);
+
+        
+        // Wizard Logic
+        let wizEngine = 'PAPER';
+        let wizColor = '#FF6B00';
+        const RAM_STEPS = [512, 1024, 2048, 3072, 4096, 6144, 8192];
+        
+        function openModalIfOnline(id) {
+            if (currentAppState === 'OFFLINE') {
+                alert("Please open the KodaHosting App on your Android device first and wait for it to connect.");
+                return;
+            }
+            if (id === 'modal-create-server') {
+                document.getElementById('wizard-create-server').classList.add('active');
+                selectWizardEngine('PAPER', document.querySelector('.software-card')); // Default
+            } else {
+                openModal(id);
+            }
+        }
+        
+        function closeWizard() {
+            document.getElementById('wizard-create-server').classList.remove('active');
+            nextWizardStep(1); // Reset
+        }
+        
+        function nextWizardStep(step) {
+            document.querySelectorAll('.wizard-step').forEach(el => el.classList.remove('active'));
+            document.getElementById('wizard-step-' + step).classList.add('active');
+            
+            // Check setup visibility
+            if (step === 3) {
+                const setupBox = document.getElementById('wizard-setup-box');
+                if (['PAPER', 'PURPUR', 'FOLIA'].includes(wizEngine)) {
+                    setupBox.style.display = 'block';
+                } else {
+                    setupBox.style.display = 'none';
+                    document.getElementById('wizard-enable-setup').checked = false;
+                }
+            }
+        }
+        
+        function selectWizardEngine(engine, el) {
+            wizEngine = engine;
+            document.querySelectorAll('.software-card').forEach(c => c.classList.remove('active'));
+            el.classList.add('active');
+            
+            const verSelect = document.getElementById('wizard-version');
+            verSelect.innerHTML = '';
+            const list = VERSIONS[engine] || ["1.21.4"];
+            list.forEach(v => {
+                const opt = document.createElement('option');
+                opt.value = v;
+                opt.textContent = v;
+                verSelect.appendChild(opt);
+            });
+        }
+        
+        function updateWizardRam() {
+            const idx = document.getElementById('wizard-ram-slider').value;
+            const ram = RAM_STEPS[idx];
+            document.getElementById('wizard-ram-label').textContent = ram + " MB";
+        }
+        
+        function validateWizardName() {
+            const name = document.getElementById('wizard-name').value;
+            const regex = /^[a-z0-9-]+$/;
+            const err = document.getElementById('wizard-name-error');
+            const btn = document.getElementById('btn-wiz-next-2');
+            
+            if (name.length > 0 && !regex.test(name)) {
+                err.style.display = 'block';
+                btn.disabled = true;
+                btn.style.opacity = '0.5';
+            } else {
+                err.style.display = 'none';
+                btn.disabled = false;
+                btn.style.opacity = '1';
+            }
+        }
+        
+        function selectWizardColor(hex, el) {
+            wizColor = hex;
+            document.querySelectorAll('.color-dot').forEach(d => d.classList.remove('active'));
+            el.classList.add('active');
+        }
+        
+        document.getElementById('wizard-enable-setup').addEventListener('change', (e) => {
+            document.getElementById('wizard-color-picker').style.display = e.target.checked ? 'block' : 'none';
+        });
+
+        async function submitWizardServer() {
+            const name = document.getElementById('wizard-name').value || 'server';
+            const version = document.getElementById('wizard-version').value;
+            const ramIdx = document.getElementById('wizard-ram-slider').value;
+            const ram = RAM_STEPS[ramIdx];
+            const useSetup = document.getElementById('wizard-enable-setup').checked;
+            
+            let cmd = "CMD:INSTALL_" + wizEngine + "_" + version;
+            if (useSetup) {
+                cmd += "_SETUP_" + wizColor.replace('#', '');
+            }
+            
+            const { data: userData } = await supabaseClient.from('koda_users').select('app_uuid').eq('auth_id', currentUser.id).single();
+            const uuid = (userData && userData.app_uuid) ? userData.app_uuid : currentUser.id;
+
+            await supabaseClient.from('koda_servers').insert([{
+                owner_app_uuid: uuid,
+                host: name,
+                ram_mb: ram,
+                server_version: cmd,
+                is_banned: false
+            }]);
+            
+            closeWizard();
+            fetchServers();
+        }
 
         async function submitCreateServer() {
             const name = document.getElementById('create-srv-name').value;
