@@ -303,13 +303,24 @@
             if (!serverData) return;
             if (key === 'motd') val = btoa(val);
             const cmd = `CMD:SETPROP_${key}_${val}`;
-            await supabase.from('koda_servers').update({ server_version: cmd }).eq('id', serverId);
-            fetchServer();
+            
+            const dot = document.getElementById('status-dot');
+            const badge = document.getElementById('status-text');
+            badge.textContent = 'SAVING...'; 
+            dot.className = 'status-dot pending'; 
+            
+            const { error } = await supabase.from('koda_servers').update({ server_version: cmd }).eq('id', serverId);
+            if (error) alert("Error saving: " + error.message);
         }
 
         async function sendCommand(cmdStr) {
-            await supabase.from('koda_servers').update({ server_version: `CMD:${cmdStr}` }).eq('id', serverId);
-            fetchServer();
+            const dot = document.getElementById('status-dot');
+            const badge = document.getElementById('status-text');
+            badge.textContent = 'PENDING...'; 
+            dot.className = 'status-dot pending'; 
+            
+            const { error } = await supabase.from('koda_servers').update({ server_version: `CMD:${cmdStr}` }).eq('id', serverId);
+            if (error) alert("Error sending command: " + error.message);
         }
 
         // ================= FILES LOGIC =================
