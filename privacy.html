@@ -15,7 +15,11 @@
             --txt-secondary: #888899;
         }
 
-        * { margin: 0; padding: 0; box-sizing: border-box; }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
         body {
             font-family: 'Inter', sans-serif;
@@ -25,8 +29,6 @@
             -webkit-font-smoothing: antialiased;
         }
 
-        h1, h2, h3 { font-family: 'Outfit', sans-serif; letter-spacing: -0.02em; }
-
         nav {
             display: flex;
             justify-content: space-between;
@@ -34,9 +36,6 @@
             padding: 20px 5%;
             background-color: rgba(27, 22, 19, 0.85);
             backdrop-filter: blur(12px);
-            position: sticky;
-            top: 0;
-            z-index: 100;
             border-bottom: 1px solid var(--border-dim);
         }
 
@@ -46,9 +45,14 @@
             font-weight: 800;
             color: var(--txt-primary);
             text-decoration: none;
-            display: flex; align-items: center; gap: 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
         }
-        .logo span { color: var(--koda-orange); }
+
+        .logo span {
+            color: var(--koda-orange);
+        }
 
         .nav-links a {
             color: var(--txt-secondary);
@@ -57,49 +61,68 @@
             font-weight: 500;
             transition: color 0.3s;
         }
-        .nav-links a:hover { color: var(--koda-orange); }
 
-        .privacy-section {
-            padding: 80px 5%;
-            min-height: 80vh;
-        }
-
-        .privacy-content {
-            max-width: 800px;
-            margin: 0 auto;
-            background-color: var(--bg-panel);
-            padding: 40px;
-            border-radius: 16px;
-            border: 1px solid var(--border-dim);
-        }
-
-        .privacy-content h2 {
-            font-size: 2.5rem;
-            margin-bottom: 10px;
+        .nav-links a:hover {
             color: var(--koda-orange);
         }
 
-        .privacy-content h3 {
-            font-size: 1.4rem;
+        main {
+            max-width: 800px;
+            margin: 80px auto;
+            padding: 0 5%;
+        }
+
+        h1 {
+            font-family: 'Outfit', sans-serif;
+            font-size: 3rem;
+            color: var(--koda-orange);
+            margin-bottom: 10px;
+        }
+        
+        .updated-date {
+            color: var(--txt-secondary);
+            font-size: 0.9rem;
+            margin-bottom: 40px;
+        }
+
+        h2 {
+            font-family: 'Outfit', sans-serif;
+            font-size: 1.5rem;
             margin-top: 40px;
             margin-bottom: 15px;
             padding-bottom: 10px;
             border-bottom: 1px solid var(--border-dim);
-            color: var(--txt-primary);
         }
 
-        .privacy-content p, .privacy-content ul {
-            margin-bottom: 20px;
+        p, ul {
             color: var(--txt-secondary);
+            margin-bottom: 20px;
         }
 
-        .privacy-content li {
-            margin-bottom: 10px;
+        ul {
             margin-left: 20px;
         }
 
-        .privacy-content strong {
-            color: var(--txt-primary);
+        li {
+            margin-bottom: 10px;
+        }
+
+        .danger-rule {
+            background-color: #2A1010;
+            border-left: 4px solid #FF4444;
+            padding: 20px;
+            border-radius: 4px;
+            margin: 30px 0;
+            color: #FFEEEE;
+        }
+        
+        .danger-rule p {
+            color: #FFEEEE;
+            margin-bottom: 10px;
+        }
+
+        .danger-rule ul {
+            color: #FFEEEE;
         }
 
         footer {
@@ -107,11 +130,28 @@
             padding: 40px 20px;
             color: var(--txt-secondary);
             border-top: 1px solid var(--border-dim);
+            margin-top: 80px;
         }
-
         @media (max-width: 768px) {
-            .nav-links { display: none; }
-            .privacy-content { padding: 20px; }
+            nav {
+                flex-direction: column;
+                gap: 15px;
+            }
+            .nav-links {
+                display: flex;
+                flex-wrap: wrap;
+                justify-content: center;
+                gap: 15px;
+            }
+            .nav-links a {
+                margin: 0;
+            }
+            .tos-container {
+                padding: 30px 20px;
+            }
+            .tos-header h1 {
+                font-size: 2.5rem;
+            }
         }
     </style>
 </head>
@@ -121,23 +161,24 @@
         <a href="/" class="logo">Koda<span>Hosting</span></a>
         <div class="nav-links">
             <a href="/">Home</a>
-            <a href="/privacy">Privacy Policy</a>
+            <a href="/privacy.html">Privacy Policy</a>
+            <a href="/tos.html">Terms of Service</a>
         </div>
     </nav>
 
-    <section class="privacy-section">
-        <div class="privacy-content">
-            <h2>Privacy Policy</h2>
-            <p style="font-size: 0.9rem;">Last Updated: June 2026</p>
+    <main>
+        <div class="legal-content">
+            <h1>Privacy Policy</h1>
+            <p class="last-updated">Last Updated: July 2026</p>
 
-            <h3>1. Introduction & Data Controller</h3>
+            <h2>1. Introduction & Data Controller</h2>
             <p>Welcome to <strong>KodaHosting</strong>. We respect your privacy and are committed to protecting any information that may be processed while you use our mobile application and the accompanying Web Dashboard. This Privacy Policy explains what information we collect, how we use it, and your rights regarding your data.</p>
             <p><strong>The Data Controller responsible for your personal information is:</strong><br>
             Karol Brzostowski<br>
             Deutschland Fixberg 17, 33106 Paderborn-Wewer<br>
             Email: support@host.kodanetwork.eu</p>
 
-            <h3>2. Information We Collect & Process</h3>
+            <h2>2. Information We Collect & Process</h2>
             <p>KodaHosting processes certain data to function correctly:</p>
             <ul>
                 <li><strong>Account Information:</strong> When you register or log in, we securely process your email address and authentication details to manage your personal KodaHosting account. Authentication is handled securely by our partner, <strong>Supabase</strong>.</li>
@@ -149,7 +190,7 @@
                 <li><strong>AI Server Builder:</strong> If you use the AI Server Builder, your text prompts are sent to the <strong>Google Gemini API</strong> for processing to generate server configurations. Do not submit sensitive personal information in these prompts. Data transferred outside the European Economic Area (EEA) to Google LLC is safeguarded under the EU-U.S. Data Privacy Framework (DPF) and Standard Contractual Clauses.</li>
             </ul>
 
-            <h3>3. Third-Party Services</h3>
+            <h2>3. Third-Party Services</h2>
             <p>The App utilizes certain third-party services that may collect information used to identify you or provide core functionalities:</p>
             <ul>
                 <li><strong>Google Play Services:</strong> For app distribution, crash reporting, and standard analytics.</li>
@@ -159,10 +200,10 @@
                 <li><strong>Bore / FRP (Fast Reverse Proxy):</strong> Used exclusively to create the secure network tunnels between your device and our VPS infrastructure.</li>
             </ul>
 
-            <h3>4. Data Security</h3>
+            <h2>4. Data Security</h2>
             <p>We value your trust in using our App. Since the core functionality is local server hosting, your personal server data remains entirely on your device. Any data transmitted to APIs (like plugin search queries) is sent over secure, encrypted connections (HTTPS).</p>
 
-            <h3>5. Your GDPR Rights (User Rights)</h3>
+            <h2>5. Your GDPR Rights (User Rights)</h2>
             <p>Under the General Data Protection Regulation (GDPR) and applicable privacy laws, you have the following rights:</p>
             <ul>
                 <li><strong>Right to Access:</strong> You can request a copy of the personal data we hold about you.</li>
@@ -171,16 +212,16 @@
             </ul>
             <p>To exercise these rights, please contact us via our support channels.</p>
 
-            <h3>6. Children's Privacy</h3>
+            <h2>6. Children's Privacy</h2>
             <p>Our services are not directed to individuals under the age of 13 (or 16 in certain EU jurisdictions). We do not knowingly collect personal data from children. If we become aware that a child has provided us with personal data, we will take steps to delete such information.</p>
 
-            <h3>7. Changes to This Privacy Policy</h3>
+            <h2>7. Changes to This Privacy Policy</h2>
             <p>We may update our Privacy Policy from time to time. We will notify you of any changes by posting the new Privacy Policy on this page. You are advised to review this Privacy Policy periodically for any changes.</p>
 
-            <h3>8. Contact Us</h3>
+            <h2>8. Contact Us</h2>
             <p>If you have any questions or suggestions about our Privacy Policy, do not hesitate to contact us at: <a href="mailto:support@host.kodanetwork.eu" style="color: var(--koda-orange);">support@host.kodanetwork.eu</a></p>
         </div>
-    </section>
+    </main>
 
     <footer>
         <p>&copy; 2026 KodaHosting. All rights reserved.</p>
