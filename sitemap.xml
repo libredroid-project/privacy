@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?xml-stylesheet type="text/xsl" href="/download/eea88b734-b42dbad9a/sitemap.xsl"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">
+
+  <url>
+       <loc>https://host.kodanetwork.eu/</loc>
+       <lastmod>2026-07-17T19:16:57+00:00</lastmod>
+       <changefreq>daily</changefreq>
+       <priority>1.0000</priority>
+  </url>
+  <url>
+       <loc>https://host.kodanetwork.eu/dashboard</loc>
+       <lastmod>2026-07-17T19:16:57+00:00</lastmod>
+       <changefreq>daily</changefreq>
+       <priority>0.6400</priority>
+  </url>
+  <url>
+       <loc>https://host.kodanetwork.eu/tos</loc>
+       <lastmod>2026-07-17T19:16:57+00:00</lastmod>
+       <changefreq>daily</changefreq>
+       <priority>0.6400</priority>
+  </url>
+  <url>
+    <loc>https://host.kodanetwork.eu/privacy</loc>
+    <lastmod>2026-07-17T19:16:57+00:00</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.6400</priority>
+  </url>
+</urlset>
