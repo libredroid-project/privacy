@@ -599,21 +599,36 @@
         // Fetch Data
         async function fetchServers() {
             if (!currentUser) return;
-            const { data: userData } = await supabaseClient.from('koda_users').select('app_uuid, app_state, app_last_ping, device_ram_mb').eq('auth_id', currentUser.id).single();
-            const uuidFilter = (userData && userData.app_uuid) ? userData.app_uuid : currentUser.id;
+            
+            let userData = null;
+            const { data: userRows } = await supabaseClient
+                .from('koda_users')
+                .select('*')
+                .or(`auth_id.eq.${currentUser.id}${currentUser.email ? `,email.eq.${currentUser.email}` : ''}`);
+                
+            if (userRows && userRows.length > 0) {
+                userData = userRows[0];
+                if (!userData.auth_id && currentUser.id) {
+                    await supabaseClient.from('koda_users').update({ auth_id: currentUser.id }).eq('id', userData.id);
+                }
+            }
 
             if (userData) {
                 updateAppStatusBadge(userData.app_state, userData.app_last_ping);
             }
 
-            const { data: servers, error } = await supabaseClient
-                .from('koda_servers')
-                .select('*')
-                .eq('owner_app_uuid', uuidFilter)
+            let query = supabaseClient.from('koda_servers').select('*');
+            if (userData && userData.app_uuid) {
+                query = query.or(`owner_app_uuid.eq.${userData.app_uuid},owner_app_uuid.eq.${currentUser.id}`);
+            } else {
+                query = query.eq('owner_app_uuid', currentUser.id);
+            }
+
+            const { data: servers, error } = await query
                 .not('host', 'like', 'deleted_%')
                 .order('created_at', { ascending: false });
 
-            if (error) return;
+            if (error || !servers) return;
 
             const mcServers = servers.filter(s => s.server_version !== 'CMD:INSTALL_DB');
             const dbServers = servers.filter(s => s.server_version === 'CMD:INSTALL_DB' || s.host.startsWith('db_'));
@@ -624,14 +639,21 @@
 
         async function setupRealtime() {
             if (serversChannel) supabaseClient.removeChannel(serversChannel);
-            const { data: userData } = await supabaseClient.from('koda_users').select('app_uuid').eq('auth_id', currentUser.id).single();
+            
+            let userData = null;
+            const { data: userRows } = await supabaseClient
+                .from('koda_users')
+                .select('*')
+                .or(`auth_id.eq.${currentUser.id}${currentUser.email ? `,email.eq.${currentUser.email}` : ''}`);
+            if (userRows && userRows.length > 0) userData = userRows[0];
+
             const uuidFilter = (userData && userData.app_uuid) ? userData.app_uuid : currentUser.id;
 
             serversChannel = supabaseClient.channel('custom-all-channel')
-                .on('postgres_changes', { event: '*', schema: 'public', table: 'koda_servers', filter: `owner_app_uuid=eq.${uuidFilter}` }, () => {
+                .on('postgres_changes', { event: '*', schema: 'public', table: 'koda_servers' }, () => {
                     fetchServers();
                 })
-                .on('postgres_changes', { event: '*', schema: 'public', table: 'koda_users', filter: `auth_id=eq.${currentUser.id}` }, (payload) => {
+                .on('postgres_changes', { event: '*', schema: 'public', table: 'koda_users' }, (payload) => {
                     if (payload.new) updateAppStatusBadge(payload.new.app_state, payload.new.app_last_ping);
                 })
                 .subscribe();
