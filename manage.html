@@ -104,6 +104,7 @@
         <button class="tab-btn active" onclick="switchTab('dash', this)">Dashboard</button>
         <button class="tab-btn" onclick="switchTab('files', this)">Files</button>
         <button class="tab-btn" onclick="switchTab('settings', this)">Settings</button>
+        <button class="tab-btn" id="tab-btn-kodadash" style="display: none; color: var(--accent);" onclick="switchTab('kodadash', this)">Web Dashboard</button>
     </div>
     <div class="tab-divider"></div>
 
@@ -170,6 +171,11 @@
         </div>
     </div>
 
+    <!-- Tab 4: KODADASH -->
+    <div class="content-area" id="tab-kodadash" style="padding: 0; height: calc(100vh - 100px);">
+        <iframe id="kodadash-iframe" style="width: 100%; height: 100%; border: none;" src=""></iframe>
+    </div>
+
     <!-- Tab 3: SETTINGS -->
     <div class="content-area" id="tab-settings">
         <div class="card">
@@ -213,6 +219,11 @@
                 <input type="checkbox" id="prop-whitelist" onchange="updateProp('whitelist', this.checked)">
                 <label for="prop-whitelist">Enable Whitelist</label>
             </div>
+            <div class="form-check" id="kodadash-setting-container" style="display: none; border-top: 1px solid var(--border); padding-top: 16px; margin-top: 16px;">
+                <input type="checkbox" id="prop-kodadash" onchange="toggleKodaDash(this.checked)">
+                <label for="prop-kodadash" style="color: var(--accent); font-weight: bold;">Enable Web Dashboard</label>
+                <div style="font-size:11px; color:#FF5252; margin-top:6px; padding-left:28px;">⚠️ BETA WARNING: This uses an additional ~50MB RAM and may be unstable.</div>
+            </div>
             <div style="margin-top:24px;">
                 <button class="btn btn-outline" style="width:100%; border-color:#FF3344; color:#FF3344;" onclick="sendCommand('WIPE')">Wipe Server (Delete all data)</button>
             </div>
@@ -233,6 +244,15 @@
         const urlParams = new URLSearchParams(window.location.search);
         const serverId = urlParams.get('id');
         
+        let currentUserEmail = null;
+        async function fetchUser() {
+            const { data: { session } } = await window.supabase.auth.getSession();
+            if (session) {
+                currentUserEmail = session.user.email;
+            }
+        }
+        fetchUser();
+
         let serverData = null;
         let currentPath = "/";
         let activeFileTransferId = null;
@@ -285,6 +305,22 @@
                 document.getElementById('info-ram').textContent = (data.ram_mb || 2048) + " MB RAM";
                 document.getElementById('info-join').textContent = data.host;
                 
+                // KodaDash Logic
+                const isPaperOrPurpur = (ver || "").toLowerCase().includes("paper") || (ver || "").toLowerCase().includes("purpur");
+                if (isPaperOrPurpur && currentUserEmail === "darkpocky3@gmail.com") {
+                    document.getElementById('kodadash-setting-container').style.display = 'block';
+                    const hasKodaDash = data.kodadash_port != null;
+                    document.getElementById('prop-kodadash').checked = hasKodaDash;
+                    
+                    if (hasKodaDash) {
+                        document.getElementById('tab-btn-kodadash').style.display = 'block';
+                        const domain = data.host.split(':')[0];
+                        document.getElementById('kodadash-iframe').src = `http://${domain}:${data.kodadash_port}`;
+                    } else {
+                        document.getElementById('tab-btn-kodadash').style.display = 'none';
+                    }
+                }
+
                 // Fill Properties
                 if (document.activeElement.tagName !== 'INPUT' && document.activeElement.tagName !== 'SELECT') {
                     document.getElementById('prop-ram-slider').value = data.ram_mb || 2048;
@@ -321,6 +357,18 @@
             
             const { error } = await supabase.from('koda_servers').update({ server_version: `CMD:${cmdStr}` }).eq('id', serverId);
             if (error) alert("Error sending command: " + error.message);
+        }
+
+        function toggleKodaDash(checked) {
+            if (checked) {
+                if (confirm("WARNING: KodaDash is a Beta feature. It uses more RAM and might be unstable. Are you sure?")) {
+                    sendCommand('INSTALL_KODADASH');
+                } else {
+                    document.getElementById('prop-kodadash').checked = false;
+                }
+            } else {
+                sendCommand('DISABLE_KODADASH');
+            }
         }
 
         // ================= FILES LOGIC =================
