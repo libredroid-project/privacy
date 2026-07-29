@@ -899,7 +899,11 @@ ${content.replace(/</g, '&lt;').replace(/>/g, '&gt;')}
                 if (item.kodadash_port && item.kodadash_port > 0) {
                     // Browser unterstützen keine SRV-Records für HTTP, deshalb nutzen wir direkt den FRP-Host.
                     let dashHost = 'frp.kodanetwork.eu';
-                    manageButtonHtml = `<button class="btn-primary" style="background: var(--primary); color: white; border: none;" onclick="window.open('http://${dashHost}:${item.kodadash_port}', '_blank')">🚀 Open KodaDash</button>`;
+                    let url = `http://${dashHost}:${item.kodadash_port}`;
+                    if (item.kodadash_token) {
+                        url += `?token=${encodeURIComponent(item.kodadash_token)}`;
+                    }
+                    manageButtonHtml = `<button class="btn-primary" style="background: var(--primary); color: white; border: none;" onclick="window.open('${url}', '_blank')">🚀 Open KodaDash</button>`;
                 }
 
                 const controls = isMinecraft ? `
