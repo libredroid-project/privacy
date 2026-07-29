@@ -897,8 +897,7 @@ ${content.replace(/</g, '&lt;').replace(/>/g, '&gt;')}
                 
                 let manageButtonHtml = `<button class="btn-outline" onclick="window.location.href='manage.html?id=${item.id}'">Manage Server</button>`;
                 if (item.kodadash_port && item.kodadash_port > 0) {
-                    // Der Minecraft-Server läuft hinter Playit (A-Record), aber KodaDash läuft über den FRP-Tunnel!
-                    // Browser unterstützen keine SRV-Records für HTTP, deshalb müssen wir direkt den FRP-Host nutzen.
+                    // Browser unterstützen keine SRV-Records für HTTP, deshalb nutzen wir direkt den FRP-Host.
                     let dashHost = 'frp.kodanetwork.eu';
                     manageButtonHtml = `<button class="btn-primary" style="background: var(--primary); color: white; border: none;" onclick="window.open('http://${dashHost}:${item.kodadash_port}', '_blank')">🚀 Open KodaDash</button>`;
                 }
