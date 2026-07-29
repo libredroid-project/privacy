@@ -598,54 +598,22 @@
 
         // Fetch Data
         async function fetchServers() {
-            if (!currentUser) {
-                console.log("[KodaDebug] fetchServers skipped: No currentUser");
-                return;
+            if (!currentUser) return;
+            const { data: userData } = await supabaseClient.from('koda_users').select('app_uuid, app_state, app_last_ping, device_ram_mb').eq('auth_id', currentUser.id).single();
+            const uuidFilter = (userData && userData.app_uuid) ? userData.app_uuid : currentUser.id;
+
+            if (userData) {
+                updateAppStatusBadge(userData.app_state, userData.app_last_ping);
             }
-            console.log("[KodaDebug] Fetching servers for user:", currentUser.id, currentUser.email);
-            
-            let appUuids = [currentUser.id];
-            let activeUserData = null;
-
-            try {
-                const { data: userRows, error: userError } = await supabaseClient
-                    .from('koda_users')
-                    .select('*')
-                    .eq('auth_id', currentUser.id);
-                    
-                console.log("[KodaDebug] koda_users query result:", userRows, "error:", userError);
-
-                if (userRows && userRows.length > 0) {
-                    userRows.forEach(u => {
-                        if (u.app_uuid) appUuids.push(u.app_uuid);
-                    });
-                    activeUserData = userRows.find(u => u.app_state) || userRows[0];
-                }
-            } catch(e) {
-                console.error("[KodaDebug] koda_users query exception:", e);
-            }
-
-            if (activeUserData) {
-                console.log("[KodaDebug] Found user app_state:", activeUserData.app_state, "last_ping:", activeUserData.app_last_ping);
-                updateAppStatusBadge(activeUserData.app_state, activeUserData.app_last_ping);
-            } else {
-                console.warn("[KodaDebug] No user row found in koda_users for auth_id:", currentUser.id);
-            }
-
-            appUuids = [...new Set(appUuids)];
-            const orFilter = appUuids.map(id => `owner_app_uuid.eq.${id}`).join(',');
-            console.log("[KodaDebug] Querying koda_servers with filter:", orFilter);
 
             const { data: servers, error } = await supabaseClient
                 .from('koda_servers')
                 .select('*')
-                .or(orFilter)
+                .eq('owner_app_uuid', uuidFilter)
                 .not('host', 'like', 'deleted_%')
                 .order('created_at', { ascending: false });
 
-            console.log("[KodaDebug] koda_servers query result:", servers, "error:", error);
-
-            if (error || !servers) return;
+            if (error) return;
 
             const mcServers = servers.filter(s => s.server_version !== 'CMD:INSTALL_DB');
             const dbServers = servers.filter(s => s.server_version === 'CMD:INSTALL_DB' || s.host.startsWith('db_'));
@@ -656,15 +624,15 @@
 
         async function setupRealtime() {
             if (serversChannel) supabaseClient.removeChannel(serversChannel);
+            const { data: userData } = await supabaseClient.from('koda_users').select('app_uuid').eq('auth_id', currentUser.id).single();
+            const uuidFilter = (userData && userData.app_uuid) ? userData.app_uuid : currentUser.id;
 
             serversChannel = supabaseClient.channel('custom-all-channel')
-                .on('postgres_changes', { event: '*', schema: 'public', table: 'koda_servers' }, () => {
+                .on('postgres_changes', { event: '*', schema: 'public', table: 'koda_servers', filter: `owner_app_uuid=eq.${uuidFilter}` }, () => {
                     fetchServers();
                 })
-                .on('postgres_changes', { event: '*', schema: 'public', table: 'koda_users' }, (payload) => {
-                    if (payload.new && currentUser && payload.new.auth_id === currentUser.id) {
-                        updateAppStatusBadge(payload.new.app_state, payload.new.app_last_ping);
-                    }
+                .on('postgres_changes', { event: '*', schema: 'public', table: 'koda_users', filter: `auth_id=eq.${currentUser.id}` }, (payload) => {
+                    if (payload.new) updateAppStatusBadge(payload.new.app_state, payload.new.app_last_ping);
                 })
                 .subscribe();
         }
