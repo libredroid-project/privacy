@@ -897,7 +897,9 @@ ${content.replace(/</g, '&lt;').replace(/>/g, '&gt;')}
                 
                 let manageButtonHtml = `<button class="btn-outline" onclick="window.location.href='manage.html?id=${item.id}'">Manage Server</button>`;
                 if (item.kodadash_port && item.kodadash_port > 0) {
-                    let url = `http://${item.host}:${item.kodadash_port}`;
+                    let baseDomain = item.base_domain ? item.base_domain : 'kodanetwork.eu';
+                    let dashHost = `${item.host}.${baseDomain}`;
+                    let url = `http://${dashHost}:${item.kodadash_port}`;
                     if (item.kodadash_token) {
                         url += `?token=${encodeURIComponent(item.kodadash_token)}`;
                     }

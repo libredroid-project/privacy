@@ -306,7 +306,8 @@
                 
                 document.getElementById('info-version').textContent = "Minecraft " + (ver || "1.21.11");
                 document.getElementById('info-ram').textContent = (data.ram_mb || 2048) + " MB RAM";
-                document.getElementById('info-join').textContent = data.host;
+                let displayBaseDomain = data.base_domain ? data.base_domain : 'kodanetwork.eu';
+                document.getElementById('info-join').textContent = data.host + '.' + displayBaseDomain;
                 
                 // KodaDash Logic
                 const isPaperOrPurpur = (ver || "").toLowerCase().includes("paper") || (ver || "").toLowerCase().includes("purpur");
@@ -317,8 +318,10 @@
                     
                     if (hasKodaDash) {
                         document.getElementById('tab-btn-kodadash').style.display = 'block';
+                        let baseDomain = data.base_domain ? data.base_domain : 'kodanetwork.eu';
                         const domain = data.host.split(':')[0];
-                        let url = `http://${domain}:${data.kodadash_port}`;
+                        let dashHost = `${domain}.${baseDomain}`;
+                        let url = `http://${dashHost}:${data.kodadash_port}`;
                         if (data.kodadash_token) {
                             url += `?token=${encodeURIComponent(data.kodadash_token)}`;
                         }
