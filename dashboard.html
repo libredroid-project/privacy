@@ -598,17 +598,23 @@
 
         // Fetch Data
         async function fetchServers() {
-            if (!currentUser) return;
+            if (!currentUser) {
+                console.log("[KodaDebug] fetchServers skipped: No currentUser");
+                return;
+            }
+            console.log("[KodaDebug] Fetching servers for user:", currentUser.id, currentUser.email);
             
             let appUuids = [currentUser.id];
             let activeUserData = null;
 
             try {
-                const { data: userRows } = await supabaseClient
+                const { data: userRows, error: userError } = await supabaseClient
                     .from('koda_users')
                     .select('*')
                     .eq('auth_id', currentUser.id);
                     
+                console.log("[KodaDebug] koda_users query result:", userRows, "error:", userError);
+
                 if (userRows && userRows.length > 0) {
                     userRows.forEach(u => {
                         if (u.app_uuid) appUuids.push(u.app_uuid);
@@ -616,15 +622,19 @@
                     activeUserData = userRows.find(u => u.app_state) || userRows[0];
                 }
             } catch(e) {
-                console.error("koda_users query error:", e);
+                console.error("[KodaDebug] koda_users query exception:", e);
             }
 
             if (activeUserData) {
+                console.log("[KodaDebug] Found user app_state:", activeUserData.app_state, "last_ping:", activeUserData.app_last_ping);
                 updateAppStatusBadge(activeUserData.app_state, activeUserData.app_last_ping);
+            } else {
+                console.warn("[KodaDebug] No user row found in koda_users for auth_id:", currentUser.id);
             }
 
             appUuids = [...new Set(appUuids)];
             const orFilter = appUuids.map(id => `owner_app_uuid.eq.${id}`).join(',');
+            console.log("[KodaDebug] Querying koda_servers with filter:", orFilter);
 
             const { data: servers, error } = await supabaseClient
                 .from('koda_servers')
@@ -632,6 +642,8 @@
                 .or(orFilter)
                 .not('host', 'like', 'deleted_%')
                 .order('created_at', { ascending: false });
+
+            console.log("[KodaDebug] koda_servers query result:", servers, "error:", error);
 
             if (error || !servers) return;
 
