@@ -652,7 +652,8 @@
             if (!currentUser) return;
             
             // Use dbClient (anon) to avoid authenticated RLS policy blocks
-            const { data: userRows } = await dbClient.from('koda_users').select('*').eq('auth_id', currentUser.id);
+            const { data: userRows, error: userError } = await dbClient.from('koda_users').select('*').eq('auth_id', currentUser.id);
+            if (userError) console.error("fetch koda_users error:", userError);
             
             let appUuids = [currentUser.id];
             let activeUserData = null;
@@ -678,7 +679,14 @@
                 .not('host', 'like', 'deleted_%')
                 .order('created_at', { ascending: false });
 
-            if (error || !servers) return;
+            if (error) {
+                console.error("fetchServers error:", error);
+                return;
+            }
+            if (!servers) {
+                console.warn("fetchServers: no servers returned");
+                return;
+            }
 
             const mcServers = servers.filter(s => s.server_version !== 'CMD:INSTALL_DB');
             const dbServers = servers.filter(s => s.server_version === 'CMD:INSTALL_DB' || s.host.startsWith('db_'));
