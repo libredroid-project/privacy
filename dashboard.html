@@ -651,11 +651,14 @@
         async function fetchServers() {
             if (!currentUser) return;
             
-            // Use dbClient (anon) to avoid authenticated RLS policy blocks
-            console.log("currentUser.id is:", currentUser.id);
-            const { data: userRows, error: userError } = await dbClient.from('koda_users').select('*').eq('auth_id', currentUser.id);
-            if (userError) console.error("fetch koda_users error:", userError);
-            console.log("koda_users got:", userRows);
+            // Test both clients
+            const { data: userRowsAnon, error: errAnon } = await dbClient.from('koda_users').select('*').eq('auth_id', currentUser.id);
+            const { data: userRowsAuth, error: errAuth } = await supabaseClient.from('koda_users').select('*').eq('auth_id', currentUser.id);
+            
+            console.log("koda_users (anon) got:", userRowsAnon, "error:", errAnon);
+            console.log("koda_users (auth) got:", userRowsAuth, "error:", errAuth);
+            
+            let userRows = userRowsAuth && userRowsAuth.length > 0 ? userRowsAuth : userRowsAnon;
             
             let appUuids = [currentUser.id];
             let activeUserData = null;
@@ -674,18 +677,25 @@
             appUuids = [...new Set(appUuids)];
             const orFilter = appUuids.map(id => `owner_app_uuid.eq.${id}`).join(',');
 
-            const { data: servers, error } = await dbClient
+            const { data: serversAnon, error: errServersAnon } = await dbClient
                 .from('koda_servers')
                 .select('*')
                 .or(orFilter)
                 .not('host', 'like', 'deleted_%')
                 .order('created_at', { ascending: false });
 
-            if (error) {
-                console.error("fetchServers error:", error);
-                return;
-            }
-            console.log("fetchServers got:", servers);
+            const { data: serversAuth, error: errServersAuth } = await supabaseClient
+                .from('koda_servers')
+                .select('*')
+                .or(orFilter)
+                .not('host', 'like', 'deleted_%')
+                .order('created_at', { ascending: false });
+
+            console.log("fetchServers (anon) got:", serversAnon, "error:", errServersAnon);
+            console.log("fetchServers (auth) got:", serversAuth, "error:", errServersAuth);
+            
+            const servers = serversAuth && serversAuth.length > 0 ? serversAuth : serversAnon;
+
             if (!servers) {
                 console.warn("fetchServers: no servers returned");
                 return;
