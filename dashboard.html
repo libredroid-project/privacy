@@ -893,9 +893,17 @@ ${content.replace(/</g, '&lt;').replace(/>/g, '&gt;')}
             items.forEach(item => {
                 const status = getStatusDetails(item.server_version);
                 const title = item.host;
+                const isMinecraft = item.server_version && !item.server_version.includes('MariaDB') && !item.server_version.includes('Redis') && !item.server_version.includes('MongoDB') && !item.server_version.includes('PostgreSQL');
+                
+                let manageButtonHtml = `<button class="btn-outline" onclick="window.location.href='manage.html?id=${item.id}'">Manage Server</button>`;
+                if (item.kodadash_port && item.kodadash_port > 0) {
+                    let domain = item.host.split(':')[0]; // in case there's a port in the host string
+                    manageButtonHtml = `<button class="btn-primary" style="background: var(--primary); color: white; border: none;" onclick="window.open('http://${domain}:${item.kodadash_port}', '_blank')">🚀 Open KodaDash</button>`;
+                }
+
                 const controls = isMinecraft ? `
                     <div class="controls-grid" style="grid-template-columns: 1fr;">
-                        <button class="btn-outline" onclick="window.location.href='manage.html?id=${item.id}'">Manage Server</button>
+                        ${manageButtonHtml}
                     </div>
                 ` : `
                     <div class="controls-grid">
