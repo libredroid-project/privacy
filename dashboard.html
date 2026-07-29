@@ -600,31 +600,36 @@
         async function fetchServers() {
             if (!currentUser) return;
             
-            let userData = null;
-            const { data: userRows } = await supabaseClient
-                .from('koda_users')
-                .select('*')
-                .or(`auth_id.eq.${currentUser.id}${currentUser.email ? `,email.eq.${currentUser.email}` : ''}`);
-                
-            if (userRows && userRows.length > 0) {
-                userData = userRows[0];
-                if (!userData.auth_id && currentUser.id) {
-                    await supabaseClient.from('koda_users').update({ auth_id: currentUser.id }).eq('id', userData.id);
+            let appUuids = [currentUser.id];
+            let activeUserData = null;
+
+            try {
+                const { data: userRows } = await supabaseClient
+                    .from('koda_users')
+                    .select('*')
+                    .eq('auth_id', currentUser.id);
+                    
+                if (userRows && userRows.length > 0) {
+                    userRows.forEach(u => {
+                        if (u.app_uuid) appUuids.push(u.app_uuid);
+                    });
+                    activeUserData = userRows.find(u => u.app_state) || userRows[0];
                 }
+            } catch(e) {
+                console.error("koda_users query error:", e);
             }
 
-            if (userData) {
-                updateAppStatusBadge(userData.app_state, userData.app_last_ping);
+            if (activeUserData) {
+                updateAppStatusBadge(activeUserData.app_state, activeUserData.app_last_ping);
             }
 
-            let query = supabaseClient.from('koda_servers').select('*');
-            if (userData && userData.app_uuid) {
-                query = query.or(`owner_app_uuid.eq.${userData.app_uuid},owner_app_uuid.eq.${currentUser.id}`);
-            } else {
-                query = query.eq('owner_app_uuid', currentUser.id);
-            }
+            appUuids = [...new Set(appUuids)];
+            const orFilter = appUuids.map(id => `owner_app_uuid.eq.${id}`).join(',');
 
-            const { data: servers, error } = await query
+            const { data: servers, error } = await supabaseClient
+                .from('koda_servers')
+                .select('*')
+                .or(orFilter)
                 .not('host', 'like', 'deleted_%')
                 .order('created_at', { ascending: false });
 
@@ -639,22 +644,15 @@
 
         async function setupRealtime() {
             if (serversChannel) supabaseClient.removeChannel(serversChannel);
-            
-            let userData = null;
-            const { data: userRows } = await supabaseClient
-                .from('koda_users')
-                .select('*')
-                .or(`auth_id.eq.${currentUser.id}${currentUser.email ? `,email.eq.${currentUser.email}` : ''}`);
-            if (userRows && userRows.length > 0) userData = userRows[0];
-
-            const uuidFilter = (userData && userData.app_uuid) ? userData.app_uuid : currentUser.id;
 
             serversChannel = supabaseClient.channel('custom-all-channel')
                 .on('postgres_changes', { event: '*', schema: 'public', table: 'koda_servers' }, () => {
                     fetchServers();
                 })
                 .on('postgres_changes', { event: '*', schema: 'public', table: 'koda_users' }, (payload) => {
-                    if (payload.new) updateAppStatusBadge(payload.new.app_state, payload.new.app_last_ping);
+                    if (payload.new && currentUser && payload.new.auth_id === currentUser.id) {
+                        updateAppStatusBadge(payload.new.app_state, payload.new.app_last_ping);
+                    }
                 })
                 .subscribe();
         }
