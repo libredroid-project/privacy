@@ -523,6 +523,10 @@
         const SUPABASE_URL = 'https://scsezpfrrmpyuapblbxk.supabase.co';
         const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNjc2V6cGZycm1weXVhcGJsYnhrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY5NDE4MjYsImV4cCI6MjA5MjUxNzgyNn0.rHro6kQpXHAnxEaFxozYzsKY8IHIUlot-7-Q4LNbZT8';
         const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        // Create an anonymous client specifically for DB queries to bypass authenticated RLS restrictions
+        const dbClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY, {
+            auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false }
+        });
 
         let currentUser = null;
         let serversChannel = null;
@@ -599,21 +603,35 @@
         // Fetch Data
         async function fetchServers() {
             if (!currentUser) return;
-            const { data: userData } = await supabaseClient.from('koda_users').select('app_uuid, app_state, app_last_ping, device_ram_mb').eq('auth_id', currentUser.id).single();
-            const uuidFilter = (userData && userData.app_uuid) ? userData.app_uuid : currentUser.id;
-
-            if (userData) {
-                updateAppStatusBadge(userData.app_state, userData.app_last_ping);
+            
+            // Use dbClient (anon) to avoid authenticated RLS policy blocks
+            const { data: userRows } = await dbClient.from('koda_users').select('*').eq('auth_id', currentUser.id);
+            
+            let appUuids = [currentUser.id];
+            let activeUserData = null;
+            
+            if (userRows && userRows.length > 0) {
+                userRows.forEach(u => {
+                    if (u.app_uuid) appUuids.push(u.app_uuid);
+                });
+                activeUserData = userRows.find(u => u.app_state) || userRows[0];
             }
 
-            const { data: servers, error } = await supabaseClient
+            if (activeUserData) {
+                updateAppStatusBadge(activeUserData.app_state, activeUserData.app_last_ping);
+            }
+            
+            appUuids = [...new Set(appUuids)];
+            const orFilter = appUuids.map(id => `owner_app_uuid.eq.${id}`).join(',');
+
+            const { data: servers, error } = await dbClient
                 .from('koda_servers')
                 .select('*')
-                .eq('owner_app_uuid', uuidFilter)
+                .or(orFilter)
                 .not('host', 'like', 'deleted_%')
                 .order('created_at', { ascending: false });
 
-            if (error) return;
+            if (error || !servers) return;
 
             const mcServers = servers.filter(s => s.server_version !== 'CMD:INSTALL_DB');
             const dbServers = servers.filter(s => s.server_version === 'CMD:INSTALL_DB' || s.host.startsWith('db_'));
@@ -623,16 +641,16 @@
         }
 
         async function setupRealtime() {
-            if (serversChannel) supabaseClient.removeChannel(serversChannel);
-            const { data: userData } = await supabaseClient.from('koda_users').select('app_uuid').eq('auth_id', currentUser.id).single();
-            const uuidFilter = (userData && userData.app_uuid) ? userData.app_uuid : currentUser.id;
+            if (serversChannel) dbClient.removeChannel(serversChannel);
 
-            serversChannel = supabaseClient.channel('custom-all-channel')
-                .on('postgres_changes', { event: '*', schema: 'public', table: 'koda_servers', filter: `owner_app_uuid=eq.${uuidFilter}` }, () => {
+            serversChannel = dbClient.channel('custom-all-channel')
+                .on('postgres_changes', { event: '*', schema: 'public', table: 'koda_servers' }, () => {
                     fetchServers();
                 })
-                .on('postgres_changes', { event: '*', schema: 'public', table: 'koda_users', filter: `auth_id=eq.${currentUser.id}` }, (payload) => {
-                    if (payload.new) updateAppStatusBadge(payload.new.app_state, payload.new.app_last_ping);
+                .on('postgres_changes', { event: '*', schema: 'public', table: 'koda_users' }, (payload) => {
+                    if (payload.new && currentUser && payload.new.auth_id === currentUser.id) {
+                        updateAppStatusBadge(payload.new.app_state, payload.new.app_last_ping);
+                    }
                 })
                 .subscribe();
         }

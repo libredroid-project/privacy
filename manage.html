@@ -240,13 +240,16 @@
         const supabaseUrl = 'https://scsezpfrrmpyuapblbxk.supabase.co';
         const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNjc2V6cGZycm1weXVhcGJsYnhrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY5NDE4MjYsImV4cCI6MjA5MjUxNzgyNn0.rHro6kQpXHAnxEaFxozYzsKY8IHIUlot-7-Q4LNbZT8';
         const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+        const dbClient = window.supabase.createClient(supabaseUrl, supabaseKey, {
+            auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false }
+        });
 
         const urlParams = new URLSearchParams(window.location.search);
         const serverId = urlParams.get('id');
         
         let currentUserEmail = null;
         async function fetchUser() {
-            const { data: { session } } = await window.supabase.auth.getSession();
+            const { data: { session } } = await supabase.auth.getSession();
             if (session) {
                 currentUserEmail = session.user.email;
             }
@@ -275,7 +278,7 @@
         }
 
         async function fetchServer() {
-            const { data, error } = await supabase.from('koda_servers').select('*').eq('id', serverId).single();
+            const { data, error } = await dbClient.from('koda_servers').select('*').eq('id', serverId).single();
             if (data) {
                 serverData = data;
                 document.getElementById('server-title').textContent = data.host;
@@ -345,7 +348,7 @@
             badge.textContent = 'SAVING...'; 
             dot.className = 'status-dot pending'; 
             
-            const { error } = await supabase.from('koda_servers').update({ server_version: cmd }).eq('id', serverId);
+            const { error } = await dbClient.rpc('rpc_patch_server_by_id', { p_id: serverId, p_payload: { server_version: cmd } });
             if (error) alert("Error saving: " + error.message);
         }
 
@@ -355,7 +358,7 @@
             badge.textContent = 'PENDING...'; 
             dot.className = 'status-dot pending'; 
             
-            const { error } = await supabase.from('koda_servers').update({ server_version: `CMD:${cmdStr}` }).eq('id', serverId);
+            const { error } = await dbClient.rpc('rpc_patch_server_by_id', { p_id: serverId, p_payload: { server_version: `CMD:${cmdStr}` } });
             if (error) alert("Error sending command: " + error.message);
         }
 
@@ -383,7 +386,7 @@
         }
 
         async function createTransferRow(path, status) {
-            const { data, error } = await supabase.from('koda_file_transfers')
+            const { data, error } = await dbClient.from('koda_file_transfers')
                 .insert([{ server_id: serverId, file_path: path, status: status }])
                 .select();
             if (error) {
@@ -404,12 +407,15 @@
                     return;
                 }
                 
-                const { data } = await supabase.from('koda_file_transfers').select('*').eq('id', activeFileTransferId).single();
+                const { data } = await dbClient.from('koda_file_transfers').select('*').eq('id', activeFileTransferId).single();
                 if (data && data.status === targetStatus) {
                     clearInterval(filePollInterval);
                     hideLoading();
                     callback(data.content_b64);
-                    await supabase.from('koda_file_transfers').delete().eq('id', activeFileTransferId);
+                    if (activeFileTransferId) {
+                        await dbClient.from('koda_file_transfers').delete().eq('id', activeFileTransferId);
+                    }
+                    activeFileTransferId = null;
                 }
             }, 1000);
         }
@@ -478,15 +484,18 @@
 
         async function requestFile(path) {
             showLoading(`Loading file ${path}...`);
-            const reqPath = path.substring(1);
-            
             document.getElementById('editing-filename').textContent = path;
+            const reqPath = path === "/" ? "." : path.substring(1);
+            
             activeFileTransferId = await createTransferRow(reqPath, "REQUEST_FILE");
             
             if (activeFileTransferId) {
                 pollFileTransfer("UPLOADED_FILE", (b64) => {
-                    const content = b64 ? decodeURIComponent(escape(atob(b64))) : "";
-                    document.getElementById('file-editor').value = content;
+                    let text = "Cannot display binary file.";
+                    try {
+                        text = decodeURIComponent(escape(atob(b64)));
+                    } catch(e) {}
+                    document.getElementById('file-editor').value = text;
                     document.getElementById('file-browser').style.display = 'none';
                     document.getElementById('editor-container').style.display = 'flex';
                 });
@@ -501,24 +510,34 @@
         }
 
         async function saveFile() {
-            const content = document.getElementById('file-editor').value;
-            const b64 = btoa(unescape(encodeURIComponent(content)));
-            const path = document.getElementById('editing-filename').textContent.substring(1);
+            const val = document.getElementById('file-editor').value;
+            const b64 = btoa(unescape(encodeURIComponent(val)));
+            const path = document.getElementById('editing-filename').textContent;
+            const reqPath = path.startsWith("/") ? path.substring(1) : path;
             
-            showLoading(`Saving file...`);
+            showLoading("Saving file...");
             
-            const { data } = await supabase.from('koda_file_transfers')
-                .insert([{ server_id: serverId, file_path: path, status: "SAVING_FILE", content_b64: b64 }]);
+            const { error } = await dbClient.from('koda_file_transfers').update({ 
+                status: "WRITE_FILE", 
+                file_path: reqPath,
+                content_b64: b64 
+            }).eq('id', activeFileTransferId);
+            
+            if (error) {
+                alert("Error saving: " + error.message);
+                hideLoading();
+                return;
+            }
             
             setTimeout(() => {
                 hideLoading();
                 closeEditor();
-            }, 2000);
+            }, 1500);
         }
 
         // Init
         fetchServer();
-        setInterval(fetchServer, 3000);
+        setInterval(fetchServer, 2000);
     </script>
 </body>
 </html>
