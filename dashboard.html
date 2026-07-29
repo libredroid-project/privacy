@@ -897,9 +897,7 @@ ${content.replace(/</g, '&lt;').replace(/>/g, '&gt;')}
                 
                 let manageButtonHtml = `<button class="btn-outline" onclick="window.location.href='manage.html?id=${item.id}'">Manage Server</button>`;
                 if (item.kodadash_port && item.kodadash_port > 0) {
-                    // Browser unterstützen keine SRV-Records für HTTP, deshalb nutzen wir direkt den FRP-Host.
-                    let dashHost = 'frp.kodanetwork.eu';
-                    let url = `http://${dashHost}:${item.kodadash_port}`;
+                    let url = `http://${item.host}:${item.kodadash_port}`;
                     if (item.kodadash_token) {
                         url += `?token=${encodeURIComponent(item.kodadash_token)}`;
                     }

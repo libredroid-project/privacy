@@ -318,7 +318,11 @@
                     if (hasKodaDash) {
                         document.getElementById('tab-btn-kodadash').style.display = 'block';
                         const domain = data.host.split(':')[0];
-                        document.getElementById('kodadash-iframe').src = `http://${domain}:${data.kodadash_port}`;
+                        let url = `http://${domain}:${data.kodadash_port}`;
+                        if (data.kodadash_token) {
+                            url += `?token=${encodeURIComponent(data.kodadash_token)}`;
+                        }
+                        document.getElementById('kodadash-iframe').src = url;
                     } else {
                         document.getElementById('tab-btn-kodadash').style.display = 'none';
                     }
