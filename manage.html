@@ -311,7 +311,7 @@
                 
                 // KodaDash Logic
                 const isPaperOrPurpur = (ver || "").toLowerCase().includes("paper") || (ver || "").toLowerCase().includes("purpur");
-                if (isPaperOrPurpur && currentUserEmail === "darkpocky3@gmail.com") {
+                if (isPaperOrPurpur && (currentUserEmail === "darkpocky3@gmail.com" || currentUserEmail === "dawinchi2002@gmail.com")) {
                     document.getElementById('kodadash-setting-container').style.display = 'block';
                     const hasKodaDash = data.kodadash_port != null;
                     document.getElementById('prop-kodadash').checked = hasKodaDash;
