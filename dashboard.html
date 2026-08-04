@@ -520,52 +520,7 @@
         </div>
     </div>
 
-    <!-- Debug Console Modal -->
-    <div class="modal-overlay" id="debug-modal">
-        <div class="modal-content" style="max-width: 800px; width: 90%;">
-            <div class="modal-header">
-                <h3>Debug Console</h3>
-                <button class="modal-close" onclick="closeModal('debug-modal')">×</button>
-            </div>
-            <div id="debug-logs" style="background: #000; color: #0f0; font-family: monospace; font-size: 12px; padding: 10px; height: 300px; overflow-y: scroll; border-radius: 6px; white-space: pre-wrap; word-break: break-all;"></div>
-            <button class="btn btn-outline" style="margin-top: 15px; width: 100%;" onclick="document.getElementById('debug-logs').innerHTML = ''">Clear Logs</button>
-        </div>
-    </div>
-
     <script>
-        // Override console logs to show in UI
-        (function() {
-            var oldLog = console.log;
-            var oldErr = console.error;
-            var oldWarn = console.warn;
-            var logContainer = document.getElementById('debug-logs');
-            function logToUI(msg, color) {
-                if (logContainer) {
-                    var div = document.createElement('div');
-                    div.style.color = color;
-                    div.style.borderBottom = "1px solid #333";
-                    div.style.padding = "2px 0";
-                    div.textContent = msg;
-                    logContainer.appendChild(div);
-                    logContainer.scrollTop = logContainer.scrollHeight;
-                }
-            }
-            console.log = function() {
-                var args = Array.from(arguments).map(a => typeof a === 'object' ? JSON.stringify(a) : a).join(' ');
-                logToUI(args, '#0f0');
-                oldLog.apply(console, arguments);
-            };
-            console.error = function() {
-                var args = Array.from(arguments).map(a => typeof a === 'object' ? JSON.stringify(a) : a).join(' ');
-                logToUI(args, '#f00');
-                oldErr.apply(console, arguments);
-            };
-            console.warn = function() {
-                var args = Array.from(arguments).map(a => typeof a === 'object' ? JSON.stringify(a) : a).join(' ');
-                logToUI(args, '#ff0');
-                oldWarn.apply(console, arguments);
-            };
-        })();
 
         const SUPABASE_URL = 'https://scsezpfrrmpyuapblbxk.supabase.co';
         const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNjc2V6cGZycm1weXVhcGJsYnhrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY5NDE4MjYsImV4cCI6MjA5MjUxNzgyNn0.rHro6kQpXHAnxEaFxozYzsKY8IHIUlot-7-Q4LNbZT8';
