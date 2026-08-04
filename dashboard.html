@@ -183,7 +183,7 @@
         <div class="nav-item" onclick="switchTab('licenses')">Licenses</div>
         <div class="nav-item" onclick="switchTab('legal')">Legal</div>
         <div class="sidebar-bottom">
-            <div class="nav-item" onclick="document.getElementById('debug-modal').classList.add('active')" style="color: var(--accent);">Debug Console</div>
+
             <div class="nav-item" onclick="logout()" style="color: var(--error);">Logout</div>
         </div>
     </div>
@@ -220,7 +220,7 @@
         <div id="tab-servers" class="view-section active">
             <div class="page-header">
                 <h2 class="page-title">Minecraft Servers</h2>
-                <button class="btn" id="btn-new-server" onclick="openModalIfOnline('modal-create-server')" disabled style="opacity: 0.5; cursor: not-allowed;">+ New Server</button>
+
             </div>
             <div class="items-grid" id="servers-container"></div>
         </div>
@@ -229,7 +229,7 @@
         <div id="tab-databases" class="view-section">
             <div class="page-header">
                 <h2 class="page-title">MariaDB Databases</h2>
-                <button class="btn" id="btn-new-db" onclick="openModalIfOnline('modal-create-database')" disabled style="opacity: 0.5; cursor: not-allowed;">+ New Database</button>
+
             </div>
             <div class="items-grid" id="databases-container"></div>
         </div>
