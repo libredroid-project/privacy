@@ -17,7 +17,7 @@ Note on Legal Capacity: The developer of KodaHosting is a minor under German law
 
 KodaHosting processes certain data to function correctly:
 
-- Account Information: When you register or log in, we securely process your email address and authentication details to manage your personal KodaHosting account. Authentication is handled securely by our partner, Supabase. We do not process your password directly — Supabase handles password storage and verification using industry-standard hashing algorithms.
+- Account Information: When you register or log in, we securely process your email address and authentication details to manage your personal KodaHosting account. Authentication is handled securely by our partner, Supabase. We do not process your password directly. Supabase handles password storage and verification using industry-standard hashing algorithms.
 
 - Web Dashboard & Remote Control: When using the Web Dashboard, we process your authentication tokens and proxy server commands securely via our API to allow remote management of your Android-hosted servers. This includes server start, stop, restart, hibernate, wipe, and delete commands, as well as property changes (RAM, MOTD, gamemode, difficulty, max players, PvP, whitelist) and console commands.
 

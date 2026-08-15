@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>KodaHosting — Minecraft Server Hosting on Android</title>
+    <title>KodaHosting | Minecraft Server Hosting on Android</title>
     <meta name="description" content="Transform your Android device into a fully functional Minecraft server. Pay once for the app and host forever without monthly fees.">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -283,49 +283,150 @@
             font-size: 1rem; color: var(--md-on-surface-variant); line-height: 1.5;
         }
 
-        /* Material 3 Filled Cards Grid */
-        .features-grid {
-            display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px;
+        /* Bento Grid for Features */
+        .bento-grid {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            grid-auto-rows: minmax(160px, auto);
+            gap: 12px;
         }
-        .card {
-            background: var(--md-surface-container); border-radius: var(--shape-md);
-            padding: 24px;
-            transition: box-shadow 0.2s var(--ease-standard), background 0.2s var(--ease-standard), transform 0.15s var(--ease-standard);
-            position: relative; overflow: hidden;
+        .bento-card {
+            background: var(--md-surface-container-low);
+            border-radius: var(--shape-lg);
+            padding: 28px;
+            position: relative;
+            overflow: hidden;
+            box-shadow: var(--elev-1);
+            transition: box-shadow 0.25s var(--ease-standard), background 0.25s var(--ease-standard), transform 0.15s var(--ease-standard);
+            display: flex;
+            flex-direction: column;
         }
-        .card:hover { box-shadow: var(--elev-2); transform: translateY(-2px); }
+        .bento-card:hover {
+            background: var(--md-surface-container);
+            box-shadow: var(--elev-3);
+            transform: translateY(-2px);
+        }
+        .bento-card.b-hero {
+            grid-column: span 3;
+            grid-row: span 2;
+            background: linear-gradient(145deg, var(--md-surface-container) 0%, var(--md-surface-container-high) 100%);
+            padding: 40px;
+        }
+        .bento-card.b-hero::before {
+            content: '';
+            position: absolute;
+            top: -40px; right: -40px;
+            width: 240px; height: 240px;
+            background: radial-gradient(circle, var(--brand-container), transparent 65%);
+            pointer-events: none;
+        }
+        .bento-card.b-wide { grid-column: span 3; }
+        .bento-card.b-medium { grid-column: span 2; }
+        .bento-card.b-small { grid-column: span 2; }
 
-        .feature-card {
-            background: var(--md-surface-container-low); box-shadow: var(--elev-1);
-            display: flex; flex-direction: column; padding: 0;
+        /* Accent variant: solid brand-colored card */
+        .bento-card.b-accent {
+            background: linear-gradient(145deg, var(--brand) 0%, #E55D00 100%);
+            color: #fff;
+            box-shadow: var(--elev-2);
         }
-        .feature-card:hover { background: var(--md-surface-container); box-shadow: var(--elev-3); }
+        .bento-card.b-accent:hover {
+            background: linear-gradient(145deg, var(--brand-hover) 0%, #FF6B00 100%);
+            box-shadow: var(--elev-3);
+        }
+        .bento-card.b-accent .bento-tag {
+            color: rgba(255, 255, 255, 0.85);
+        }
+        .bento-card.b-accent .bento-tag::before {
+            background: #fff;
+            box-shadow: 0 0 6px rgba(255, 255, 255, 0.6);
+        }
+        .bento-card.b-accent h3 { color: #fff; }
+        .bento-card.b-accent p { color: rgba(255, 255, 255, 0.9); }
 
-        .feature-num {
-            font-family: 'Roboto Flex', sans-serif; font-size: 3rem; font-weight: 300;
-            line-height: 1; color: var(--brand); letter-spacing: -0.04em;
-            padding: 20px 24px 0 24px; display: flex; align-items: baseline; gap: 6px;
-            transition: color 0.3s var(--ease-standard);
+        /* Outlined variant: transparent terminal-style card */
+        .bento-card.b-outlined {
+            background: var(--md-surface-container-lowest);
+            box-shadow: inset 0 0 0 1px var(--md-outline-variant);
         }
-        .feature-num .total {
-            font-size: 0.875rem; color: var(--md-on-surface-variant); font-weight: 500;
-            letter-spacing: 0;
+        .bento-card.b-outlined:hover {
+            box-shadow: inset 0 0 0 1px var(--brand);
+            background: var(--md-surface-container-low);
         }
-        .feature-card:hover .feature-num { color: var(--brand-hover); }
+        .bento-card.b-outlined .terminal-lines {
+            margin-top: auto;
+            padding-top: 16px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.72rem;
+            line-height: 1.7;
+            color: var(--md-on-surface-variant);
+        }
+        .bento-card.b-outlined .terminal-lines .prompt { color: var(--brand); }
+        .bento-card.b-outlined .terminal-lines .output { color: var(--md-success); }
 
-        .feature-body { padding: 12px 24px 24px 24px; flex: 1; display: flex; flex-direction: column; }
-        .feature-divider {
-            width: 32px; height: 2px; background: var(--md-outline-variant);
-            border-radius: 1px; margin-bottom: 16px;
-            transition: width 0.3s var(--ease-standard), background 0.3s var(--ease-standard);
+        .bento-tag {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.7rem;
+            font-weight: 600;
+            color: var(--brand);
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            margin-bottom: 14px;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
         }
-        .feature-card:hover .feature-divider { width: 48px; background: var(--brand); }
-
-        .feature-card h3 {
-            font-size: 1.125rem; font-weight: 500; margin-bottom: 10px; letter-spacing: -0.01em;
+        .bento-tag::before {
+            content: '';
+            width: 6px; height: 6px;
+            border-radius: 50%;
+            background: var(--brand);
+            box-shadow: 0 0 6px var(--brand);
         }
-        .feature-card p {
-            color: var(--md-on-surface-variant); font-size: 0.875rem; line-height: 1.6; flex: 1;
+        .bento-card h3 {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 8px;
+            letter-spacing: -0.015em;
+            color: var(--md-on-surface);
+        }
+        .bento-card.b-hero h3 {
+            font-size: 1.75rem;
+            font-weight: 700;
+            margin-bottom: 14px;
+            line-height: 1.1;
+        }
+        .bento-card p {
+            color: var(--md-on-surface-variant);
+            font-size: 0.85rem;
+            line-height: 1.6;
+            flex: 1;
+        }
+        .bento-card.b-hero p {
+            font-size: 1rem;
+            line-height: 1.7;
+        }
+        .bento-card.b-hero .bento-detail {
+            margin-top: 24px;
+            padding-top: 20px;
+            border-top: 1px solid var(--md-outline-variant);
+            display: flex;
+            gap: 32px;
+            flex-wrap: wrap;
+        }
+        .bento-detail-item .label {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.65rem;
+            color: var(--md-on-surface-variant);
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            display: block;
+            margin-bottom: 4px;
+        }
+        .bento-detail-item .value {
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: var(--md-on-surface);
         }
 
         /* CTA */
@@ -606,7 +707,12 @@
         .reveal-d3 { transition-delay: 0.24s; }
 
         @media (max-width: 900px) {
-            .features-grid { grid-template-columns: repeat(2, 1fr); }
+            .bento-grid { grid-template-columns: repeat(2, 1fr); }
+            .bento-card.b-hero { grid-column: span 2; grid-row: span 1; padding: 32px; }
+            .bento-card.b-hero h3 { font-size: 1.4rem; }
+            .bento-card.b-wide { grid-column: span 2; }
+            .bento-card.b-medium { grid-column: span 1; }
+            .bento-card.b-small { grid-column: span 1; }
             .footer-grid { grid-template-columns: 1fr 1fr; }
             .footer-brand { grid-column: span 2; }
             .steps-grid { grid-template-columns: 1fr; }
@@ -627,7 +733,11 @@
             .hero-stats { grid-template-columns: repeat(2, 1fr); margin-top: 56px; }
             .hero-stat:nth-child(2)::after, .hero-stat:last-child::after { display: none; }
 
-            .features-grid { grid-template-columns: 1fr; }
+            .bento-grid { grid-template-columns: 1fr; }
+            .bento-card.b-hero,
+            .bento-card.b-wide,
+            .bento-card.b-medium,
+            .bento-card.b-small { grid-column: span 1; grid-row: span 1; }
             .engines-grid { grid-template-columns: 1fr; }
             .comparison-row { grid-template-columns: 1fr; padding: 12px 16px; gap: 4px; }
             .comparison-row .col-koda, .comparison-row .col-trad { font-size: 0.8125rem; }
@@ -678,9 +788,9 @@
                 Android-native server hosting
             </div>
             <h1>Your Minecraft Server,<br><span class="text-accent">in your pocket.</span></h1>
-            <p class="lead">Transform your Android device into a fully functional Minecraft server. Pay once for the app and host forever without monthly fees.</p>
+            <p class="lead">Turn your Android phone into a fully functional Minecraft server. Free forever, no subscriptions, no monthly fees. Java and Bedrock players join the same world.</p>
             <div class="hero-actions">
-                <a href="dashboard.html" class="btn btn-filled btn-lg">
+                <a href="https://play.google.com/store/apps/details?id=eu.kodanetwork.mchost" target="_blank" rel="noopener" class="btn btn-filled btn-lg">
                     Get Started
                     <span class="material-symbols-outlined">arrow_forward</span>
                 </a>
@@ -689,20 +799,20 @@
 
             <div class="hero-stats">
                 <div class="hero-stat">
-                    <span class="num" data-count="8">0</span>
-                    <span class="label">Power features</span>
+                    <span class="num">0€</span>
+                    <span class="label">Price: free forever</span>
                 </div>
                 <div class="hero-stat">
-                    <span class="num">$0<span style="color: var(--md-on-surface-variant); font-size: 1.25rem;"> forever</span></span>
-                    <span class="label">Cost to you</span>
+                    <span class="num" data-count="6">0</span>
+                    <span class="label">Server engines</span>
                 </div>
                 <div class="hero-stat">
-                    <span class="num" data-count="100" data-suffix="%">0</span>
-                    <span class="label">Local hosting</span>
+                    <span class="num">4 GB</span>
+                    <span class="label">Min. device RAM</span>
                 </div>
                 <div class="hero-stat">
                     <span class="num" data-count="2">0</span>
-                    <span class="label">Java + Bedrock</span>
+                    <span class="label">Editions: Java + Bedrock</span>
                 </div>
             </div>
         </div>
@@ -714,92 +824,94 @@
             <div class="section-header reveal">
                 <button class="chip">
                     <span class="material-symbols-outlined">bolt</span>
-                    Capabilities
+                    What you get
                 </button>
-                <h2 class="section-title">Everything you need to host.</h2>
-                <p class="section-subtitle">From cross-platform multiplayer to live monitoring and full file access — KodaHosting puts a complete server stack in your hand.</p>
+                <h2 class="section-title">Built for real hosting, not a toy.</h2>
+                <p class="section-subtitle">VPS proxy routing, crossplay, root file access, live console, and six server engines. All running on your Android device, all free.</p>
             </div>
 
-            <div class="features-grid">
-                <div class="card feature-card reveal">
-                    <div class="feature-num">01 <span class="total">/ 09</span></div>
-                    <div class="feature-body">
-                        <div class="feature-divider"></div>
-                        <h3>User Accounts</h3>
-                        <p>Create your personal KodaHosting account and log in securely. Keep your server profiles, linked accounts, and custom settings organized across sessions.</p>
+            <div class="bento-grid">
+                <!-- HERO: Hidden IP & Security (the key differentiator) -->
+                <div class="bento-card b-hero reveal">
+                    <span class="bento-tag">Privacy by design</span>
+                    <h3>Your home IP stays hidden. Always.</h3>
+                    <p>Every player connection routes through our central VPS proxy infrastructure using secure reverse tunnels (Bore / FRP). Players only ever see the IP of our proxy server. Your home network, your location, and your device remain completely invisible to the outside world.</p>
+                    <div class="bento-detail">
+                        <div class="bento-detail-item">
+                            <span class="label">Tunnel</span>
+                            <span class="value">Bore / FRP</span>
+                        </div>
+                        <div class="bento-detail-item">
+                            <span class="label">IP Exposure</span>
+                            <span class="value">Zero</span>
+                        </div>
+                        <div class="bento-detail-item">
+                            <span class="label">Routing</span>
+                            <span class="value">VPS Proxy</span>
+                        </div>
                     </div>
                 </div>
 
-                <div class="card feature-card reveal reveal-d1">
-                    <div class="feature-num">02 <span class="total">/ 09</span></div>
-                    <div class="feature-body">
-                        <div class="feature-divider"></div>
-                        <h3>True Crossplay</h3>
-                        <p>Natively supports both Java and Bedrock editions. PC, console, and mobile gamers can join the same server and play together seamlessly from anywhere.</p>
+                <!-- WIDE: True Crossplay -->
+                <div class="bento-card b-wide reveal reveal-d1">
+                    <span class="bento-tag">Crossplay</span>
+                    <h3>Java &amp; Bedrock, one server.</h3>
+                    <p>PC, console, and mobile players join the exact same world through the same address. No split communities, no second server, no extra setup. Crossplay works out of the box.</p>
+                </div>
+
+                <!-- WIDE: File Management -->
+                <div class="bento-card b-wide reveal reveal-d2">
+                    <span class="bento-tag">Full root access</span>
+                    <h3>Your server directory, your rules.</h3>
+                    <p>Upload existing worlds, install custom maps, drop in plugins, or hand-edit server.properties. You have direct file-system access on your device. No FTP, no upload limits, no waiting.</p>
+                </div>
+
+                <!-- SMALL: User Accounts -->
+                <div class="bento-card b-small reveal">
+                    <span class="bento-tag">Accounts</span>
+                    <h3>Secure Login</h3>
+                    <p>Email or Google sign-in via Supabase. Your server profiles and settings sync across the app and web dashboard automatically.</p>
+                </div>
+
+                <!-- SMALL: Live Console (outlined terminal style) -->
+                <div class="bento-card b-small b-outlined reveal reveal-d1">
+                    <span class="bento-tag">Console</span>
+                    <h3>Live Console</h3>
+                    <p>Execute commands and read server output in real-time, from the in-app terminal or the web Server Manager.</p>
+                    <div class="terminal-lines">
+                        <div><span class="prompt">&gt;</span> say Welcome to the server!</div>
+                        <div><span class="output">[Server] Welcome to the server!</span></div>
+                        <div><span class="prompt">&gt;</span> difficulty hard</div>
+                        <div><span class="output">[Server] Set game difficulty to Hard</span></div>
                     </div>
                 </div>
 
-                <div class="card feature-card reveal reveal-d2">
-                    <div class="feature-num">03 <span class="total">/ 09</span></div>
-                    <div class="feature-body">
-                        <div class="feature-divider"></div>
-                        <h3>Hidden IP &amp; Security</h3>
-                        <p>Thanks to our VPS infrastructure, your home IP address is completely hidden. Players connect through our secure proxy, keeping your network private.</p>
-                    </div>
+                <!-- SMALL: Performance Monitor -->
+                <div class="bento-card b-small reveal reveal-d2">
+                    <span class="bento-tag">Monitoring</span>
+                    <h3>Performance Monitor</h3>
+                    <p>Track CPU load, RAM usage, and tick rate live. Know exactly how your device is holding up before your players notice lag.</p>
                 </div>
 
-                <div class="card feature-card reveal">
-                    <div class="feature-num">04 <span class="total">/ 09</span></div>
-                    <div class="feature-body">
-                        <div class="feature-divider"></div>
-                        <h3>Live Console</h3>
-                        <p>Keep track of your server in real-time. View live chat, manage players, and execute commands directly from the interactive app console.</p>
-                    </div>
+                <!-- SMALL: Completely Free (accent solid card) -->
+                <div class="bento-card b-small b-accent reveal">
+                    <span class="bento-tag">Pricing</span>
+                    <h3>Free Forever</h3>
+                    <p>No purchase, no subscription, no premium tiers. Optional Ko-fi support if you want to help cover server costs. It unlocks nothing.</p>
                 </div>
 
-                <div class="card feature-card reveal reveal-d1">
-                    <div class="feature-num">05 <span class="total">/ 09</span></div>
-                    <div class="feature-body">
-                        <div class="feature-divider"></div>
-                        <h3>Performance Monitor</h3>
-                        <p>Always know how your device is holding up. Track CPU and RAM usage live to ensure a lag-free experience for your entire community.</p>
-                    </div>
+                <!-- SMALL: Always Up-To-Date -->
+                <div class="bento-card b-small reveal reveal-d1">
+                    <span class="bento-tag">Auto-update</span>
+                    <h3>Latest Versions</h3>
+                    <p>Paper, Purpur, Fabric, Vanilla, Folia and Velocity versions are fetched live from their APIs. No app update needed to get new releases.</p>
                 </div>
 
-                <div class="card feature-card reveal reveal-d2">
-                    <div class="feature-num">06 <span class="total">/ 09</span></div>
-                    <div class="feature-body">
-                        <div class="feature-divider"></div>
-                        <h3>File Management</h3>
-                        <p>Upload your old worlds, install custom maps, or edit configuration files manually. You have full root access to your server's directory directly on your device.</p>
-                    </div>
-                </div>
-
-                <div class="card feature-card reveal">
-                    <div class="feature-num">07 <span class="total">/ 09</span></div>
-                    <div class="feature-body">
-                        <div class="feature-divider"></div>
-                        <h3>Completely Free</h3>
-                        <p>KodaHosting is and always will be free. No subscriptions, no premium tiers, no hidden costs. The full feature set is available to everyone. Optional support via Ko-fi if you want to help development.</p>
-                    </div>
-                </div>
-
-                <div class="card feature-card reveal reveal-d1">
-                    <div class="feature-num">08 <span class="total">/ 09</span></div>
-                    <div class="feature-body">
-                        <div class="feature-divider"></div>
-                        <h3>Lobby Remote Control</h3>
-                        <p>Link your Minecraft account to our official Lobby Server. Monitor and control your mobile-hosted servers directly from inside the game through a custom GUI.</p>
-                    </div>
-                </div>
-
-                <div class="card feature-card reveal reveal-d2">
-                    <div class="feature-num">09 <span class="total">/ 09</span></div>
-                    <div class="feature-body">
-                        <div class="feature-divider"></div>
-                        <h3>Always Up-To-Date</h3>
-                        <p>Versions for Paper, Purpur, Fabric, Vanilla, Folia and Velocity are fetched live from their respective APIs — no app update required to get the latest release.</p>
-                    </div>
+                <!-- SMALL: Lobby Remote Control -->
+                <div class="bento-card b-small reveal reveal-d2">
+                    <span class="bento-tag">In-game control</span>
+                    <h3>Lobby Remote</h3>
+                    <p>Link your Minecraft account to our Lobby Server and manage your servers through a custom in-game GUI without leaving the game.</p>
                 </div>
             </div>
         </div>
@@ -814,13 +926,13 @@
                     Getting Started
                 </button>
                 <h2 class="section-title">From download to play in three steps.</h2>
-                <p class="section-subtitle">No server configuration, no port forwarding, no monthly bills. Download the app, sign in, tap Create Server — done.</p>
+                <p class="section-subtitle">No server configuration, no port forwarding, no monthly bills. Download the app, sign in, tap Create Server, done.</p>
             </div>
             <div class="steps-grid">
                 <div class="card step-card reveal">
                     <div class="step-num">01</div>
                     <h3>Download the App</h3>
-                    <p>Get KodaHosting from the Google Play Store. One-time purchase, no subscriptions, no hidden fees. Install it on any Android device with ARM64 architecture.</p>
+                    <p>Get KodaHosting from the Google Play Store. Completely free, no subscriptions, no hidden fees. Install it on any Android device with ARM64 architecture.</p>
                 </div>
                 <div class="card step-card reveal reveal-d1">
                     <div class="step-num">02</div>
@@ -830,7 +942,7 @@
                 <div class="card step-card reveal reveal-d2">
                     <div class="step-num">03</div>
                     <h3>Tap "Create Server"</h3>
-                    <p>Inside the app, tap the Create Server button. Pick your engine, version and RAM — that's it. Your server is live and players can join through your subdomain within seconds.</p>
+                    <p>Inside the app, tap the Create Server button. Pick your engine, version and RAM. That's it. Your server is live and players can join through your subdomain within seconds.</p>
                 </div>
             </div>
         </div>
@@ -845,7 +957,7 @@
                     Compatibility
                 </button>
                 <h2 class="section-title">Six engines. One app.</h2>
-                <p class="section-subtitle">From vanilla to high-performance modded servers — pick the engine that fits your community. Versions are fetched live from their respective APIs.</p>
+                <p class="section-subtitle">From vanilla to high-performance modded servers. Pick the engine that fits your community. Versions are fetched live from their respective APIs.</p>
             </div>
             <div class="engines-grid">
                 <div class="engine-card reveal">
@@ -966,7 +1078,7 @@
                         <span class="faq-toggle">+</span>
                     </div>
                     <div class="faq-answer">
-                        <p>Each account can host a maximum of six (6) servers simultaneously. This limit applies across all server types — Minecraft servers and databases combined — and is in place to ensure fair use of the shared VPS proxy infrastructure. Creating multiple accounts to bypass this limit is not allowed and may result in a permanent ban.</p>
+                        <p>Each account can host a maximum of six (6) servers simultaneously. This limit applies across all server types (Minecraft servers and databases combined) and is in place to ensure fair use of the shared VPS proxy infrastructure. Creating multiple accounts to bypass this limit is not allowed and may result in a permanent ban.</p>
                     </div>
                 </div>
                 <div class="faq-item">
@@ -1075,9 +1187,9 @@
         <div class="container">
             <div class="card cta-card reveal">
                 <h2>Ready to host your world?</h2>
-                <p>Open the dashboard, sign in with your KodaHosting account, and create your first server in under a minute.</p>
-                <a href="dashboard.html" class="btn btn-filled btn-lg">
-                    Open Dashboard
+                <p>Download KodaHosting from the Google Play Store, sign in, and tap Create Server. Your Minecraft world is live in under a minute.</p>
+                <a href="https://play.google.com/store/apps/details?id=eu.kodanetwork.mchost" target="_blank" rel="noopener" class="btn btn-filled btn-lg">
+                    Download on Google Play
                     <span class="material-symbols-outlined">arrow_forward</span>
                 </a>
             </div>
@@ -1091,7 +1203,7 @@
                 <span class="material-symbols-outlined">smart_toy</span>
             </div>
             <div class="ai-disclaimer-text">
-                <strong>About this website.</strong> Parts of this website (the landing page, dashboard and legal documents you are currently viewing) were drafted with the assistance of an AI language model and reviewed by the developer. The AI was used for layout, copywriting and legal text generation only. The KodaHosting Android application itself, its server-hosting logic, networking infrastructure, and all executable code are written entirely by the developer and are not AI-generated. Legal responsibility for all content — including AI-assisted sections — rests with the developer and their legal guardians, as set out in the Impressum.
+                <strong>About this website.</strong> Parts of this website (the landing page, dashboard and legal documents you are currently viewing) were drafted with the assistance of an AI language model and reviewed by the developer. The AI was used for layout, copywriting and legal text generation only. The KodaHosting Android application itself, its server-hosting logic, networking infrastructure, and all executable code are written entirely by the developer and are not AI-generated. Legal responsibility for all content (including AI-assisted sections) rests with the developer and their legal guardians, as set out in the Impressum.
             </div>
         </div>
     </section>
