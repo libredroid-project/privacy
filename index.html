@@ -526,6 +526,33 @@
             color: var(--md-on-surface-variant); font-size: 0.875rem; line-height: 1.6;
         }
 
+        /* AI Disclaimer */
+        .ai-disclaimer {
+            background: var(--md-surface-container-lowest);
+            border-top: 1px solid var(--md-outline-variant);
+            padding: 32px 0;
+        }
+        .ai-disclaimer-content {
+            max-width: 760px;
+            margin: 0 auto;
+            padding: 0 24px;
+            display: flex;
+            align-items: flex-start;
+            gap: 14px;
+        }
+        .ai-disclaimer-icon {
+            color: var(--md-on-surface-variant);
+            flex-shrink: 0;
+            margin-top: 2px;
+        }
+        .ai-disclaimer-icon .material-symbols-outlined { font-size: 18px; }
+        .ai-disclaimer-text {
+            font-size: 0.78rem;
+            color: var(--md-on-surface-variant);
+            line-height: 1.6;
+        }
+        .ai-disclaimer-text strong { color: var(--md-on-surface); font-weight: 600; }
+
         /* Support */
         .support-section { padding: 80px 0 96px; }
         .support-card {
@@ -889,7 +916,7 @@
                 </div>
                 <div class="comparison-row">
                     <div class="col-feature">Server limit</div>
-                    <div class="col-koda">Unlimited</div>
+                    <div class="col-koda">Up to 6 servers</div>
                     <div class="col-trad">1 per plan tier</div>
                 </div>
                 <div class="comparison-row">
@@ -933,6 +960,15 @@
                 <p class="section-subtitle">Everything you need to know about hosting Minecraft servers on your Android device.</p>
             </div>
             <div class="faq-list reveal">
+                <div class="faq-item">
+                    <div class="faq-question" onclick="this.parentElement.classList.toggle('active')">
+                        How many servers can I host at the same time?
+                        <span class="faq-toggle">+</span>
+                    </div>
+                    <div class="faq-answer">
+                        <p>Each account can host a maximum of six (6) servers simultaneously. This limit applies across all server types — Minecraft servers and databases combined — and is in place to ensure fair use of the shared VPS proxy infrastructure. Creating multiple accounts to bypass this limit is not allowed and may result in a permanent ban.</p>
+                    </div>
+                </div>
                 <div class="faq-item">
                     <div class="faq-question" onclick="this.parentElement.classList.toggle('active')">
                         Does my phone need to be on 24/7?
@@ -984,7 +1020,7 @@
                         <span class="faq-toggle">+</span>
                     </div>
                     <div class="faq-answer">
-                        <p>Yes. The web dashboard at host.kodanetwork.eu lets you manage all your servers from any browser. You can start, stop, restart, hibernate, and delete servers, adjust RAM allocation, edit server properties (MOTD, gamemode, difficulty, max players, PvP, whitelist), execute console commands, and monitor real-time status. The dashboard communicates with your device through Supabase realtime updates.</p>
+                        <p>Yes. The web dashboard at host.kodanetwork.eu lets you manage all your servers from any browser. The Server Manager gives you access to the live console (where you can execute commands and see server output in real-time) and the file management view (where you can upload worlds, install maps, and edit configuration files). Start, stop, restart, and other server lifecycle actions happen in the app directly. The dashboard communicates with your device through Supabase realtime updates.</p>
                     </div>
                 </div>
                 <div class="faq-item">
@@ -1044,6 +1080,18 @@
                     Open Dashboard
                     <span class="material-symbols-outlined">arrow_forward</span>
                 </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- AI Disclaimer -->
+    <section class="ai-disclaimer">
+        <div class="ai-disclaimer-content">
+            <div class="ai-disclaimer-icon">
+                <span class="material-symbols-outlined">smart_toy</span>
+            </div>
+            <div class="ai-disclaimer-text">
+                <strong>About this website.</strong> Parts of this website (the landing page, dashboard and legal documents you are currently viewing) were drafted with the assistance of an AI language model and reviewed by the developer. The AI was used for layout, copywriting and legal text generation only. The KodaHosting Android application itself, its server-hosting logic, networking infrastructure, and all executable code are written entirely by the developer and are not AI-generated. Legal responsibility for all content — including AI-assisted sections — rests with the developer and their legal guardians, as set out in the Impressum.
             </div>
         </div>
     </section>
