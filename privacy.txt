@@ -1,6 +1,6 @@
 Privacy Policy
 
-Last Updated: July 2026
+Last Updated: August 2026
 
 1. Introduction & Data Controller
 
@@ -10,6 +10,8 @@ The Data Controller responsible for your personal information is:
 Karol Brzostowski
 Deutschland Fixberg 17, 33106 Paderborn-Wewer
 Email: support@host.kodanetwork.eu
+
+Note on Legal Capacity: The developer of KodaHosting is a minor under German law (§ 106 BGB, beschränkte Geschäftsfähigkeit). Legal responsibility for the operation of this service, including data protection matters, is jointly held by the legal guardians. Correspondence regarding data protection can be addressed to the email above.
 
 2. Information We Collect & Process
 
@@ -29,19 +31,21 @@ KodaHosting processes certain data to function correctly:
 
 - AI Server Builder: If you use the AI Server Builder, your text prompts are sent to the Google Gemini API for processing to generate server configurations. Do not submit sensitive personal information in these prompts. Data transferred outside the European Economic Area (EEA) to Google LLC is safeguarded under the EU-U.S. Data Privacy Framework (DPF) and Standard Contractual Clauses.
 
+- Voluntary Donations: If you choose to support development via Ko-fi, you will be redirected to ko-fi.com, which processes the donation independently. Ko-fi may collect your name, email, and payment information. We do not process or store your payment data. Ko-fi's privacy policy applies to donations.
+
 3. Third-Party Services
 
 The App utilizes certain third-party services that may collect information used to identify you or provide core functionalities:
 
 - Google Play Services: For app distribution, crash reporting, and standard analytics.
 
-- Google Play Billing: Used to process your one-time purchase of the KodaHosting app securely.
-
 - Modrinth API / Spigot: To search and download server plugins directly within the app.
 
 - GitHub Releases: Used to download essential server binaries like Java and secure tunnel clients.
 
 - Bore / FRP (Fast Reverse Proxy): Used exclusively to create the secure network tunnels between your device and our VPS infrastructure.
+
+- Ko-fi: Used for voluntary financial support of the developer. Ko-fi is an external service; visiting their site or making a donation is subject to their terms and privacy policy. Donations are voluntary gifts and do not unlock any features.
 
 4. Data Security
 
@@ -57,11 +61,15 @@ Under the General Data Protection Regulation (GDPR) and applicable privacy laws,
 
 - Right to Rectification: You may update or correct your account information.
 
-To exercise these rights, please contact us via our support channels.
+To exercise these rights, please contact us via our support channels. If you are under 16, your request must be submitted by or with the consent of your legal guardian.
 
 6. Children's Privacy
 
-Our services are not directed to individuals under the age of 13 (or 16 in certain EU jurisdictions). We do not knowingly collect personal data from children. If we become aware that a child has provided us with personal data, we will take steps to delete such information.
+The App is intended for general use. Under Article 8 of the GDPR as implemented in Germany, users under the age of 16 require the consent of their legal guardian to create an account and use services that process personal data.
+
+If you are under 16, please ask your legal guardian to review this Privacy Policy and to consent to your use of KodaHosting on your behalf before you create an account.
+
+If we become aware that we have collected personal data from a child under 16 without verifiable parental consent, we will take steps to delete such information.
 
 7. Changes to This Privacy Policy
 
