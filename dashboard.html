@@ -635,6 +635,30 @@
         .status-offline { background: var(--md-error-container); color: var(--md-error); }
         .status-pending { background: var(--brand-container); color: var(--brand); }
 
+        .item-hint {
+            display: flex;
+            align-items: flex-start;
+            gap: 8px;
+            font-size: 0.8125rem;
+            line-height: 1.45;
+            color: var(--md-on-surface-variant);
+            background: var(--md-surface-container-high);
+            border-radius: var(--shape-sm, 8px);
+            padding: 12px 14px;
+        }
+        .item-hint .material-symbols-outlined { font-size: 18px; flex-shrink: 0; }
+        .item-hint.warn {
+            color: var(--md-on-surface);
+            background: var(--md-surface-container-highest, #332A22);
+            box-shadow: inset 3px 0 0 var(--brand);
+        }
+        .item-hint.warn .material-symbols-outlined { color: var(--brand); }
+        .btn-outline-card.primary-action {
+            background: var(--brand);
+            color: #fff;
+        }
+        .btn-outline-card.primary-action:hover { background: var(--brand-hover, #FF8533); }
+
         .item-details {
             display: flex;
             flex-direction: column;
@@ -1259,10 +1283,13 @@
         <div id="tab-servers" class="view-section active">
             <div class="page-header">
                 <h2 class="page-title">Minecraft Servers</h2>
-                <button class="fab" id="btn-new-server" onclick="openModalIfOnline('modal-create-server')">
-                    <span class="material-symbols-outlined">add</span>
-                    New Server
-                </button>
+            </div>
+            <div class="info-box" style="margin-bottom: 24px;">
+                <div class="icon-large">
+                    <span class="material-symbols-outlined fill">monitor</span>
+                </div>
+                <p>Servers are created, started and stopped in the KodaHosting app.</p>
+                <p style="margin-top: 8px; font-size: 0.875rem;">This page shows their status. Servers with KodaDash enabled open the full web console, file manager, players and settings.</p>
             </div>
             <div class="items-grid" id="servers-container"></div>
         </div>
@@ -1270,10 +1297,6 @@
         <div id="tab-databases" class="view-section">
             <div class="page-header">
                 <h2 class="page-title">MariaDB Databases</h2>
-                <button class="fab" id="btn-new-db" onclick="openModalIfOnline('modal-create-database')">
-                    <span class="material-symbols-outlined">add</span>
-                    New Database
-                </button>
             </div>
             <div class="items-grid" id="databases-container"></div>
         </div>
@@ -1314,288 +1337,13 @@
     </main>
 
 
-    <!-- Wizard (Material 3 Dialog) -->
-    <div id="wizard-create-server" class="wizard-overlay">
-        <div class="wizard-container">
-            <div class="wizard-header">
-                <h2>Create Minecraft Server</h2>
-                <button class="icon-btn" onclick="closeWizard()" aria-label="Close">
-                    <span class="material-symbols-outlined">close</span>
-                </button>
-            </div>
-
-            <div class="wizard-progress">
-                <div class="wizard-progress-dot active" id="wiz-dot-1"></div>
-                <div class="wizard-progress-dot" id="wiz-dot-2"></div>
-                <div class="wizard-progress-dot" id="wiz-dot-3"></div>
-            </div>
-
-            <div class="wizard-step active" id="wizard-step-1">
-                <h3>Select Software</h3>
-                <div class="cards-grid">
-                    <div class="software-card" onclick="selectWizardEngine('PAPER', this)">
-                        <h4>PaperMC</h4><p>High Performance, Plugins</p>
-                    </div>
-                    <div class="software-card" onclick="selectWizardEngine('PURPUR', this)">
-                        <h4>Purpur</h4><p>Features &amp; Optimization</p>
-                    </div>
-                    <div class="software-card" onclick="selectWizardEngine('FABRIC', this)">
-                        <h4>Fabric</h4><p>Lightweight Mods</p>
-                    </div>
-                    <div class="software-card" onclick="selectWizardEngine('VANILLA', this)">
-                        <h4>Vanilla</h4><p>Original Game</p>
-                    </div>
-                    <div class="software-card" onclick="selectWizardEngine('VELOCITY', this)">
-                        <h4>Velocity</h4><p>Modern Proxy</p>
-                    </div>
-                    <div class="software-card" onclick="selectWizardEngine('FOLIA', this)">
-                        <h4>Folia</h4><p>Multi-threaded Performance</p>
-                    </div>
-                </div>
-
-                <div class="input-group" style="margin-top: 24px; max-width: 280px;">
-                    <label>Version</label>
-                    <select id="wizard-version"></select>
-                </div>
-
-                <div class="wizard-footer">
-                    <div></div>
-                    <button class="btn btn-filled" onclick="nextWizardStep(2)">Continue</button>
-                </div>
-            </div>
-
-            <div class="wizard-step" id="wizard-step-2">
-                <h3>Server Name &amp; RAM</h3>
-                <div class="input-group" style="margin-top: 16px;">
-                    <label>Subdomain / Name (e.g. survival)</label>
-                    <input type="text" id="wizard-name" placeholder="survival" onkeyup="validateWizardName()">
-                    <p id="wizard-name-error" style="color: var(--md-error); font-size: 0.75rem; display: none; margin-top: 6px;">Invalid name. Only a-z, 0-9 and hyphens are allowed.</p>
-                </div>
-
-                <div class="input-group" style="margin-top: 24px;">
-                    <label>Allocated RAM: <span id="wizard-ram-label" style="color: var(--brand); font-weight: 500;">2048 MB</span></label>
-                    <input type="range" id="wizard-ram-slider" min="0" max="6" value="2" oninput="updateWizardRam()">
-                    <div style="display: flex; justify-content: space-between; font-size: 0.75rem; color: var(--md-on-surface-variant); margin-top: 6px;">
-                        <span>512MB</span><span>8GB</span>
-                    </div>
-                </div>
-
-                <div class="wizard-footer">
-                    <button class="btn btn-text" onclick="nextWizardStep(1)">Back</button>
-                    <button class="btn btn-filled" onclick="nextWizardStep(3)" id="btn-wiz-next-2">Continue</button>
-                </div>
-            </div>
-
-            <div class="wizard-step" id="wizard-step-3">
-                <h3>KodaHosting Setup &amp; Rules</h3>
-
-                <div id="wizard-setup-box" style="background: var(--brand-container); padding: 16px 20px; border-radius: var(--shape-sm); margin-bottom: 16px;">
-                    <h4 style="color: var(--brand); margin-bottom: 6px; font-family: 'Roboto Flex'; font-weight: 500; font-size: 0.9375rem;">Auto Design (Optional)</h4>
-                    <p style="font-size: 0.8125rem; color: var(--md-on-surface-variant); margin-bottom: 12px;">Automatically installs UI plugins and applies a theme color to your server.</p>
-                    <label style="display: flex; align-items: center; gap: 10px; cursor: pointer; color: var(--md-on-surface); font-size: 0.875rem;">
-                        <input type="checkbox" id="wizard-enable-setup" style="width: 20px; height: 20px; accent-color: var(--brand);">
-                        <span>Enable Auto Design</span>
-                    </label>
-
-                    <div id="wizard-color-picker" style="margin-top: 12px; display: none;">
-                        <p style="font-size: 0.8125rem; margin-bottom: 8px; color: var(--md-on-surface);">Select Theme Color:</p>
-                        <input type="color" id="wizard-color-input" value="#FF6B00" onchange="wizColor = this.value" style="width: 100%; height: 48px; border: none; border-radius: var(--shape-sm); cursor: pointer; background: transparent;">
-                    </div>
-                </div>
-
-                <div style="background: var(--md-error-container); padding: 14px 20px; border-radius: var(--shape-sm); font-size: 0.8125rem; color: var(--md-on-error-container);">
-                    <p style="font-weight: 500; margin-bottom: 4px; font-family: 'Roboto Flex';">Security &amp; EULA</p>
-                    <p>By creating this server, you agree to the Minecraft EULA and our Acceptable Use Policy. Hosting illegal proxy tunnels is strictly prohibited.</p>
-                </div>
-
-                <div class="wizard-footer">
-                    <button class="btn btn-text" onclick="nextWizardStep(2)">Back</button>
-                    <button class="btn btn-filled" onclick="submitWizardServer()">Start Server</button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Server Detail Modal -->
-    <div class="modal" id="modal-server-detail">
-        <div class="modal-content" style="max-width: 800px; width: 90%; max-height: 90vh; overflow-y: auto;">
-            <div class="modal-header">
-                <div>
-                    <h3 id="detail-server-title">Manage Server</h3>
-                    <div id="detail-status-badge" class="status-badge" style="margin-top: 8px;"></div>
-                </div>
-                <button class="icon-btn" onclick="closeModal('modal-server-detail')" aria-label="Close">
-                    <span class="material-symbols-outlined">close</span>
-                </button>
-            </div>
-
-            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 24px;">
-                <div>
-                    <div class="property-label">
-                        <span class="material-symbols-outlined">tune</span>
-                        Controls
-                    </div>
-                    <div class="controls-grid" style="margin-bottom: 24px;">
-                        <button class="btn-outline-card" onclick="sendCommand(currentManageServer.id, 'START')">Start</button>
-                        <button class="btn-outline-card" onclick="sendCommand(currentManageServer.id, 'STOP')">Stop</button>
-                        <button class="btn-outline-card" onclick="sendCommand(currentManageServer.id, 'RESTART')">Restart</button>
-                        <button class="btn-outline-card" onclick="sendCommand(currentManageServer.id, 'HIBERNATE')">Hibernate</button>
-                    </div>
-
-                    <div class="property-label">
-                        <span class="material-symbols-outlined">terminal</span>
-                        Console Command
-                    </div>
-                    <div class="console-input" style="margin-bottom: 24px;">
-                        <input type="text" id="detail-console-input" placeholder="say Hello World">
-                        <button onclick="sendDetailConsole()">Send</button>
-                    </div>
-
-                    <div class="property-label">
-                        <span class="material-symbols-outlined">memory</span>
-                        Hardware
-                    </div>
-                    <div class="input-group">
-                        <label>Allocated RAM (MB)</label>
-                        <input type="number" id="detail-ram">
-                    </div>
-
-                    <div class="property-label danger" style="margin-top: 24px;">
-                        <span class="material-symbols-outlined">warning</span>
-                        Danger Zone
-                    </div>
-                    <div class="controls-grid">
-                        <button class="btn-outline-card danger" onclick="if(confirm('Wipe server? This deletes all files!')) { sendCommand(currentManageServer.id, 'WIPE'); closeModal('modal-server-detail'); }">Wipe Server</button>
-                        <button class="btn-outline-card danger" onclick="if(confirm('Delete server? This cannot be undone!')) { sendCommand(currentManageServer.id, 'DELETE'); closeModal('modal-server-detail'); }">Delete Server</button>
-                    </div>
-                </div>
-
-                <div>
-                    <div class="property-label">
-                        <span class="material-symbols-outlined">settings</span>
-                        Properties
-                    </div>
-                    <div class="input-group">
-                        <label>MOTD</label>
-                        <input type="text" id="detail-motd">
-                    </div>
-
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
-                        <div class="input-group">
-                            <label>Gamemode</label>
-                            <select id="detail-gamemode">
-                                <option value="survival">Survival</option>
-                                <option value="creative">Creative</option>
-                                <option value="adventure">Adventure</option>
-                                <option value="spectator">Spectator</option>
-                            </select>
-                        </div>
-                        <div class="input-group">
-                            <label>Difficulty</label>
-                            <select id="detail-difficulty">
-                                <option value="peaceful">Peaceful</option>
-                                <option value="easy">Easy</option>
-                                <option value="normal">Normal</option>
-                                <option value="hard">Hard</option>
-                            </select>
-                        </div>
-                        <div class="input-group" style="grid-column: span 2;">
-                            <label>Max Players</label>
-                            <input type="number" id="detail-max-players">
-                        </div>
-                    </div>
-
-                    <div style="display: flex; gap: 20px; margin-bottom: 20px; margin-top: 12px; flex-wrap: wrap;">
-                        <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; color: var(--md-on-surface); font-size: 0.875rem;">
-                            <input type="checkbox" id="detail-pvp" style="width: 20px; height: 20px; accent-color: var(--brand);">
-                            <span>Enable PvP</span>
-                        </label>
-                        <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; color: var(--md-on-surface); font-size: 0.875rem;">
-                            <input type="checkbox" id="detail-whitelist" style="width: 20px; height: 20px; accent-color: var(--brand);">
-                            <span>Enable Whitelist</span>
-                        </label>
-                    </div>
-
-                    <button class="btn btn-filled btn-full" onclick="saveServerProperties()" style="margin-bottom: 16px;">Save Settings</button>
-                    <p style="font-size: 0.75rem; color: var(--md-on-surface-variant);">Settings will be applied on the next server start.</p>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Create Server Modal -->
-    <div class="modal" id="modal-create-server">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3>Create Minecraft Server</h3>
-                <button class="icon-btn" onclick="closeModal('modal-create-server')" aria-label="Close">
-                    <span class="material-symbols-outlined">close</span>
-                </button>
-            </div>
-            <div class="input-group">
-                <label>Subdomain (e.g. survival)</label>
-                <input type="text" id="create-srv-name" placeholder="survival">
-            </div>
-            <div class="input-group">
-                <label>Software</label>
-                <select id="create-srv-engine" onchange="updateVersionOptions()">
-                    <option value="PAPER">PaperMC (Recommended)</option>
-                    <option value="PURPUR">Purpur</option>
-                    <option value="FOLIA">Folia</option>
-                    <option value="FABRIC">Fabric</option>
-                    <option value="VANILLA">Vanilla</option>
-                    <option value="VELOCITY">Velocity</option>
-                </select>
-            </div>
-            <div class="input-group">
-                <label>Version</label>
-                <select id="create-srv-version"></select>
-            </div>
-            <div class="input-group">
-                <label>RAM (MB)</label>
-                <input type="number" id="create-srv-ram" value="1500">
-            </div>
-            <button class="btn btn-filled btn-full" onclick="submitCreateServer()">Install via Android App</button>
-            <p style="color: var(--md-on-surface-variant); font-size: 0.75rem; margin-top: 12px; text-align: center;">The server will be created on your connected Android device automatically.</p>
-        </div>
-    </div>
-
-    <!-- Create Database Modal -->
-    <div class="modal" id="modal-create-database">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3>Create Database</h3>
-                <button class="icon-btn" onclick="closeModal('modal-create-database')" aria-label="Close">
-                    <span class="material-symbols-outlined">close</span>
-                </button>
-            </div>
-            <div class="input-group">
-                <label>Database Name</label>
-                <input type="text" id="create-db-name" placeholder="mydatabase">
-            </div>
-            <div class="input-group">
-                <label>Username</label>
-                <input type="text" id="create-db-user" placeholder="root">
-            </div>
-            <div class="input-group">
-                <label>Password</label>
-                <input type="password" id="create-db-pass" placeholder="password">
-            </div>
-            <button class="btn btn-filled btn-full" onclick="submitCreateDatabase()">Create Database</button>
-            <p style="color: var(--md-on-surface-variant); font-size: 0.75rem; margin-top: 12px; text-align: center;">MariaDB will be provisioned on your Android device.</p>
-        </div>
-    </div>
-
     <script>
         const SUPABASE_URL = 'https://scsezpfrrmpyuapblbxk.supabase.co';
         const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNjc2V6cGZycm1weXVhcGJsYnhrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY5NDE4MjYsImV4cCI6MjA5MjUxNzgyNn0.rHro6kQpXHAnxEaFxozYzsKY8IHIUlot-7-Q4LNbZT8';
         const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-        const dbClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY, {
-            auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false }
-        });
 
         let currentUser = null;
-        let serversChannel = null;
+        let refreshTimer = null;
 
         async function checkSession() {
             const { data: { session } } = await supabaseClient.auth.getSession();
@@ -1603,7 +1351,7 @@
                 currentUser = session.user;
                 document.getElementById('login-view').style.display = 'none';
                 fetchServers();
-                setupRealtime();
+                startPolling();
                 loadLegalTexts();
             } else {
                 document.getElementById('login-view').style.display = 'flex';
@@ -1614,13 +1362,30 @@
                     currentUser = session.user;
                     document.getElementById('login-view').style.display = 'none';
                     fetchServers();
-                    setupRealtime();
+                    startPolling();
                     loadLegalTexts();
                 } else {
                     currentUser = null;
+                    stopPolling();
                     document.getElementById('login-view').style.display = 'flex';
                 }
             });
+        }
+
+        /**
+         * Row level security allows no realtime subscription for a logged-in user,
+         * so the dashboard refreshes itself on a plain interval instead.
+         */
+        function startPolling() {
+            stopPolling();
+            refreshTimer = setInterval(() => {
+                if (document.visibilityState === 'visible') fetchServers();
+            }, 30000);
+        }
+
+        function stopPolling() {
+            if (refreshTimer) clearInterval(refreshTimer);
+            refreshTimer = null;
         }
 
         let currentAppState = 'OFFLINE';
@@ -1632,9 +1397,14 @@
 
         function switchTab(tabId) {
             document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
-            document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.nav-item').forEach(el => {
+                // The active marker follows the nav entry that switches to this tab.
+                // (No dependency on the global "event" - switchTab also works when
+                // called from code, e.g. after a reload or from a deep link.)
+                const handler = el.getAttribute('onclick') || '';
+                el.classList.toggle('active', handler.includes("'" + tabId + "'"));
+            });
             document.getElementById('tab-' + tabId).classList.add('active');
-            event.target.classList.add('active');
             if (window.innerWidth <= 768) toggleSidebar();
         }
 
@@ -1659,78 +1429,42 @@
 
         async function logout() { await supabaseClient.auth.signOut(); }
 
+        /**
+         * Reads the account's servers through the rpc_get_servers_for_auth() function.
+         * Direct table reads are blocked by row level security - the function checks the
+         * JWT and returns only the servers that belong to the signed-in account family.
+         */
         async function fetchServers() {
             if (!currentUser) return;
 
-            const { data: userRowsAnon, error: errAnon } = await dbClient.from('koda_users').select('*').eq('auth_id', currentUser.id);
-            const { data: userRowsAuth, error: errAuth } = await supabaseClient.from('koda_users').select('*').eq('auth_id', currentUser.id);
+            const { data, error } = await supabaseClient.rpc('rpc_get_servers_for_auth');
 
-            console.log("koda_users (anon) got:", userRowsAnon, "error:", errAnon);
-            console.log("koda_users (auth) got:", userRowsAuth, "error:", errAuth);
-
-            let userRows = userRowsAuth && userRowsAuth.length > 0 ? userRowsAuth : userRowsAnon;
-
-            let appUuids = [currentUser.id];
-            let activeUserData = null;
-
-            if (userRows && userRows.length > 0) {
-                userRows.forEach(u => {
-                    if (u.app_uuid) appUuids.push(u.app_uuid);
-                });
-                activeUserData = userRows.find(u => u.app_state) || userRows[0];
-            }
-
-            if (activeUserData) {
-                updateAppStatusBadge(activeUserData.app_state, activeUserData.app_last_ping);
-            }
-
-            appUuids = [...new Set(appUuids)];
-            const orFilter = appUuids.map(id => `owner_app_uuid.eq.${id}`).join(',');
-
-            const { data: serversAnon, error: errServersAnon } = await dbClient
-                .from('koda_servers')
-                .select('*')
-                .or(orFilter)
-                .not('host', 'like', 'deleted_%')
-                .order('created_at', { ascending: false });
-
-            const { data: serversAuth, error: errServersAuth } = await supabaseClient
-                .from('koda_servers')
-                .select('*')
-                .or(orFilter)
-                .not('host', 'like', 'deleted_%')
-                .order('created_at', { ascending: false });
-
-            console.log("fetchServers (anon) got:", serversAnon, "error:", errServersAnon);
-            console.log("fetchServers (auth) got:", serversAuth, "error:", errServersAuth);
-
-            const servers = serversAuth && serversAuth.length > 0 ? serversAuth : serversAnon;
-
-            if (!servers) {
-                console.warn("fetchServers: no servers returned");
+            if (error) {
+                console.error("fetchServers failed:", error);
+                renderError(error.message);
                 return;
             }
 
-            const mcServers = servers.filter(s => s.server_version !== 'CMD:INSTALL_DB');
-            const dbServers = servers.filter(s => s.server_version === 'CMD:INSTALL_DB' || s.host.startsWith('db_'));
+            const servers = data || [];
+            const appRow = servers.find(s => s.app_state) || servers[0];
+            if (appRow) updateAppStatusBadge(appRow.app_state, appRow.app_last_ping);
 
-            renderItems(mcServers, 'servers-container', true);
-            renderItems(dbServers, 'databases-container', false);
+            const rootServers = servers.filter(s => !isDatabase(s));
+            const dbServers = servers.filter(s => isDatabase(s));
+
+            renderItems(rootServers, 'servers-container');
+            renderItems(dbServers, 'databases-container');
         }
 
-        async function setupRealtime() {
-            if (serversChannel) dbClient.removeChannel(serversChannel);
+        function isDatabase(server) {
+            return server.host.startsWith('db_') || (server.server_version || '') === 'CMD:INSTALL_DB';
+        }
 
-            serversChannel = dbClient.channel('custom-all-channel')
-                .on('postgres_changes', { event: '*', schema: 'public', table: 'koda_servers' }, () => {
-                    fetchServers();
-                })
-                .on('postgres_changes', { event: '*', schema: 'public', table: 'koda_users' }, (payload) => {
-                    if (payload.new && currentUser && payload.new.auth_id === currentUser.id) {
-                        updateAppStatusBadge(payload.new.app_state, payload.new.app_last_ping);
-                    }
-                })
-                .subscribe();
+        function openKodaDash(server) {
+            const baseDomain = server.base_domain || 'kodanetwork.eu';
+            let url = `http://${server.host}.${baseDomain}:${server.kodadash_port}`;
+            if (server.kodadash_token) url += `?token=${encodeURIComponent(server.kodadash_token)}`;
+            window.open(url, '_blank', 'noopener');
         }
 
         function updateAppStatusBadge(state, lastPingStr) {
@@ -1749,9 +1483,6 @@
             currentAppState = state;
 
             badge.textContent = state;
-            const btnServer = document.getElementById('btn-new-server');
-            const btnDb = document.getElementById('btn-new-db');
-
             indicator.classList.remove('online', 'warn', 'offline');
 
             if (state === 'FOREGROUND') {
@@ -1768,13 +1499,6 @@
                 indicator.classList.add('offline');
             }
 
-            if (state !== 'OFFLINE') {
-                if(btnServer) { btnServer.disabled = false; btnServer.style.opacity = '1'; btnServer.style.cursor = 'pointer'; }
-                if(btnDb) { btnDb.disabled = false; btnDb.style.opacity = '1'; btnDb.style.cursor = 'pointer'; }
-            } else {
-                if(btnServer) { btnServer.disabled = true; btnServer.style.opacity = '0.4'; btnServer.style.cursor = 'not-allowed'; }
-                if(btnDb) { btnDb.disabled = true; btnDb.style.opacity = '0.4'; btnDb.style.cursor = 'not-allowed'; }
-            }
         }
 
         function formatLegalText(raw) {
@@ -1895,7 +1619,7 @@ ${content.replace(/</g, '&lt;').replace(/>/g, '&gt;')}
             return { label: 'Active', class: 'status-online' };
         }
 
-        function renderItems(items, containerId, isMinecraft) {
+        function renderItems(items, containerId) {
             const container = document.getElementById(containerId);
             container.innerHTML = '';
             if (!items || items.length === 0) {
@@ -1904,357 +1628,60 @@ ${content.replace(/</g, '&lt;').replace(/>/g, '&gt;')}
             }
             items.forEach(item => {
                 const status = getStatusDetails(item.server_version);
-                const title = item.host;
-                const isMinecraft = item.server_version && !item.server_version.includes('MariaDB') && !item.server_version.includes('Redis') && !item.server_version.includes('MongoDB') && !item.server_version.includes('PostgreSQL');
+                const database = isDatabase(item);
+                const version = item.server_version && !item.server_version.startsWith('CMD:')
+                    ? item.server_version : 'Unknown';
+                const players = (item.online_players || 0) + ' / ' + (item.max_players || 0);
 
-                let manageButtonHtml = `<button class="btn-outline-card" onclick="window.location.href='manage.html?id=${item.id}'">Manage Server</button>`;
-                if (item.kodadash_port && item.kodadash_port > 0) {
-                    let baseDomain = item.base_domain ? item.base_domain : 'kodanetwork.eu';
-                    let dashHost = `${item.host}.${baseDomain}`;
-                    let url = `http://${dashHost}:${item.kodadash_port}`;
-                    if (item.kodadash_token) {
-                        url += `?token=${encodeURIComponent(item.kodadash_token)}`;
-                    }
-                    manageButtonHtml = `<button class="btn-outline-card primary-action" onclick="window.open('${url}', '_blank')">Open KodaDash</button>`;
-                }
-
-                const controls = isMinecraft ? `
-                    <div class="controls-grid" style="grid-template-columns: 1fr;">
-                        ${manageButtonHtml}
-                    </div>
-                ` : `
-                    <div class="controls-grid">
-                        <button class="btn-outline-card" onclick="sendCommand('${item.id}', 'START')">Start Database</button>
-                        <button class="btn-outline-card" onclick="sendCommand('${item.id}', 'STOP')">Stop Database</button>
-                    </div>
-                `;
-
-                container.innerHTML += `
-                    <div class="item-card">
-                        <div class="item-header">
-                            <div class="item-title">${title}</div>
-                            <div class="status-badge ${status.class}">${status.label}</div>
-                        </div>
-                        <div class="item-details">
-                            <span><span class="material-symbols-outlined">tag</span>Version: ${item.server_version && !item.server_version.startsWith('CMD:') ? item.server_version : 'Unknown'}</span>
-                            <span><span class="material-symbols-outlined">memory</span>RAM: ${item.ram_mb || 0} MB</span>
-                        </div>
-                        ${controls}
-                    </div>
-                `;
-            });
-        }
-
-        async function sendCommand(id, cmd) {
-            await supabaseClient.from('koda_servers').update({ server_version: `CMD:${cmd}` }).eq('id', id);
-        }
-        async function sendConsoleCommand(id) {
-            const input = document.getElementById(`cmd-${id}`);
-            if (!input.value.trim()) return;
-            await sendCommand(id, `EXEC_${input.value.trim()}`);
-            input.value = '';
-        }
-
-        let currentManageServer = null;
-
-        function openServerDetail(server) {
-            currentManageServer = server;
-            document.getElementById('detail-server-title').textContent = server.host;
-
-            const status = getStatusDetails(server.server_version);
-            const badge = document.getElementById('detail-status-badge');
-            badge.className = 'status-badge ' + status.class;
-            badge.textContent = status.label;
-
-            document.getElementById('detail-ram').value = server.ram_mb || 2048;
-            document.getElementById('detail-motd').value = server.motd || '';
-            document.getElementById('detail-gamemode').value = server.gamemode || 'survival';
-            document.getElementById('detail-difficulty').value = server.difficulty || 'normal';
-            document.getElementById('detail-max-players').value = server.max_players || 20;
-            document.getElementById('detail-pvp').checked = server.pvp !== false;
-            document.getElementById('detail-whitelist').checked = server.whitelist === true;
-
-            openModal('modal-server-detail');
-        }
-
-        async function saveServerProperties() {
-            if (!currentManageServer) return;
-            const id = currentManageServer.id;
-
-            const ram = document.getElementById('detail-ram').value;
-            const motd = document.getElementById('detail-motd').value;
-            const gm = document.getElementById('detail-gamemode').value;
-            const diff = document.getElementById('detail-difficulty').value;
-            const maxP = document.getElementById('detail-max-players').value;
-            const pvp = document.getElementById('detail-pvp').checked;
-            const wl = document.getElementById('detail-whitelist').checked;
-
-            await sendCommand(id, `SETPROP_ram_${ram}`);
-            await new Promise(r => setTimeout(r, 200));
-            await sendCommand(id, `SETPROP_motd_${btoa(motd)}`);
-            await new Promise(r => setTimeout(r, 200));
-            await sendCommand(id, `SETPROP_gamemode_${gm}`);
-            await new Promise(r => setTimeout(r, 200));
-            await sendCommand(id, `SETPROP_difficulty_${diff}`);
-            await new Promise(r => setTimeout(r, 200));
-            await sendCommand(id, `SETPROP_maxPlayers_${maxP}`);
-            await new Promise(r => setTimeout(r, 200));
-            await sendCommand(id, `SETPROP_pvp_${pvp}`);
-            await new Promise(r => setTimeout(r, 200));
-            await sendCommand(id, `SETPROP_whitelist_${wl}`);
-
-            alert('Settings queued to be applied to server!');
-        }
-
-        async function sendDetailConsole() {
-            const input = document.getElementById('detail-console-input');
-            if (!input.value.trim() || !currentManageServer) return;
-            await sendCommand(currentManageServer.id, `EXEC_${input.value.trim()}`);
-            input.value = '';
-        }
-
-        const VERSIONS = {
-            "FABRIC": ["1.21.4","1.21.3","1.21.1","1.20.6","1.20.4","1.20.1","1.19.4"],
-            "VANILLA": ["1.21.4","1.21.3","1.21.1","1.20.6","1.20.4","1.20.1","1.19.4","1.18.2","1.17.1","1.16.5"],
-            "VELOCITY": ["3.4.0","3.3.0","3.2.0","3.1.2","3.1.1","3.1.0"],
-            "PAPER": ["1.21.4","1.21.3","1.21.1","1.20.6","1.20.4","1.20.1","1.19.4"],
-            "PURPUR": ["1.21.4","1.21.1","1.20.6","1.20.4","1.20.1"],
-            "FOLIA": ["1.21.4","1.21.1","1.20.6","1.20.4"]
-        };
-
-        function updateVersionOptions() {
-            const engine = document.getElementById('create-srv-engine').value;
-            const verSelect = document.getElementById('create-srv-version');
-            verSelect.innerHTML = '';
-            const list = VERSIONS[engine] || ["1.21.4"];
-            list.forEach(v => {
-                const opt = document.createElement('option');
-                opt.value = v;
-                opt.textContent = v;
-                verSelect.appendChild(opt);
-            });
-        }
-
-        window.addEventListener('DOMContentLoaded', updateVersionOptions);
-
-        let wizEngine = 'PAPER';
-        let wizColor = '#FF6B00';
-        const RAM_STEPS = [512, 1024, 2048, 3072, 4096, 6144, 8192];
-
-        function updateWizardProgress(step) {
-            for (let i = 1; i <= 3; i++) {
-                const dot = document.getElementById('wiz-dot-' + i);
-                if (!dot) continue;
-                dot.classList.remove('active', 'done');
-                if (i < step) dot.classList.add('done');
-                else if (i === step) dot.classList.add('active');
-            }
-        }
-
-        function openModalIfOnline(id) {
-            if (currentAppState === 'OFFLINE') {
-                alert("Please open the KodaHosting App on your Android device first and wait for it to connect.");
-                return;
-            }
-            if (id === 'modal-create-server') {
-                document.getElementById('wizard-create-server').classList.add('active');
-                selectWizardEngine('PAPER', document.querySelector('.software-card'));
-                updateWizardProgress(1);
-            } else {
-                openModal(id);
-            }
-        }
-
-        function closeWizard() {
-            document.getElementById('wizard-create-server').classList.remove('active');
-            nextWizardStep(1);
-        }
-
-        function nextWizardStep(step) {
-            document.querySelectorAll('.wizard-step').forEach(el => el.classList.remove('active'));
-            document.getElementById('wizard-step-' + step).classList.add('active');
-            updateWizardProgress(step);
-
-            if (step === 3) {
-                const setupBox = document.getElementById('wizard-setup-box');
-                if (['PAPER', 'PURPUR', 'FOLIA'].includes(wizEngine)) {
-                    setupBox.style.display = 'block';
+                let controls;
+                let dashHint = '';
+                if (database) {
+                    dashHint = '<div class="item-hint"><span class="material-symbols-outlined">info</span>Databases are managed in the KodaHosting app.</div>';
+                    controls = '';
+                } else if (item.kodadash_port && item.kodadash_port > 0) {
+                    controls = `<div class="controls-grid" style="grid-template-columns: 1fr;">
+                        <button class="btn-outline-card primary-action" data-dash="${escapeAttr(item.id)}">Open KodaDash</button>
+                    </div>`;
                 } else {
-                    setupBox.style.display = 'none';
-                    document.getElementById('wizard-enable-setup').checked = false;
-                    document.getElementById('wizard-color-picker').style.display = 'none';
+                    dashHint = '<div class="item-hint warn"><span class="material-symbols-outlined">warning</span>KodaDash is not enabled for this server. Turn it on in the app under Server &rarr; KodaDash to control it from the browser.</div>';
+                    controls = '';
                 }
-            }
-        }
 
-        async function fetchVersions(engine) {
-            try {
-                let res, json;
-                switch (engine) {
-                    case 'PAPER':
-                    case 'FOLIA':
-                    case 'VELOCITY':
-                        res = await fetch('https://api.papermc.io/v2/projects/' + engine.toLowerCase());
-                        json = await res.json();
-                        return json.versions.reverse().slice(0, 50);
-                    case 'PURPUR':
-                        res = await fetch('https://api.purpurmc.org/v2/purpur');
-                        json = await res.json();
-                        return json.versions.reverse().slice(0, 50);
-                    case 'FABRIC':
-                        res = await fetch('https://meta.fabricmc.net/v2/versions/game');
-                        json = await res.json();
-                        return json.filter(v => v.stable).map(v => v.version).slice(0, 50);
-                    default:
-                        return ["1.21.4", "1.21.3", "1.20.4", "1.20.1", "1.19.4", "1.12.2", "1.8.8"];
+                const card = document.createElement('div');
+                card.className = 'item-card';
+                card.innerHTML = `
+                    <div class="item-header">
+                        <div class="item-title">${escapeHtml(item.host)}</div>
+                        <div class="status-badge ${status.class}">${status.label}</div>
+                    </div>
+                    <div class="item-details">
+                        <span><span class="material-symbols-outlined">tag</span>Version: ${escapeHtml(version)}</span>
+                        <span><span class="material-symbols-outlined">memory</span>RAM: ${item.ram_mb || 0} MB</span>
+                        ${database ? '' : `<span><span class="material-symbols-outlined">group</span>Players: ${escapeHtml(players)}</span>`}
+                    </div>
+                    ${dashHint}
+                    ${controls}
+                `;
+                if (item.kodadash_port && item.kodadash_port > 0 && !database) {
+                    card.querySelector('[data-dash]').addEventListener('click', () => openKodaDash(item));
                 }
-            } catch (e) {
-                console.error("Failed fetching versions for", engine, e);
-                return VERSIONS[engine] || ["1.21.4"];
-            }
-        }
-
-        async function selectWizardEngine(engine, el) {
-            wizEngine = engine;
-            document.querySelectorAll('.software-card').forEach(c => c.classList.remove('active'));
-            el.classList.add('active');
-
-            const verSelect = document.getElementById('wizard-version');
-            verSelect.innerHTML = '<option>Loading...</option>';
-            verSelect.disabled = true;
-
-            const list = await fetchVersions(engine);
-
-            verSelect.innerHTML = '';
-            list.forEach(v => {
-                const opt = document.createElement('option');
-                opt.value = v;
-                opt.textContent = v;
-                verSelect.appendChild(opt);
+                container.appendChild(card);
             });
-            verSelect.disabled = false;
         }
 
-        function updateWizardRam() {
-            const slider = document.getElementById('wizard-ram-slider');
-            const idx = slider.value;
-            let ram = RAM_STEPS[idx];
-
-            if (currentAvailableRam > 0) {
-                const maxSafeRam = currentAvailableRam - 1024;
-                if (maxSafeRam >= RAM_STEPS[0] && ram > maxSafeRam) {
-                    ram = maxSafeRam;
-                    let validIdx = 0;
-                    for (let i=0; i<RAM_STEPS.length; i++) {
-                        if (RAM_STEPS[i] <= maxSafeRam) validIdx = i;
-                    }
-                    slider.value = validIdx;
-                    ram = RAM_STEPS[validIdx];
-                } else if (maxSafeRam < RAM_STEPS[0]) {
-                    if (ram > 512) {
-                        slider.value = 0;
-                        ram = 512;
-                    }
-                }
-            }
-
-            document.getElementById('wizard-ram-label').textContent = ram + " MB";
+        function escapeHtml(value) {
+            return String(value == null ? '' : value)
+                .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
         }
 
-        function validateWizardName() {
-            const name = document.getElementById('wizard-name').value;
-            const regex = /^[a-z0-9-]+$/;
-            const err = document.getElementById('wizard-name-error');
-            const btn = document.getElementById('btn-wiz-next-2');
-
-            if (name.length > 0 && !regex.test(name)) {
-                err.style.display = 'block';
-                btn.disabled = true;
-                btn.style.opacity = '0.5';
-            } else {
-                err.style.display = 'none';
-                btn.disabled = false;
-                btn.style.opacity = '1';
-            }
+        function escapeAttr(value) {
+            return escapeHtml(value);
         }
 
-        function selectWizardColor(hex, el) {
-            wizColor = hex;
-            document.querySelectorAll('.color-dot').forEach(d => d.classList.remove('active'));
-            el.classList.add('active');
-        }
-
-        document.getElementById('wizard-enable-setup').addEventListener('change', (e) => {
-            document.getElementById('wizard-color-picker').style.display = e.target.checked ? 'block' : 'none';
-        });
-
-        async function submitWizardServer() {
-            const name = document.getElementById('wizard-name').value || 'server';
-            const version = document.getElementById('wizard-version').value;
-            const ramIdx = document.getElementById('wizard-ram-slider').value;
-            const ram = RAM_STEPS[ramIdx];
-            const useSetup = document.getElementById('wizard-enable-setup').checked;
-
-            const { data: existing } = await supabaseClient.from('koda_servers').select('id').eq('host', name);
-            if (existing && existing.length > 0) {
-                alert("Error: A server with this name already exists!");
-                return;
-            }
-
-            let cmd = "CMD:INSTALL_" + wizEngine + "_" + version;
-            if (useSetup) {
-                cmd += "_SETUP_" + wizColor.replace('#', '');
-            }
-
-            const { data: userData } = await supabaseClient.from('koda_users').select('app_uuid').eq('auth_id', currentUser.id).single();
-            const uuid = (userData && userData.app_uuid) ? userData.app_uuid : currentUser.id;
-
-            await supabaseClient.from('koda_servers').insert([{
-                owner_app_uuid: uuid,
-                host: name,
-                ram_mb: ram,
-                server_version: cmd,
-                is_banned: false
-            }]);
-
-            closeWizard();
-            fetchServers();
-        }
-
-        async function submitCreateServer() {
-            const name = document.getElementById('create-srv-name').value;
-            const engine = document.getElementById('create-srv-engine').value;
-            const version = document.getElementById('create-srv-version').value;
-            const ram = parseInt(document.getElementById('create-srv-ram').value);
-
-            const { data: userData } = await supabaseClient.from('koda_users').select('app_uuid').eq('auth_id', currentUser.id).single();
-            const uuid = (userData && userData.app_uuid) ? userData.app_uuid : currentUser.id;
-
-            await supabaseClient.from('koda_servers').insert([{
-                owner_app_uuid: uuid,
-                host: name,
-                ram_mb: ram,
-                server_version: `CMD:INSTALL_${engine}_${version}`,
-                is_banned: false
-            }]);
-            closeModal('modal-create-server');
-            fetchServers();
-        }
-
-        async function submitCreateDatabase() {
-            const name = document.getElementById('create-db-name').value;
-            const { data: userData } = await supabaseClient.from('koda_users').select('app_uuid').eq('auth_id', currentUser.id).single();
-            const uuid = (userData && userData.app_uuid) ? userData.app_uuid : currentUser.id;
-
-            await supabaseClient.from('koda_servers').insert([{
-                owner_app_uuid: uuid,
-                host: `db_${name}`,
-                ram_mb: 512,
-                server_version: `CMD:INSTALL_DB`,
-                is_banned: false
-            }]);
-            closeModal('modal-create-database');
-            fetchServers();
+        function renderError(message) {
+            const container = document.getElementById('servers-container');
+            container.innerHTML = `<p style="color: var(--md-error); grid-column: 1 / -1; text-align: center; padding: 40px; font-size: 0.875rem;">Could not load your servers: ${escapeHtml(message)}</p>`;
         }
 
         checkSession();
