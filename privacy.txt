@@ -1,6 +1,6 @@
 Privacy Policy
 
-Last Updated: August 2026
+Last Updated: September 2026
 
 1. Introduction & Data Controller
 
@@ -31,6 +31,10 @@ KodaHosting processes certain data to function correctly:
 
 - AI Server Builder: If you use the AI Server Builder, your text prompts are sent to the Google Gemini API for processing to generate server configurations. Do not submit sensitive personal information in these prompts. Data transferred outside the European Economic Area (EEA) to Google LLC is safeguarded under the EU-U.S. Data Privacy Framework (DPF) and Standard Contractual Clauses. We do not store your prompts or the generated configurations on our servers.
 
+- AI Crash Analysis ("Ask AI", opt-in): If you explicitly consent and tap "Ask AI" after a crash, the last portion of your app log (up to approximately 1,000 lines), basic device information (model, RAM, Android version), and the affected server's configuration are transmitted to OpenRouter, a U.S.-based AI gateway, for analysis. OpenRouter routes the request through third-party AI models, which may include models by NVIDIA (Nemotron), MiniMax, Dots Studio, inclusionAI (Ling), and Google (Gemma). The feature is limited to 10 requests per day, requires explicit consent before every first use, and can be revoked at any time in the app settings. Do not use this feature if your logs may contain sensitive personal information. Transfers to the U.S. are safeguarded under the EU-U.S. Data Privacy Framework (DPF) and Standard Contractual Clauses where applicable to the respective model provider.
+
+- Support Tickets: If you contact us through the in-app support ticket system or request a password reset or verification code, we process your email address and your message, including diagnostic information attached to the ticket (device model, app version, memory, network type, and the names and status of your hosted servers). Emails are delivered via Resend, a third-party email delivery service.
+
 - Voluntary Donations: If you choose to support development via Ko-fi, you will be redirected to ko-fi.com, which processes the donation independently. Ko-fi may collect your name, email, and payment information. We do not process or store your payment data. Ko-fi's privacy policy applies to donations. Donations are voluntary gifts and do not create a customer relationship with us.
 
 3. Legal Basis for Processing (Art. 6 GDPR)
@@ -47,8 +51,10 @@ You may withdraw consent at any time without affecting the lawfulness of process
 
 The App utilizes certain third-party services that may collect information used to identify you or provide core functionalities:
 
-- Google Play Services: For app distribution, crash reporting, and standard analytics.
+- Google Play Services: For app distribution and in-app updates. Crash and diagnostic data may be processed by Google via Google Play's standard developer diagnostics (Android Vitals). We do not integrate any additional analytics, advertising, or tracking SDKs.
 - Supabase: For authentication and real-time database functionality (server management state). Supabase stores your email address and authentication token in encrypted form.
+- OpenRouter: For the optional, consent-based AI crash analysis described in Section 2. OpenRouter is the processor that forwards requests to third-party AI model providers (see Section 2 for the list of possible providers).
+- Resend: For delivering transactional emails (verification codes, password resets, support correspondence) to your email address.
 - Modrinth API / Spigot: To search and download server plugins directly within the app.
 - GitHub Releases: Used to download essential server binaries like Java and secure tunnel clients.
 - Bore / FRP (Fast Reverse Proxy): Used exclusively to create the secure network tunnels between your device and our VPS infrastructure.
@@ -94,7 +100,7 @@ If we become aware that we have collected personal data from a child under 16 wi
 
 Your personal data may be transferred to and processed in countries outside the European Economic Area (EEA), in particular:
 
-- United States: For services like Supabase, Google, GitHub, and Ko-fi.
+- United States: For services like Supabase, OpenRouter (AI crash analysis), Google, GitHub, and Ko-fi.
 - Other countries: As required by the third-party services listed in Section 4.
 
 Such transfers are made only to recipients that provide an adequate level of protection as required by the GDPR, through Standard Contractual Clauses (SCCs), the EU-U.S. Data Privacy Framework (DPF), or other lawful transfer mechanisms.

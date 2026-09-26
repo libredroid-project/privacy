@@ -1,0 +1,257 @@
+[
+  {
+    "file": "androidx.txt",
+    "title": "AndroidX (Android Jetpack)",
+    "type": "txt"
+  },
+  {
+    "file": "blurview.txt",
+    "title": "BlurView",
+    "type": "txt"
+  },
+  {
+    "file": "changa_one.txt",
+    "title": "Changa One (Font)",
+    "type": "txt"
+  },
+  {
+    "file": "commercial_license.pdf",
+    "title": "Commercial License (PDF)",
+    "type": "pdf"
+  },
+  {
+    "file": "commercial_license_info.pdf",
+    "title": "Commercial License Information (PDF)",
+    "type": "pdf"
+  },
+  {
+    "file": "commons_compress.txt",
+    "title": "Apache Commons Compress",
+    "type": "txt"
+  },
+  {
+    "file": "coroutines.txt",
+    "title": "Kotlin Coroutines",
+    "type": "txt"
+  },
+  {
+    "file": "fabric_loader.txt",
+    "title": "Fabric Loader",
+    "type": "txt"
+  },
+  {
+    "file": "floodgate.txt",
+    "title": "Floodgate",
+    "type": "txt"
+  },
+  {
+    "file": "forge.txt",
+    "title": "Minecraft Forge",
+    "type": "txt"
+  },
+  {
+    "file": "frp.txt",
+    "title": "Fast Reverse Proxy (FRP)",
+    "type": "txt"
+  },
+  {
+    "file": "gemma_ai.txt",
+    "title": "AI Crash Analysis (Gemma via OpenRouter)",
+    "type": "txt"
+  },
+  {
+    "file": "geyser.txt",
+    "title": "Geyser",
+    "type": "txt"
+  },
+  {
+    "file": "glide.txt",
+    "title": "Glide",
+    "type": "txt"
+  },
+  {
+    "file": "golos_text.txt",
+    "title": "Golos Text (Font)",
+    "type": "txt"
+  },
+  {
+    "file": "gpl_v3.txt",
+    "title": "GNU General Public License v3",
+    "type": "txt"
+  },
+  {
+    "file": "gson.txt",
+    "title": "Gson",
+    "type": "txt"
+  },
+  {
+    "file": "jetbrains_mono.txt",
+    "title": "JetBrains Mono (Font)",
+    "type": "txt"
+  },
+  {
+    "file": "kotlin.txt",
+    "title": "Kotlin",
+    "type": "txt"
+  },
+  {
+    "file": "llvm_libcxx.txt",
+    "title": "LLVM libc++",
+    "type": "txt"
+  },
+  {
+    "file": "lopl_preview.pdf",
+    "title": "Libre Open Project License v1.0 PREVIEW (PDF)",
+    "type": "pdf"
+  },
+  {
+    "file": "lottie.txt",
+    "title": "Lottie",
+    "type": "txt"
+  },
+  {
+    "file": "luckperms.txt",
+    "title": "LuckPerms",
+    "type": "txt"
+  },
+  {
+    "file": "mariadb.txt",
+    "title": "MariaDB Database",
+    "type": "txt"
+  },
+  {
+    "file": "mojang_eula.txt",
+    "title": "Minecraft EULA",
+    "type": "txt"
+  },
+  {
+    "file": "ncurses.txt",
+    "title": "ncurses",
+    "type": "txt"
+  },
+  {
+    "file": "noto_sans.txt",
+    "title": "Noto Sans (Font)",
+    "type": "txt"
+  },
+  {
+    "file": "okhttp.txt",
+    "title": "OkHttp",
+    "type": "txt"
+  },
+  {
+    "file": "okio.txt",
+    "title": "Okio",
+    "type": "txt"
+  },
+  {
+    "file": "openjdk.txt",
+    "title": "OpenJDK (Java Runtime)",
+    "type": "txt"
+  },
+  {
+    "file": "openssl.txt",
+    "title": "OpenSSL",
+    "type": "txt"
+  },
+  {
+    "file": "orgjson.txt",
+    "title": "org.json",
+    "type": "txt"
+  },
+  {
+    "file": "papermc.txt",
+    "title": "PaperMC",
+    "type": "txt"
+  },
+  {
+    "file": "pcre2.txt",
+    "title": "PCRE2",
+    "type": "txt"
+  },
+  {
+    "file": "placeholderapi.txt",
+    "title": "PlaceholderAPI",
+    "type": "txt"
+  },
+  {
+    "file": "play_services.txt",
+    "title": "Google Play Services",
+    "type": "txt"
+  },
+  {
+    "file": "pojav.txt",
+    "title": "PojavLauncher",
+    "type": "txt"
+  },
+  {
+    "file": "press_start_2p.txt",
+    "title": "Press Start 2P (Font)",
+    "type": "txt"
+  },
+  {
+    "file": "proot.txt",
+    "title": "PRoot",
+    "type": "txt"
+  },
+  {
+    "file": "protocollib.txt",
+    "title": "ProtocolLib",
+    "type": "txt"
+  },
+  {
+    "file": "pumpkin.txt",
+    "title": "Pumpkin",
+    "type": "txt"
+  },
+  {
+    "file": "purpur.txt",
+    "title": "Purpur",
+    "type": "txt"
+  },
+  {
+    "file": "redis.txt",
+    "title": "Redis In-Memory Data Store",
+    "type": "txt"
+  },
+  {
+    "file": "retrofit.txt",
+    "title": "Retrofit",
+    "type": "txt"
+  },
+  {
+    "file": "rootbeer.txt",
+    "title": "RootBeer",
+    "type": "txt"
+  },
+  {
+    "file": "space_grotesk.txt",
+    "title": "Space Grotesk (Font)",
+    "type": "txt"
+  },
+  {
+    "file": "tab.txt",
+    "title": "TAB (Tab Forge)",
+    "type": "txt"
+  },
+  {
+    "file": "termux.txt",
+    "title": "Termux",
+    "type": "txt"
+  },
+  {
+    "file": "voicechat.txt",
+    "title": "Simple Voice Chat",
+    "type": "txt"
+  },
+  {
+    "file": "xz_java.txt",
+    "title": "XZ for Java",
+    "type": "txt"
+  },
+  {
+    "file": "zlib.txt",
+    "title": "zlib",
+    "type": "txt"
+  }
+]

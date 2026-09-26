@@ -1,5 +1,5 @@
 Terms of Service
-Last Updated: August 2026
+Last Updated: September 2026
 
 By downloading, installing, or using the KodaHosting mobile application, the Web Dashboard, and related services, you agree to comply with and be bound by these Terms of Service. If you do not agree to these Terms, you must uninstall the app and cease using our services immediately.
 
@@ -25,7 +25,7 @@ Strict Prohibitions
 
 The following actions are strictly prohibited and will result in an immediate, permanent ban from KodaHosting services without warning:
 
-- Reverse Engineering: You may not decompile, reverse engineer, decrypt, or otherwise attempt to extract the source code of the KodaHosting App, our official plugins, or our proprietary networking binaries.
+- Reverse Engineering: You may not decompile, reverse engineer, decrypt, or otherwise attempt to extract the source code of proprietary components of the KodaHosting App, our official plugins, or our networking binaries. This prohibition does not restrict the rights granted to you by the free and open-source licenses that apply to open-source components distributed with or used by the app (including the GNU General Public License); for those components, the terms of their respective licenses apply.
 
 - Unauthorized Tunnels: You may not use the KodaHosting network infrastructure to host unauthorized tunnels, VPNs, proxies, or any traffic that is not standard Minecraft gameplay data.
 

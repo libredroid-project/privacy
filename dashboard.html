@@ -635,6 +635,46 @@
         .status-offline { background: var(--md-error-container); color: var(--md-error); }
         .status-pending { background: var(--brand-container); color: var(--brand); }
 
+        .license-text {
+            white-space: pre-wrap;
+            word-break: break-word;
+            font-family: 'JetBrains Mono', ui-monospace, monospace;
+            font-size: 0.75rem;
+            line-height: 1.5;
+            color: var(--md-on-surface-variant);
+            max-height: 320px;
+            overflow-y: auto;
+            margin: 0;
+        }
+        .lang-switch {
+            display: inline-flex;
+            gap: 4px;
+            padding: 4px;
+            background: var(--md-surface-container-high, #2A221C);
+            border-radius: 999px;
+        }
+        .lang-switch button {
+            font: inherit;
+            font-size: 0.8125rem;
+            font-weight: 500;
+            color: var(--md-on-surface-variant);
+            background: transparent;
+            border: 0;
+            border-radius: 999px;
+            padding: 8px 18px;
+            cursor: pointer;
+            transition: background 0.2s var(--ease-standard, ease), color 0.2s var(--ease-standard, ease);
+        }
+        .lang-switch button:hover { color: var(--md-on-surface); }
+        .lang-switch button.active { background: var(--brand); color: #fff; }
+        .danger-rule {
+            border-left: 3px solid var(--brand);
+            background: var(--md-surface-container-high, #2A221C);
+            border-radius: var(--shape-sm, 8px);
+            padding: 16px 20px 4px;
+            margin: 20px 0;
+        }
+        .danger-rule .legal-section-title { margin-top: 0; color: var(--md-error); border-color: var(--md-error); }
         .item-hint {
             display: flex;
             align-items: flex-start;
@@ -1316,23 +1356,38 @@
 
         <div id="tab-licenses" class="view-section">
             <div class="page-header">
-                <h2 class="page-title">Open Source Licenses</h2>
+                <h2 class="page-title">Licenses</h2>
             </div>
+            <p class="page-sub">Third-party components, fonts and runtimes shipped with the KodaHosting app and the KodaDash plugin.</p>
             <div id="licenses-content" style="background: var(--md-surface-container); padding: 24px; border-radius: var(--shape-lg); max-height: 75vh; overflow-y: auto; box-shadow: var(--elev-1);"></div>
         </div>
 
         <div id="tab-legal" class="view-section">
             <div class="page-header">
                 <h2 class="page-title">Legal &amp; Privacy</h2>
+                <div class="lang-switch" role="group" aria-label="Language">
+                    <button type="button" class="legal-lang active" data-lang="en">English</button>
+                    <button type="button" class="legal-lang" data-lang="de">Deutsch</button>
+                </div>
             </div>
             <div class="legal-document">
-                <h1 class="legal-doc-title">Terms of Service</h1>
+                <h1 class="legal-doc-title" id="legal-tos-title">Terms of Service</h1>
                 <div id="legal-tos-content">Loading...</div>
             </div>
             <div class="legal-document">
-                <h1 class="legal-doc-title">Privacy Policy</h1>
+                <h1 class="legal-doc-title" id="legal-privacy-title">Privacy Policy</h1>
                 <div id="legal-privacy-content">Loading...</div>
             </div>
+            <div class="legal-document">
+                <h1 class="legal-doc-title" id="legal-impressum-title">Impressum</h1>
+                <div id="legal-impressum-content">Loading...</div>
+            </div>
+            <p style="margin-top: 24px; font-size: 0.875rem; color: var(--md-on-surface-variant);">
+                Permanent links:
+                <a href="tos.html" style="color: var(--brand);">Terms of Service</a> &middot;
+                <a href="privacy.html" style="color: var(--brand);">Privacy Policy</a> &middot;
+                <a href="impressum.txt" style="color: var(--brand);">Impressum</a>
+            </p>
         </div>
     </main>
 
@@ -1405,6 +1460,11 @@
                 el.classList.toggle('active', handler.includes("'" + tabId + "'"));
             });
             document.getElementById('tab-' + tabId).classList.add('active');
+            if (tabId === 'licenses' && !licensesLoaded) {
+                licensesLoaded = true;
+                loadLicenses();
+            }
+            if (tabId === 'legal') loadLegalTexts();
             if (window.innerWidth <= 768) toggleSidebar();
         }
 
@@ -1512,12 +1572,12 @@
 
                 let parsedText = t.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
 
-                if (t.startsWith('Last Updated')) {
+                if (/^(Last Updated|Letzte Aktualisierung|Zuletzt aktualisiert|Stand):/i.test(t)) {
                     html.push(`<p class="updated-date">${t}</p>`);
                     return;
                 }
 
-                if (t === "Strict Prohibitions") {
+                if (t === "Strict Prohibitions" || t === "Strenge Verbote") {
                     inDanger = true;
                     if (inList) { html.push('</ul>'); inList = false; }
                     html.push(`<div class="danger-rule"><h2 class="legal-section-title" style="margin-top: 0; color: var(--md-error); border-color: var(--md-error);">${t}</h2>`);
@@ -1560,63 +1620,120 @@
             return html.join('');
         }
 
-        function toggleAccordion(element) {
-            element.parentElement.classList.toggle('active');
-        }
+        let legalLang = 'en';
+        let licensesLoaded = false;
 
-        async function loadLegalTexts() {
-            try {
-                const resTos = await fetch('tos.txt');
-                if (resTos.ok) {
-                    let text = await resTos.text();
-                    document.getElementById('legal-tos-content').innerHTML = formatLegalText(text);
+        const LEGAL_DOCS = [
+            { id: 'tos', title: 'Terms of Service', titleDe: 'Nutzungsbedingungen' },
+            { id: 'privacy', title: 'Privacy Policy', titleDe: 'Datenschutzerklaerung' },
+            { id: 'impressum', title: 'Impressum', titleDe: 'Impressum' }
+        ];
+
+        /**
+         * Loads the legal documents from the website root (tos.txt / tos_de.txt ...).
+         * Those files are the same texts the app ships with - see tools/sync_website_legal.py.
+         */
+        async function loadLegalTexts(lang) {
+            legalLang = lang || legalLang;
+            document.querySelectorAll('.legal-lang').forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.lang === legalLang);
+            });
+
+            for (const doc of LEGAL_DOCS) {
+                const target = document.getElementById('legal-' + doc.id + '-content');
+                const heading = document.getElementById('legal-' + doc.id + '-title');
+                if (heading) heading.textContent = legalLang === 'de' ? doc.titleDe : doc.title;
+                if (!target) continue;
+                try {
+                    const file = legalLang === 'de' ? doc.id + '_de.txt' : doc.id + '.txt';
+                    const res = await fetch(file + '?v=' + encodeURIComponent(document.lastModified || '1'));
+                    if (!res.ok) { target.innerHTML = '<p class="legal-paragraph">Not available.</p>'; continue; }
+                    target.innerHTML = formatLegalText(await res.text())
+                        .replace('Strict Prohibitions', 'Strict Prohibitions')
+                        .replace('Strenge Verbote', 'Strenge Verbote');
+                } catch (e) {
+                    console.error('Failed to load ' + doc.id, e);
+                    target.innerHTML = '<p class="legal-paragraph">Could not be loaded.</p>';
                 }
-
-                const resPriv = await fetch('privacy.txt');
-                if (resPriv.ok) {
-                    let text = await resPriv.text();
-                    document.getElementById('legal-privacy-content').innerHTML = formatLegalText(text);
-                }
-
-                const licenses = ['frp.txt', 'mariadb.txt', 'openjdk.txt', 'press_start_2p.txt', 'redis.txt'];
-                const licenseTitles = {
-                    'frp.txt': 'Fast Reverse Proxy (FRP)',
-                    'mariadb.txt': 'MariaDB Database',
-                    'openjdk.txt': 'OpenJDK (Java Runtime)',
-                    'press_start_2p.txt': 'Press Start 2P (Font)',
-                    'redis.txt': 'Redis In-Memory Data Store'
-                };
-
-                let licensesHtml = "";
-                for (const file of licenses) {
-                    const res = await fetch(file);
-                    if (res.ok) {
-                        const content = await res.text();
-                        const title = licenseTitles[file] || file;
-                        licensesHtml += `
-                            <div class="accordion">
-                                <div class="accordion-header" onclick="toggleAccordion(this)">
-                                    ${title}
-                                    <span class="material-symbols-outlined">expand_more</span>
-                                </div>
-                                <div class="accordion-content">
-${content.replace(/</g, '&lt;').replace(/>/g, '&gt;')}
-                                </div>
-                            </div>
-                        `;
-                    }
-                }
-                document.getElementById('licenses-content').innerHTML = licensesHtml;
-            } catch (e) {
-                console.error("Failed to load legal texts", e);
             }
         }
 
+        /**
+         * Licences come from licenses/manifest.json, which is generated from the app's
+         * own licence folder (tools/sync_website_legal.py) so nothing can drift apart.
+         */
+        async function loadLicenses() {
+            const container = document.getElementById('licenses-content');
+            try {
+                const res = await fetch('licenses/manifest.json');
+                if (!res.ok) throw new Error('manifest missing');
+                const entries = await res.json();
+                container.innerHTML = entries.map(entry => `
+                    <div class="accordion" data-file="${escapeAttr(entry.file)}" data-type="${escapeAttr(entry.type)}">
+                        <div class="accordion-header">
+                            ${escapeHtml(entry.title)}
+                            <span class="material-symbols-outlined">expand_more</span>
+                        </div>
+                        <div class="accordion-content"></div>
+                    </div>
+                `).join('');
+
+                container.querySelectorAll('.accordion').forEach(acc => {
+                    const file = acc.dataset.file;
+                    const isPdf = acc.dataset.type === 'pdf';
+                    acc.addEventListener('click', async () => {
+                        const open = acc.classList.contains('active');
+                        acc.classList.toggle('active');
+                        const body = acc.querySelector('.accordion-content');
+                        if (open || body.dataset.loaded) {
+                            if (isPdf && !open) window.open('licenses/' + file, '_blank', 'noopener');
+                            return;
+                        }
+                        body.dataset.loaded = '1';
+                        if (isPdf) {
+                            body.innerHTML = `<p class="legal-paragraph"><a href="licenses/${escapeAttr(file)}" target="_blank" rel="noopener">Open PDF</a></p>`;
+                            return;
+                        }
+                        try {
+                            const text = await (await fetch('licenses/' + file)).text();
+                            body.innerHTML = '<pre class="license-text">' + escapeHtml(text.slice(0, 60000)) + '</pre>';
+                        } catch (e) {
+                            body.innerHTML = '<p class="legal-paragraph">Could not be loaded.</p>';
+                        }
+                    });
+                });
+            } catch (e) {
+                container.innerHTML = '<p class="legal-paragraph">Licence list could not be loaded.</p>';
+                console.error(e);
+            }
+        }
+
+        document.querySelectorAll('.legal-lang').forEach(btn => {
+            btn.addEventListener('click', () => loadLegalTexts(btn.dataset.lang));
+        });
+
+        /**
+         * server_version doubles as a status channel: the app writes "OFFLINE|<version>"
+         * while a server is down, plain "<version>" while it runs, plus CMD:/HIBERNATED.
+         */
+        function isOnline(ver) {
+            const raw = (ver || '').trim();
+            return !!raw && raw !== 'HIBERNATED' && raw !== 'DELETED'
+                && !raw.startsWith('OFFLINE') && !raw.startsWith('CMD:');
+        }
+
+        function versionLabel(ver) {
+            const raw = (ver || '').replace(/^OFFLINE\|/, '').split(' | ')[0].trim();
+            return raw || 'Unknown';
+        }
+
         function getStatusDetails(ver) {
-            if (!ver || ver === 'HIBERNATED') return { label: 'Hibernated', class: 'status-offline' };
-            if (ver.startsWith('CMD:')) return { label: 'Command Pending...', class: 'status-pending' };
-            if (ver === 'DELETED') return { label: 'Deleted', class: 'status-offline' };
-            return { label: 'Active', class: 'status-online' };
+            const raw = (ver || '').trim();
+            if (raw.startsWith('CMD:')) return { label: 'Command pending', class: 'status-pending' };
+            if (raw === 'DELETED') return { label: 'Deleted', class: 'status-offline' };
+            if (isOnline(raw)) return { label: 'Online', class: 'status-online' };
+            if (raw === 'HIBERNATED') return { label: 'Hibernated', class: 'status-offline' };
+            return { label: 'Offline', class: 'status-offline' };
         }
 
         function renderItems(items, containerId) {
@@ -1629,22 +1746,26 @@ ${content.replace(/</g, '&lt;').replace(/>/g, '&gt;')}
             items.forEach(item => {
                 const status = getStatusDetails(item.server_version);
                 const database = isDatabase(item);
-                const version = item.server_version && !item.server_version.startsWith('CMD:')
-                    ? item.server_version : 'Unknown';
+                const version = versionLabel(item.server_version);
                 const players = (item.online_players || 0) + ' / ' + (item.max_players || 0);
+                const ram = item.ram_mb ? item.ram_mb + ' MB' : '--';
 
-                let controls;
+                const online = !database && isOnline(item.server_version);
+                const hasDash = !database && item.kodadash_port && item.kodadash_port > 0;
+
+                let controls = '';
                 let dashHint = '';
                 if (database) {
                     dashHint = '<div class="item-hint"><span class="material-symbols-outlined">info</span>Databases are managed in the KodaHosting app.</div>';
-                    controls = '';
-                } else if (item.kodadash_port && item.kodadash_port > 0) {
+                } else if (!hasDash) {
+                    dashHint = '<div class="item-hint warn"><span class="material-symbols-outlined">warning</span>KodaDash is not enabled for this server. Turn it on in the app under Server &rarr; KodaDash to control it from the browser.</div>';
+                } else if (!online) {
+                    // The tunnel only exists while the server runs, so the button would lead nowhere.
+                    dashHint = '<div class="item-hint"><span class="material-symbols-outlined">power_settings_new</span>Server is offline. Start it in the app and KodaDash becomes available here.</div>';
+                } else {
                     controls = `<div class="controls-grid" style="grid-template-columns: 1fr;">
                         <button class="btn-outline-card primary-action" data-dash="${escapeAttr(item.id)}">Open KodaDash</button>
                     </div>`;
-                } else {
-                    dashHint = '<div class="item-hint warn"><span class="material-symbols-outlined">warning</span>KodaDash is not enabled for this server. Turn it on in the app under Server &rarr; KodaDash to control it from the browser.</div>';
-                    controls = '';
                 }
 
                 const card = document.createElement('div');
@@ -1656,13 +1777,13 @@ ${content.replace(/</g, '&lt;').replace(/>/g, '&gt;')}
                     </div>
                     <div class="item-details">
                         <span><span class="material-symbols-outlined">tag</span>Version: ${escapeHtml(version)}</span>
-                        <span><span class="material-symbols-outlined">memory</span>RAM: ${item.ram_mb || 0} MB</span>
+                        <span><span class="material-symbols-outlined">memory</span>RAM: ${ram}</span>
                         ${database ? '' : `<span><span class="material-symbols-outlined">group</span>Players: ${escapeHtml(players)}</span>`}
                     </div>
                     ${dashHint}
                     ${controls}
                 `;
-                if (item.kodadash_port && item.kodadash_port > 0 && !database) {
+                if (hasDash && online) {
                     card.querySelector('[data-dash]').addEventListener('click', () => openKodaDash(item));
                 }
                 container.appendChild(card);
