@@ -1625,6 +1625,7 @@
             }
 
             const servers = data || [];
+            loadDashboardScheme();
             const appRow = servers.find(s => s.app_state) || servers[0];
             if (appRow) updateAppStatusBadge(appRow.app_state, appRow.app_last_ping);
 
@@ -1703,14 +1704,34 @@
             return Math.round(seconds / 86400) + ' d ago';
         }
 
+        /** Reads app_settings.kodadash_https once, so the buttons know whether https is live. */
+        let httpsDashboards = false;
+        let httpsChecked = false;
+        async function loadDashboardScheme() {
+            if (httpsChecked) return;
+            httpsChecked = true;
+            const { data, error } = await supabaseClient
+                .from('app_settings')
+                .select('value')
+                .eq('key', 'kodadash_https')
+                .limit(1);
+            if (!error && data && data.length > 0) {
+                httpsDashboards = !!(data[0].value && data[0].value.enabled);
+            }
+        }
+
         function isDatabase(server) {
             return server.host.startsWith('db_') || (server.server_version || '') === 'CMD:INSTALL_DB';
         }
 
         function openKodaDash(server) {
             const baseDomain = server.base_domain || 'kodanetwork.eu';
-            let url = `http://${server.host}.${baseDomain}:${server.kodadash_port}`;
-            if (server.kodadash_token) url += `?token=${encodeURIComponent(server.kodadash_token)}`;
+            const token = server.kodadash_token ? `?token=${encodeURIComponent(server.kodadash_token)}` : '';
+            // Once the dashboards are served over HTTPS (app_settings.kodadash_https) the port is not
+            // needed any more - nginx proxies the subdomain to the tunnel port.
+            const url = httpsDashboards && server.host
+                ? `https://${server.host}.${baseDomain}/${token}`
+                : `http://${server.host}.${baseDomain}:${server.kodadash_port}${token}`;
             window.open(url, '_blank', 'noopener');
         }
 
