@@ -1219,6 +1219,30 @@
         }
         .property-label .material-symbols-outlined { font-size: 16px; }
         .property-label.danger { color: var(--md-error); }
+        /* ---------- Device card (live usage reported by the app) ---------- */
+        .device-card {
+            margin-top: 24px;
+            background: var(--md-surface-container);
+            border-radius: var(--shape-md);
+            padding: 20px 24px;
+            box-shadow: var(--elev-1);
+        }
+        .device-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; margin-bottom: 16px; }
+        .device-title { margin: 0; font-size: 1.125rem; font-weight: 500; }
+        .device-sub { margin: 4px 0 0; font-size: 0.8125rem; color: var(--md-on-surface-variant); }
+        .device-live {
+            display: inline-flex; align-items: center; gap: 6px;
+            font-size: 0.75rem; color: #6FBE7E;
+        }
+        .device-live::before { content: ''; width: 7px; height: 7px; border-radius: 50%; background: currentColor; }
+        .device-live.stale { color: var(--md-on-surface-variant); }
+        .device-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; }
+        .device-item .label { font-size: 0.6875rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--md-on-surface-variant); margin-bottom: 4px; }
+        .device-item .value { font-size: 1.0625rem; font-weight: 500; }
+        .device-item .foot { font-size: 0.75rem; color: var(--md-on-surface-variant); margin-top: 2px; }
+        .device-bar { height: 6px; border-radius: 999px; background: var(--md-surface-container-highest); overflow: hidden; margin-top: 8px; }
+        .device-bar > span { display: block; height: 100%; background: var(--brand); }
+
         /* ---------- Footer (same as the main page) ---------- */
         .dash-footer {
             margin-top: 48px;
@@ -1365,6 +1389,18 @@
                 <p style="margin-top: 8px; font-size: 0.875rem;">This page shows their status. Servers with KodaDash enabled open the full web console, file manager, players and settings.</p>
             </div>
             <div class="items-grid" id="servers-container"></div>
+
+            <!-- Live values from the app's heartbeat -->
+            <div class="device-card" id="device-card" style="display:none">
+                <div class="device-head">
+                    <div>
+                        <h3 class="device-title">Your device</h3>
+                        <p class="device-sub" id="device-sub">Live values reported by the app</p>
+                    </div>
+                    <span class="device-live" id="device-live">live</span>
+                </div>
+                <div class="device-grid" id="device-grid"></div>
+            </div>
         </div>
 
         <div id="tab-databases" class="view-section">
@@ -1597,6 +1633,74 @@
 
             renderItems(rootServers, 'servers-container');
             renderItems(dbServers, 'databases-container');
+            renderDeviceCard(servers);
+        }
+
+        /**
+         * Live usage of the phone that hosts the servers, taken from the app's heartbeat
+         * (the values arrive with the same RPC as the server list).
+         */
+        function renderDeviceCard(servers) {
+            const card = document.getElementById('device-card');
+            const grid = document.getElementById('device-grid');
+            if (!card || !grid) return;
+
+            const row = servers.find(s => s.total_ram_mb) || servers.find(s => s.device_model);
+            if (!row) { card.style.display = 'none'; return; }
+            card.style.display = '';
+
+            const total = row.total_ram_mb || 0;
+            const free = row.free_ram_mb || 0;
+            const usedPct = total > 0 ? Math.min(100, Math.round((total - free) / total * 100)) : 0;
+            const battery = row.battery_level;
+            const items = [
+                {
+                    label: 'Memory', value: total ? usedPct + '%' : '--',
+                    foot: total ? (total - free) + ' MB of ' + total + ' MB' : 'not reported',
+                    bar: total ? usedPct : null
+                },
+                {
+                    label: 'Battery', value: battery != null ? battery + '%' : '--',
+                    foot: row.is_charging ? 'charging' : 'on battery', bar: null
+                },
+                { label: 'CPU', value: row.cpu_cores ? row.cpu_cores + ' cores' : '--', foot: row.network_type || '', bar: null },
+                {
+                    label: 'Device', value: row.device_model || '--',
+                    foot: [row.os_version, row.screen_resolution].filter(Boolean).join(' - '), bar: null
+                },
+                {
+                    label: 'App', value: row.app_version || '--',
+                    foot: row.app_state === 'FOREGROUND' ? 'active on the device'
+                        : row.app_state === 'BACKGROUND' ? 'running in the background' : 'not connected',
+                    bar: null
+                },
+                { label: 'Last report', value: relativeTime(row.app_last_ping), foot: '', bar: null }
+            ];
+
+            grid.innerHTML = items.map(item => `
+                <div class="device-item">
+                    <div class="label">${item.label}</div>
+                    <div class="value">${item.value}</div>
+                    ${item.bar != null ? `<div class="device-bar"><span style="width:${item.bar}%"></span></div>` : ''}
+                    ${item.foot ? `<div class="foot">${item.foot}</div>` : ''}
+                </div>
+            `).join('');
+
+            const live = document.getElementById('device-live');
+            const age = row.app_last_ping ? (Date.now() - new Date(row.app_last_ping).getTime()) / 1000 : Infinity;
+            live.textContent = age < 60 ? 'live' : 'last seen ' + relativeTime(row.app_last_ping);
+            live.classList.toggle('stale', age >= 60);
+            document.getElementById('device-sub').textContent =
+                'Live values reported by the KodaHosting app on your phone';
+        }
+
+        function relativeTime(value) {
+            if (!value) return '--';
+            const seconds = Math.max(0, (Date.now() - new Date(value).getTime()) / 1000);
+            if (seconds < 60) return Math.round(seconds) + ' s ago';
+            if (seconds < 3600) return Math.round(seconds / 60) + ' min ago';
+            if (seconds < 86400) return Math.round(seconds / 3600) + ' h ago';
+            return Math.round(seconds / 86400) + ' d ago';
         }
 
         function isDatabase(server) {
