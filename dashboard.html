@@ -1219,6 +1219,38 @@
         }
         .property-label .material-symbols-outlined { font-size: 16px; }
         .property-label.danger { color: var(--md-error); }
+        /* ---------- Footer (same as the main page) ---------- */
+        .dash-footer {
+            margin-top: 48px;
+            padding-top: 24px;
+            border-top: 1px solid var(--md-outline-variant);
+            color: var(--md-on-surface-variant);
+        }
+        .dash-footer-grid {
+            display: grid;
+            grid-template-columns: minmax(0, 2fr) repeat(2, minmax(0, 1fr));
+            gap: 32px;
+        }
+        .dash-footer-brand { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; color: var(--md-on-surface); font-weight: 600; }
+        .dash-footer-brand img { width: 28px; height: 28px; border-radius: 6px; object-fit: cover; }
+        .dash-footer-brand span span { color: var(--brand); }
+        .dash-footer-note { margin: 0; font-size: 0.8125rem; line-height: 1.6; max-width: 62ch; }
+        .dash-footer-note strong { color: var(--md-on-surface); }
+        .dash-footer-col h4 {
+            margin: 0 0 10px; font-size: 0.75rem; text-transform: uppercase;
+            letter-spacing: 0.06em; color: var(--md-on-surface-variant);
+        }
+        .dash-footer-col a { display: block; padding: 3px 0; color: var(--md-on-surface-variant); text-decoration: none; font-size: 0.875rem; }
+        .dash-footer-col a:hover { color: var(--brand); }
+        .dash-footer-bottom {
+            display: flex; justify-content: space-between; gap: 12px;
+            margin-top: 24px; padding-top: 16px;
+            border-top: 1px solid var(--md-outline-variant);
+            font-size: 0.75rem;
+        }
+        @media (max-width: 900px) {
+            .dash-footer-grid { grid-template-columns: 1fr; }
+        }
     </style>
 </head>
 <body>
@@ -1387,9 +1419,51 @@
                 Permanent links:
                 <a href="tos.html" style="color: var(--brand);">Terms of Service</a> &middot;
                 <a href="privacy.html" style="color: var(--brand);">Privacy Policy</a> &middot;
+                <a href="licenses.html" style="color: var(--brand);">Licenses</a> &middot;
                 <a href="impressum.txt" style="color: var(--brand);">Impressum</a>
             </p>
         </div>
+
+        <!-- Same notices and links as the main page -->
+        <footer class="dash-footer">
+            <div class="dash-footer-grid">
+                <div>
+                    <div class="dash-footer-brand">
+                        <img src="assets/logo.png" alt="KodaHosting logo">
+                        <span>Koda<span>Hosting</span></span>
+                    </div>
+                    <p class="dash-footer-note">
+                        <strong>About this website.</strong> Parts of this website (the landing page, dashboard and
+                        legal documents you are currently viewing) were drafted with the assistance of an AI language
+                        model and reviewed by the developer. The AI was used for layout, copywriting and legal text
+                        generation only. The KodaHosting Android application itself, its server-hosting logic,
+                        networking infrastructure, and all executable code are written entirely by the developer and
+                        are not AI-generated. Legal responsibility for all content (including AI-assisted sections)
+                        rests with the developer and their legal guardians, as set out in the Impressum.
+                    </p>
+                </div>
+                <div class="dash-footer-col">
+                    <h4>Dashboard</h4>
+                    <a href="#" data-dash-tab="servers">Servers</a>
+                    <a href="#" data-dash-tab="databases">Databases</a>
+                    <a href="#" data-dash-tab="tickets">Support Tickets</a>
+                    <a href="#" data-dash-tab="licenses">Licenses</a>
+                    <a href="#" data-dash-tab="legal">Legal</a>
+                </div>
+                <div class="dash-footer-col">
+                    <h4>KodaHosting</h4>
+                    <a href="index.html">Main page</a>
+                    <a href="privacy.html">Privacy Policy</a>
+                    <a href="tos.html">Terms of Service</a>
+                    <a href="licenses.html">Licenses</a>
+                    <a href="impressum.txt">Impressum</a>
+                </div>
+            </div>
+            <div class="dash-footer-bottom">
+                <span>&copy; 2026 KodaHosting. All rights reserved.</span>
+                <span>Material Design 3</span>
+            </div>
+        </footer>
     </main>
 
 
@@ -1450,6 +1524,14 @@
         function toggleSidebar() {
             document.getElementById('sidebar').classList.toggle('open');
         }
+
+        document.querySelectorAll('[data-dash-tab]').forEach(link => {
+            link.addEventListener('click', (ev) => {
+                ev.preventDefault();
+                switchTab(link.getAttribute('data-dash-tab'));
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            });
+        });
 
         function switchTab(tabId) {
             document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
