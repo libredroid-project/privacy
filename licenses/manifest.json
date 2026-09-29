@@ -15,16 +15,6 @@
     "type": "txt"
   },
   {
-    "file": "commercial_license.pdf",
-    "title": "Commercial License (PDF)",
-    "type": "pdf"
-  },
-  {
-    "file": "commercial_license_info.pdf",
-    "title": "Commercial License Information (PDF)",
-    "type": "pdf"
-  },
-  {
     "file": "commons_compress.txt",
     "title": "Apache Commons Compress",
     "type": "txt"
@@ -98,11 +88,6 @@
     "file": "llvm_libcxx.txt",
     "title": "LLVM libc++",
     "type": "txt"
-  },
-  {
-    "file": "lopl_preview.pdf",
-    "title": "Libre Open Project License v1.0 PREVIEW (PDF)",
-    "type": "pdf"
   },
   {
     "file": "lottie.txt",
