@@ -1,5 +1,10 @@
 [
   {
+    "file": "agpl_v3.txt",
+    "title": "Agpl V3",
+    "type": "txt"
+  },
+  {
     "file": "androidx.txt",
     "title": "AndroidX (Android Jetpack)",
     "type": "txt"
@@ -32,6 +37,11 @@
   {
     "file": "floodgate.txt",
     "title": "Floodgate",
+    "type": "txt"
+  },
+  {
+    "file": "fonts_ofl.txt",
+    "title": "Fonts Ofl",
     "type": "txt"
   },
   {
@@ -75,6 +85,11 @@
     "type": "txt"
   },
   {
+    "file": "jbcrypt.txt",
+    "title": "Jbcrypt",
+    "type": "txt"
+  },
+  {
     "file": "jetbrains_mono.txt",
     "title": "JetBrains Mono (Font)",
     "type": "txt"
@@ -107,6 +122,11 @@
   {
     "file": "mojang_eula.txt",
     "title": "Minecraft EULA",
+    "type": "txt"
+  },
+  {
+    "file": "monaco.txt",
+    "title": "Monaco",
     "type": "txt"
   },
   {
