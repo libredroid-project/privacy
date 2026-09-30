@@ -110,6 +110,11 @@
     "type": "txt"
   },
   {
+    "file": "lucide.txt",
+    "title": "Lucide",
+    "type": "txt"
+  },
+  {
     "file": "luckperms.txt",
     "title": "LuckPerms",
     "type": "txt"
@@ -227,6 +232,11 @@
   {
     "file": "rootbeer.txt",
     "title": "RootBeer",
+    "type": "txt"
+  },
+  {
+    "file": "simple_icons.txt",
+    "title": "Simple Icons",
     "type": "txt"
   },
   {
