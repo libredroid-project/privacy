@@ -149,6 +149,19 @@
         }
         .nextprev a { color: #888; }
         .nextprev a:hover { color: #FF6B00; text-decoration: none; }
+        .ainotice {
+            display: flex; gap: 14px; align-items: flex-start;
+            border: 1px solid #1F1F24; border-left: 3px solid #FF6B00;
+            background: #14141A; border-radius: 0 12px 12px 0;
+            padding: 16px 18px; margin-top: 10px; scroll-margin-top: 100px;
+        }
+        .ainotice .badge {
+            font-size: 0.68rem; font-weight: 700; letter-spacing: 0.08em;
+            color: #0E0E11; background: #FF6B00; border-radius: 6px;
+            padding: 2px 7px; flex-shrink: 0; margin-top: 2px;
+        }
+        .ainotice p { margin: 0; font-size: 0.8rem; line-height: 1.65; color: #B5B5B8; }
+        .ainotice strong { color: #E5E5E7; font-weight: 600; }
         @media (max-width: 900px) {
             .layout { grid-template-columns: 1fr; gap: 24px; padding: 24px 20px 80px; }
             .sidebar { position: static; max-height: none; border: 1px solid #1F1F24; border-radius: 12px; padding: 14px 10px; }
@@ -203,11 +216,14 @@
 <div class="sgroup"><h5>Infrastructure</h5><a href="#db-schema" data-s="db-schema">The database</a><a href="#edge-functions" data-s="edge-functions">Edge functions</a><a href="#kodadash-internals" data-s="kodadash-internals">Inside KodaDash</a><a href="#release-bot" data-s="release-bot">The Discord release bot</a><a href="#website" data-s="website">The website</a><a href="#admin-tools" data-s="admin-tools">The admin tools</a><a href="#security-model" data-s="security-model">The security model</a></div>
 <div class="sgroup"><h5>Development</h5><a href="#workflow" data-s="workflow">Working on the code</a><a href="#testing" data-s="testing">The checks that run around a change</a><a href="#release" data-s="release">Making a release</a><a href="#licensing" data-s="licensing">Licensing, in plain words</a><a href="#troubleshooting" data-s="troubleshooting">When something goes wrong</a><a href="#faq" data-s="faq">Questions that come up often</a></div>
             </details>
+            <div class="dl">
+                <a href="#ai-notice">About these docs (AI)</a>
+            </div>
         </aside>
 
         <main class="doc">
             <h1>Documentation</h1>
-            <p class="hint">Everything about running KodaHosting, extending it and making it your own. 70 categories. Last updated October 2026.</p>
+            <p class="hint">Everything about running KodaHosting, extending it and making it your own. 70 categories. Parts of it were written with AI assistance, see <a href="#ai-notice">the notice at the end</a>. Last updated October 2026.</p>
 
 <section id="getting-started">
 <div class="eyebrow">Start</div>
@@ -990,6 +1006,20 @@ card.setOnClickListener(v -&gt; openMyFeature());</code></pre>
 <p>Through a ticket in the app or the Discord server. The personal chat is there for things that are not about servers at all.</p>
 <div class="nextprev"><a href="#troubleshooting">&larr; When something goes wrong</a><span></span></div>
 </section>
+
+            <div class="ainotice" id="ai-notice">
+                <span class="badge">AI</span>
+                <p>
+                    <strong>About these docs.</strong> Large parts of this documentation were drafted with the
+                    assistance of an AI language model (deepseek-flash-v4.1) and reviewed by the developer. The AI
+                    was used for the wording, the structure and the examples only. The KodaHosting Android
+                    application itself, its server hosting logic, the networking infrastructure and all executable
+                    code are written entirely by the developer and are not AI-generated; where this documentation
+                    describes code, the code is the source of truth. Legal responsibility for all content,
+                    including the AI-assisted sections, rests with the developer and their legal guardians, as set
+                    out in the Impressum.
+                </p>
+            </div>
 
         </main>
     </div>
