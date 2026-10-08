@@ -24,4 +24,10 @@
     <changefreq>daily</changefreq>
     <priority>0.6400</priority>
   </url>
+  <url>
+    <loc>https://host.kodanetwork.eu/docs</loc>
+    <lastmod>2026-10-08T00:00:00+00:00</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8000</priority>
+  </url>
 </urlset>
