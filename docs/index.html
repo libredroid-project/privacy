@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <link rel="icon" type="image/png" href="../assets/logo.png">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Documentation | KodaHosting</title>
+    <meta name="description" content="KodaHosting documentation: run your own instance, build the app, write extensions, customize themes and translations.">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html { -webkit-text-size-adjust: 100%; scroll-behavior: smooth; }
+        body {
+            font-family: 'Inter', -apple-system, sans-serif;
+            background: #0E0E11;
+            color: #E5E5E7;
+            line-height: 1.7;
+            -webkit-font-smoothing: antialiased;
+            min-height: 100vh;
+        }
+        a { color: #FF6B00; text-decoration: none; }
+        a:hover { text-decoration: underline; text-underline-offset: 2px; }
+
+        .header {
+            border-bottom: 1px solid #1F1F24;
+            padding: 20px 32px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: sticky;
+            top: 0;
+            background: rgba(14, 14, 17, 0.92);
+            backdrop-filter: blur(8px);
+            z-index: 20;
+        }
+        .logo { display: flex; align-items: center; gap: 10px; font-weight: 600; font-size: 0.95rem; color: #E5E5E7; }
+        .logo img { width: 28px; height: 28px; border-radius: 6px; object-fit: cover; }
+        .logo span { color: #FF6B00; }
+        .header .links a { color: #888; font-size: 0.85rem; font-weight: 500; margin-left: 18px; }
+        .header .links a:hover { color: #E5E5E7; text-decoration: none; }
+
+        .layout {
+            max-width: 1180px;
+            margin: 0 auto;
+            padding: 34px 32px 96px;
+            display: grid;
+            grid-template-columns: 250px minmax(0, 1fr);
+            gap: 48px;
+            align-items: start;
+        }
+
+        .sidebar { position: sticky; top: 92px; max-height: calc(100vh - 120px); overflow: auto; }
+        .sidebar h4 {
+            font-size: 0.7rem; letter-spacing: 0.14em; text-transform: uppercase;
+            color: #888; margin-bottom: 12px; font-weight: 600;
+        }
+        .sidebar a {
+            display: block; padding: 6px 10px; border-left: 2px solid #1F1F24;
+            color: #B5B5B8; font-size: 0.86rem; line-height: 1.4;
+        }
+        .sidebar a:hover { color: #E5E5E7; text-decoration: none; border-left-color: #2A2A32; }
+        .sidebar a.active { color: #FF6B00; border-left-color: #FF6B00; }
+        .sidebar .dl {
+            margin-top: 18px; padding-top: 16px; border-top: 1px solid #1F1F24;
+            font-size: 0.8rem;
+        }
+
+        .doc { min-width: 0; }
+        .doc .hint { color: #888; font-size: 0.85rem; margin-bottom: 10px; }
+        .doc h1 { font-size: 2rem; font-weight: 700; letter-spacing: -0.02em; color: #fff; margin-bottom: 8px; }
+        .doc section { scroll-margin-top: 100px; padding-bottom: 26px; border-bottom: 1px solid #17171C; margin-bottom: 30px; }
+        .doc section:last-of-type { border-bottom: none; }
+        .doc h2 { font-size: 1.3rem; font-weight: 700; color: #fff; margin-bottom: 14px; }
+        .doc h3 { font-size: 1rem; font-weight: 600; color: #FF6B00; margin: 26px 0 8px; }
+        .doc p { color: #B5B5B8; font-size: 0.95rem; margin-bottom: 14px; }
+        .doc p.lead { color: #E5E5E7; }
+        .doc ul, .doc ol { margin: 0 0 16px; padding-left: 22px; }
+        .doc li { color: #B5B5B8; font-size: 0.95rem; margin-bottom: 8px; }
+        .doc b { color: #E5E5E7; font-weight: 600; }
+        code {
+            font-family: ui-monospace, "JetBrains Mono", monospace;
+            font-size: 0.85rem; background: #17171C; border: 1px solid #24242B;
+            border-radius: 6px; padding: 1px 6px; color: #E5E5E7;
+        }
+        pre {
+            background: #14141A; border: 1px solid #1F1F24; border-radius: 12px;
+            padding: 16px 18px; overflow: auto; margin: 0 0 18px;
+        }
+        pre code { background: none; border: none; padding: 0; font-size: 0.82rem; line-height: 1.6; color: #E5E5E7; }
+        table { width: 100%; border-collapse: collapse; margin: 0 0 18px; font-size: 0.9rem; }
+        th {
+            text-align: left; color: #fff; background: #1F1F24; font-weight: 600;
+            padding: 10px 14px; border: 1px solid #1F1F24;
+        }
+        td { color: #B5B5B8; padding: 10px 14px; border: 1px solid #1F1F24; background: #14141A; vertical-align: top; }
+        .callout {
+            border-left: 3px solid #FF6B00; background: #14141A; border-radius: 0 10px 10px 0;
+            padding: 12px 16px; color: #B5B5B8; font-size: 0.9rem; margin: 0 0 18px;
+        }
+        ol.steps { padding-left: 22px; }
+        ol.steps li { margin-bottom: 10px; }
+        .nextprev {
+            display: flex; justify-content: space-between; align-items: center; gap: 12px;
+            border-top: 1px solid #17171C; padding-top: 18px; font-size: 0.85rem; color: #888; flex-wrap: wrap;
+        }
+        .download {
+            display: inline-block; background: #14141A; border: 1px solid #1F1F24; border-radius: 12px;
+            padding: 10px 16px; font-size: 0.88rem; color: #E5E5E7;
+        }
+        .download:hover { border-color: #FF6B00; text-decoration: none; }
+        @media (max-width: 900px) {
+            .layout { grid-template-columns: 1fr; gap: 24px; padding: 24px 20px 80px; }
+            .sidebar { position: static; max-height: none; border: 1px solid #1F1F24; border-radius: 12px; padding: 14px 8px; }
+        }
+    </style>
+</head>
+<body>
+
+    <header class="header">
+        <a href="../index.html" class="logo">
+            <img src="../assets/logo.png" alt="KodaHosting">
+            Koda<span>Hosting</span>
+        </a>
+        <div class="links">
+            <a href="../index.html">Home</a>
+            <a href="../dashboard.html">Dashboard</a>
+            <a href="https://github.com/libredroid-project/KodaNetwork" target="_blank" rel="noopener">GitHub</a>
+        </div>
+    </header>
+
+    <div class="layout">
+        <aside class="sidebar">
+            <h4>Contents</h4>
+            <a href="#getting-started">Getting started</a>
+<a href="#own-instance">Your own instance</a>
+<a href="#building">Building the app</a>
+<a href="#extensions">Extensions: format</a>
+<a href="#bridge">Extensions: the bridge</a>
+<a href="#contributions">Extensions: contributions</a>
+<a href="#packaging">Extensions: packaging</a>
+<a href="#customizing">Customizing the app</a>
+<a href="#quality">Checks and quality</a>
+<a href="#licensing">Licensing</a>
+            <div class="dl">
+                <a href="KodaHosting-Developer-Handbook.docx">Download as DOCX</a>
+            </div>
+        </aside>
+
+        <main class="doc">
+            <h1>Documentation</h1>
+            <p class="hint">Everything about running KodaHosting, extending it and making it your own. Last updated October 2026.</p>
+
+<section id="getting-started"><h2>Getting started</h2><p class="lead">KodaHosting turns a phone into a real Minecraft server. Not a client and not a remote control for somebody else's machine: the server process runs on the device, the world files sit in the device storage, and the app is the control panel around it. That one decision explains almost every design choice in this codebase, including the odd ones.</p>
+<p>Three planes do the work, and it helps to keep them apart in your head.</p>
+<ul>
+  <li><b>The device plane</b> is the app itself. It downloads server jars and Java runtimes, starts and stops the process, owns the console, browses and edits files, makes backups and applies every change. If something mutates a server, it happens here.</li>
+  <li><b>The connectivity plane</b> is the tunnel. A bundled reverse proxy client forwards the Minecraft ports and the web dashboard through a public server, so friends can join without your home address ever leaving the router. The app fetches its tunnel credentials from the backend on demand and caches them for a few hours.</li>
+  <li><b>The control plane</b> is Supabase. It knows who you are, which devices belong to you, which servers exist, which ports are taken, which releases are published and which extensions are approved. Every write goes through a function that checks a per device token, which is why the public key that ships inside the app cannot be abused on its own.</li>
+</ul>
+<p>There is a fourth piece that surprises people. KodaDash is a Java plugin that runs inside the Minecraft server and serves a web dashboard on port 7867. The app writes small JSON files into the server folder for stats, backups and schedules, and KodaDash picks them up, which is why the dashboard still shows sensible numbers while the phone sleeps.</p>
+<h3>The parts and where they run</h3>
+<table>
+  <tr><th>Where</th><th>What you find there</th></tr>
+  <tr><td><code>app/</code></td><td>the Android app: hosting, interface, server lifecycle, extensions</td></tr>
+  <tr><td><code>KodaDash/</code></td><td>the in server web dashboard, built with Maven</td></tr>
+  <tr><td><code>KodaLobbyPlugin/</code>, <code>KodaTransferPlugin/</code></td><td>companion plugins for the lobby and for world transfers</td></tr>
+  <tr><td><code>supabase/</code></td><td>database schema, functions, policies and edge functions</td></tr>
+  <tr><td><code>extensions/</code></td><td>the extension system: docs, schema, examples, tools</td></tr>
+  <tr><td><code>discord-bot/</code></td><td>the release bot that announces new versions</td></tr>
+  <tr><td><code>tools/</code></td><td>maintenance scripts that stay in the private development repository</td></tr>
+</table>
+<div class="callout">You will notice that <code>tools/</code> never appears in the public repository. That is deliberate, and the next section explains why.</div>
+<h3>Where everything lives</h3>
+<ul>
+  <li><a href="https://github.com/libredroid-project/KodaNetwork" target="_blank" rel="noopener">github.com/libredroid-project/KodaNetwork</a> is the public repository with the app, the dashboard plugin, SQL, examples and tools.</li>
+  <li><a href="https://github.com/libredroid-project/KodaNetwork/tree/main/extensions" target="_blank" rel="noopener">extensions/</a> holds the extension documentation, the JSON schema, the examples and the packaging tools.</li>
+  <li><a href="https://host.kodanetwork.eu/licenses.html">Licenses</a> lists every third party component in the browser.</li>
+  <li><a href="https://github.com/libredroid-project/KodaNetwork/issues" target="_blank" rel="noopener">Issues</a> is the place for bugs, ideas and questions.</li>
+</ul></section>
+<section id="own-instance"><h2>Your own instance</h2><p>The public repository is a complete snapshot of the source. What it cannot contain is the instance: the addresses, keys and accounts that belong to whoever runs it. That is not a marketing trick, it is basic hygiene, and every project that hosts something for other people has to draw that line somewhere. Here is exactly where we draw it.</p>
+<h3>What is not in the public repository</h3>
+<table>
+  <tr><th>Missing on purpose</th><th>Why it matters</th></tr>
+  <tr><td><code>secrets_local.h</code></td><td>the Supabase URL, the public key, the AI key and the tunnel host that get compiled into the app</td></tr>
+  <tr><td>The Supabase project</td><td>its rows, storage objects, auth users and the edge function secrets</td></tr>
+  <tr><td>Tunnel and DNS credentials</td><td>the reverse proxy token and the DNS provider keys for custom domains</td></tr>
+  <tr><td>Signing material</td><td>the release keystore, its passwords and the Play credentials</td></tr>
+  <tr><td>The admin tools</td><td>the web panel and the Kotlin admin app, which both hold the service role key</td></tr>
+</table>
+<p>One exception is on purpose. The imprint and the privacy policy name a real operator with a real address, because German law requires it, and a service that hides who runs it is not trustworthy anyway.</p>
+<h3>Get it running, step by step</h3>
+<ol class="steps">
+  <li>Clone the repository and build it once with JDK 21. You do not need anything else to see the app compile and start.</li>
+  <li>Create a Supabase project, then apply the SQL files from <code>supabase/</code> in order: the migrations first, then the security fixes, then the release and extension files. Each file ends with a statement that tells the API to reload its schema.</li>
+  <li>Create the storage buckets your features need: <code>artifacts</code> for Java runtimes, <code>release_images</code> for release banners, <code>support_attachments</code> for tickets, <code>extension_artifacts</code> and <code>extension_icons</code> for the store.</li>
+  <li>Deploy the edge functions from <code>supabase/functions/</code> and give them their secrets. The app asks <code>get-tunnel-config</code> for its tunnel credentials, so that one you cannot skip.</li>
+  <li>Run your own tunnel server, or use an existing service, and put its address together with your Supabase URL and public key into the header file that the app compiles into native code.</li>
+  <li>Build a signed release and install it. The first screen registers a device and creates the row that everything else hangs off.</li>
+  <li>Optional: deploy the Discord bot with your own token if you want release announcements, and the admin panel if you prefer a browser over the admin app.</li>
+</ol>
+<div class="callout">A fresh instance starts empty on purpose. Without a backend the app still runs, but the first start cannot register a device and most screens stay quiet. When that happens, check the tunnel function first, because it is the only one the app truly needs.</div></section>
+<section id="building"><h2>Building the app</h2><p>The project is one Gradle module plus a small native part that boots the embedded JVM, so the first build takes a few minutes and later ones are quick. Two traps cost more time than everything else combined, so they get their own paragraph.</p>
+<pre><code>export JAVA_HOME=/path/to/jdk-21        # newer JDKs break the Gradle version in use
+./gradlew :app:assembleDebug            # debug apk
+./gradlew :app:assembleRelease -PKEYSTORE_PW=... -PKEY_PW=...
+adb install -r app/build/outputs/apk/release/app-release.apk
+./gradlew :app:testDebugUnitTest        # unit tests, finishes in seconds</code></pre>
+<p><b>The first trap:</b> a debug build and a release build cannot replace each other, because their signatures differ. Decide early which one your test device carries, otherwise you will uninstall the app and lose its data on the way.</p>
+<p><b>The second trap:</b> release builds strip every log call. Logcat stays completely silent in a release build, for your code and for the framework wrappers alike. Show diagnostics in the interface instead of trusting a log line, and remember that the app has its own debug log screen for exactly this reason.</p>
+<p>The devices that matter are arm64 and run Android 11 or newer. The APK bundles only arm64 libraries, so an x86 emulator will install nothing useful. Use a real device when you want to reproduce real behaviour.</p></section>
+<section id="extensions"><h2>Extensions: format</h2><p>Extensions let other people add screens, languages, themes, settings rows and server tabs to the app, without forking it and without waiting for a release. They are plain ZIP files with a manifest and, usually, a small web interface. Nothing native is ever loaded, which keeps the app compatible with Play policy and, just as important, keeps a broken extension from taking the app down with it.</p>
+<p>Keep an example open next to you while you read: <a href="https://github.com/libredroid-project/KodaNetwork/tree/main/extensions/examples/koda-lab" target="_blank" rel="noopener">Koda Lab</a> is the test bench that exercises every call, <a href="https://github.com/libredroid-project/KodaNetwork/tree/main/extensions/examples/live-log" target="_blank" rel="noopener">Live Log</a> is a small screen, <a href="https://github.com/libredroid-project/KodaNetwork/tree/main/extensions/examples/language-polish" target="_blank" rel="noopener">Polski</a> is a real language pack and <a href="https://github.com/libredroid-project/KodaNetwork/tree/main/extensions/examples/theme-ocean" target="_blank" rel="noopener">Ocean</a> shows themes with interface tweaks.</p>
+<h3>What a package looks like</h3>
+<pre><code>my-extension.kodaext          (a ZIP, files at the root)
+  manifest.json                required
+  ui/index.html                required when the extension has a screen
+  ui/app.js, ui/style.css      your interface
+  lang/es.json                 language packs you contribute
+  automations.json             automation rules
+  icon.png                     128x128, shown in the hub</code></pre>
+<p>Here is a manifest that uses nearly everything. Read it as a menu, then delete the parts you do not need.</p>
+<pre><code>{
+  "schema": 1,
+  "id": "eu.example.mypack",
+  "name": "My Pack",
+  "version": "1.0.0",
+  "versionCode": 1,
+  "author": "Your name",
+  "description": "What it does, in one sentence.",
+  "license": "GPL-3.0-or-later",
+  "source_url": "https://github.com/you/mypack",
+  "minAppVersion": 8514,
+  "permissions": ["servers.read", "console.read", "storage", "http:discord.com"],
+  "ui": { "entry": "ui/index.html", "title": "My Pack" },
+  "contributes": {
+    "languages": [ { "code": "es", "name": "Espanol", "file": "lang/es.json" } ],
+    "themes": [ { "id": "ocean", "name": "Ocean", "color": "#006874" } ],
+    "settings": [ { "title": "My Pack", "subtitle": "Open the panel", "target": "overview" } ],
+    "server_tabs": [ { "id": "panel", "title": "Panel", "target": "server" } ],
+    "ui": { "hide": ["btn_github_main"], "console_chips": ["/tps", "time set day"] }
+  },
+  "automations": "automations.json"
+}</code></pre>
+<div class="callout">A license is mandatory. The app and the store show it, and a package without one is rejected at install time.</div></section>
+<section id="bridge"><h2>Extensions: the bridge</h2><p>Every page your extension shows runs in a sandbox that can only reach its own files. To talk to the app it uses one global object, <code>window.koda</code>, which the host injects before your scripts run. Every call returns a promise and every answer is a JSON object. Errors arrive as an object with an <code>error</code> field instead of an exception, so a page can always show something sensible.</p>
+<pre><code>const { servers } = await koda.servers.list();
+const first = servers[0];
+const { lines } = await koda.console.tail(first.id, 200);
+
+await koda.storage.set('lastServer', first.id);
+const saved = await koda.storage.get('lastServer');   // { value: '...' }
+
+const theme = await koda.theme();    // colours, so your page can match the app
+const { lang } = await koda.locale();
+koda.ui.toast('Hello from my pack');
+const { ok } = await koda.ui.confirm('Restart?', 'Players will be kicked.');</code></pre>
+<table>
+  <tr><th>Call</th><th>What it gives you</th></tr>
+  <tr><td><code>koda.api</code>, <code>koda.version</code></td><td>the bridge version, so you can show a friendly message on older apps</td></tr>
+  <tr><td><code>koda.servers.list()</code>, <code>get(id)</code></td><td>servers with a fixed field set: id, name, type, mcVersion, state, port, address, ramMB, maxPlayers</td></tr>
+  <tr><td><code>koda.console.tail(id, lines)</code></td><td>the last console lines, up to a thousand</td></tr>
+  <tr><td><code>koda.storage.get/set/remove/keys</code></td><td>your own key value store, one megabyte per extension</td></tr>
+  <tr><td><code>koda.ui.toast</code>, <code>koda.ui.confirm</code></td><td>two small helpers that use the app's own look</td></tr>
+  <tr><td><code>koda.theme()</code>, <code>koda.locale()</code></td><td>colours and language, so your page fits in</td></tr>
+</table>
+<h3>Permissions</h3>
+<p>Permissions are declared in the manifest and enforced by the app. If you did not ask for <code>servers.read</code>, the call comes back as an error.</p>
+<table>
+  <tr><th>Permission</th><th>State</th></tr>
+  <tr><td><code>storage</code>, <code>servers.read</code>, <code>console.read</code></td><td>live today</td></tr>
+  <tr><td><code>console.send</code>, <code>servers.control</code></td><td>declared, next phase, behind in app confirmation</td></tr>
+  <tr><td><code>players.read</code>, <code>players.actions</code>, <code>files.read</code>, <code>notifications</code></td><td>declared, next phase</td></tr>
+  <tr><td><code>http:host</code></td><td>reserved for one specific web domain</td></tr>
+</table>
+<div class="callout">The honest bit: only the read permissions are live right now. The test bench shows you exactly which answer each call gives on your build, instead of you having to guess.</div></section>
+<section id="contributions"><h2>Extensions: contributions</h2><p>Beyond its own screen, an extension can add things to the app itself. Nothing happens quietly: every contribution is applied by the user, either through the actions sheet (long press the entry in the hub, or use the menu inside its screen) or through a normal switch.</p>
+<h3>Language packs</h3>
+<pre><code>// lang/es.json, the keys are the app's string resource names
+{
+  "tab_dashboard": "Panel",
+  "jars_title": "MODS Y PLUGINS",
+  "sd_toast_log_copied": "Registro copiado",
+  "ext_ui_chips_count": "%1$d comandos extra en la consola."
+}</code></pre>
+<p>Packs are partial by design. Whatever you leave out stays in the language the user picked, so you can ship a small pack and grow it later. Keep placeholders such as <code>%1$s</code> exactly as they are in the original string, because a missing or extra one crashes the app the moment that text is formatted.</p>
+<pre><code>python3 extensions/tools/check_language_pack.py path/to/lang/es.json</code></pre>
+<h3>Themes</h3>
+<pre><code>"themes": [
+  { "id": "ocean", "name": "Ocean", "color": "#006874" },
+  { "id": "midnight", "name": "Midnight", "color": "#00D9FF",
+    "colors": { "primary": "#00D9FF", "surface": "#07070F", "card": "#14141F",
+                "text": "#EDEDF5", "text_dim": "#8C8C9C", "error": "#FF4455" } }
+]</code></pre>
+<p>The <code>color</code> field alone is a seed. The app runs it through its Material 3 engine and generates a whole palette from it, which already changes buttons, cards and highlights. If you add <code>colors</code>, you are declaring the palette yourself: the roles <code>primary</code>, <code>surface</code>, <code>card</code>, <code>text</code>, <code>text_dim</code>, <code>outline</code>, <code>online</code> and <code>error</code> override what the engine computed, and the app derives a readable contrast colour for text on top of your accents.</p>
+<p>Each theme gets its own switch in the actions sheet, with a small preview of its palette. Turning one on turns the previous one off, turning it off returns to the app's own colour mode.</p>
+<div class="callout">Themes apply in Material 3 mode, which is a setting inside the app. If it is off, only the accent colour is used.</div>
+<h3>Settings entries</h3>
+<pre><code>"settings": [
+  { "title": "My Pack", "subtitle": "Everything in one screen", "target": "overview" }
+]</code></pre>
+<p>These show up in the app's settings screen, right below the extension hub, each with a small info button that names the extension, its version, the author and the license. That button is the point: a user should never have to guess which rows come from the app and which come from a pack. Tapping the row opens your screen, and <code>target</code> is appended to your page address as <code>#target</code> so you can open the right tab of your own interface.</p>
+<h3>Server tabs</h3>
+<pre><code>"server_tabs": [ { "id": "panel", "title": "Panel", "target": "server" } ]</code></pre>
+<p>This adds a tab to every server screen. Your page is loaded with the context attached, for example <code>#server&amp;server=the-server-id</code>, so your interface knows which server it belongs to. That is how an extension shows something for one specific server instead of a generic list.</p>
+<div class="callout">One honest limitation: the optional sleek layout has no shared panel container, so contributed tabs are skipped there.</div>
+<h3>Interface tweaks and automations</h3>
+<pre><code>"ui": {
+  "hide": ["btn_github_main"],
+  "console_chips": ["/tps", "/list", "time set day"]
+}</code></pre>
+<p><code>hide</code> removes elements you do not want, addressed by the view ids used in the app's layouts. <code>console_chips</code> adds your own quick commands above the console. Both stay active while the extension is enabled, with no extra switch to hunt for.</p>
+<p>An <code>automations.json</code> describes rules in the shape of trigger and actions. Triggers are server state changes, log patterns and schedules. Actions are notifications, webhooks and console commands. The format is final and validated when the package is installed, and the engine that runs the rules ships in the next phase, so think of the file today as a precise description of what your extension will do on its own.</p></section>
+<section id="packaging"><h2>Extensions: packaging</h2><p>Two tools apply exactly the rules the app applies. An unknown view id, a missing language file, a malformed colour or a version number that does not grow will fail on your computer instead of on somebody's phone, which is the right place to find it.</p>
+<pre><code># validate the manifest and build the package
+python3 extensions/tools/pack_extension.py extensions/examples/koda-lab
+
+# check a language pack before you ship it
+python3 extensions/tools/check_language_pack.py my/pack/lang/es.json</code></pre>
+<p>To try a package, sideload it: Settings, Extensions, plus, pick the file. Updates keep the extension's storage, removing it deletes the storage with it. The hub menu has a reload entry, so you can iterate without reinstalling.</p>
+<p>When you are happy, publish it wherever you like. The store inside the app is the curated place: a submitted package is reviewed, its license and source link are shown next to it, and it can be taken down again if it misbehaves. Before that, a GitHub release with the <code>.kodaext</code> attached works fine, because the app installs from any file.</p></section>
+<section id="customizing"><h2>Customizing the app</h2><h3>Translations</h3>
+<p>All interface text lives in <code>app/src/main/res/values/strings.xml</code>, with translations beside it in <code>values-de</code>, <code>values-zh-rCN</code> and <code>values-pl</code>. Android falls back to the default for anything missing, so a partial translation is genuinely useful and can grow over time.</p>
+<p>Adding a language means creating the matching folder, adding the language to the picker in the settings activity, and nothing else. To keep translations honest the repository ships a checker that catches the two mistakes that actually hurt, keys that do not exist and placeholders that drifted.</p>
+<pre><code>python3 extensions/tools/check_translation.py app/src/main/res/values-pl/strings.xml</code></pre>
+<div class="callout">Run it after every batch of translations. A broken placeholder does not look wrong, it crashes at runtime the moment the string is used.</div>
+<h3>Theming in code</h3>
+<p>The app is Material 2 at heart with an opt in Material 3 mode that generates a full colour scheme from a seed. In Material 3 mode the helper resolves the colour roles once and styles whole view trees with them, which is also where extensions hook in. The palettes live in <code>colors_m3.xml</code> with the night variant beside it. If you want a colour decision that applies everywhere, that helper is the single place to change it.</p>
+<h3>Layouts, and the trap that keeps biting</h3>
+<p>Central screens exist in more than one layout: a classic one, an optional Material 3 one, an optional sleek one, and for the server screen a terminal variant. The activity picks at runtime. That means a new view has to be added to every variant you actually use, or the code that looks it up has to cope with its absence.</p>
+<p>We learned this the hard way. A settings card existed only in the classic layout, the settings screen crashed in Material 3 mode with a null pointer, and because that same screen is where the theme mode lives, there was no way back. The habit that prevents it is cheap:</p>
+<pre><code>View card = findViewById(R.id.card_my_feature);
+if (card == null) return;      // this layout variant may not have it
+card.setOnClickListener(v -&gt; openMyFeature());</code></pre>
+<h3>Branding and the design rules</h3>
+<p>Icons, the K monogram and the brand colours live in <code>branding/</code> and are generated by a script, so you change the source instead of twenty files. Fonts are referenced as <code>font_koda</code> for the interface and <code>font_koda_mono</code> for logs and code, and their licenses sit next to all the others in the licenses folder.</p>
+<p>The rules that keep the app coherent are worth stating plainly, because breaking them is visible: use the Koda palette instead of inventing greys, keep buttons at a 12 dp corner radius, ship every new string in English, German and Chinese at least, and keep functional sheets functional, which means controls and no prose.</p></section>
+<section id="quality"><h2>Checks and quality</h2><p>None of this is ceremony. Every check below exists because the corresponding mistake reached a device at least once.</p>
+<table>
+  <tr><th>Check</th><th>What it protects</th></tr>
+  <tr><td><code>./gradlew :app:testDebugUnitTest</code></td><td>extension manifest rules, examples that must install on the current build, path traversal in archives</td></tr>
+  <tr><td><code>check_language_pack.py</code></td><td>language packs with typo keys, which would otherwise do nothing at all</td></tr>
+  <tr><td><code>check_translation.py</code></td><td>built in translations with missing keys or broken placeholders</td></tr>
+  <tr><td>Koda Lab on a device</td><td>the whole bridge at runtime with raw answers, plus storage quota and rate limits</td></tr>
+  <tr><td>The packaging tools</td><td>unknown view ids, missing files and malformed colours before a package leaves your machine</td></tr>
+  <tr><td>The mirror publish script</td><td>instance data on its way into the public repository, with a scan that aborts the push</td></tr>
+</table></section>
+<section id="licensing"><h2>Licensing</h2><p>The project is free software under the GNU General Public License v3, and only that. Source files carry a short header that points at the license text. If you fork and publish, keep those headers and the license, and your users keep the same freedoms you got.</p>
+<p>Third party components are listed twice on purpose: inside the app under Licenses in the settings, and on the website at <a href="https://host.kodanetwork.eu/licenses.html">host.kodanetwork.eu/licenses.html</a>, so people can read them without installing anything. When you add a dependency, add its license text there as well, next to the others.</p>
+<p>Extensions are not covered by this license. They are separate works that run against a documented interface, and every published extension declares its own license, which the app shows to the user. That is why the license field is mandatory in the manifest and why the store recommends a source link: installing somebody else's code should never be a blind decision.</p></section>
+
+            <div class="nextprev"><span>Getting started</span><a href="#own-instance">Next: Your own instance</a></div>
+<div class="nextprev"><span>Your own instance</span><a href="#building">Next: Building the app</a></div>
+<div class="nextprev"><span>Building the app</span><a href="#extensions">Next: Extensions: format</a></div>
+<div class="nextprev"><span>Extensions: format</span><a href="#bridge">Next: Extensions: the bridge</a></div>
+<div class="nextprev"><span>Extensions: the bridge</span><a href="#contributions">Next: Extensions: contributions</a></div>
+<div class="nextprev"><span>Extensions: contributions</span><a href="#packaging">Next: Extensions: packaging</a></div>
+<div class="nextprev"><span>Extensions: packaging</span><a href="#customizing">Next: Customizing the app</a></div>
+<div class="nextprev"><span>Customizing the app</span><a href="#quality">Next: Checks and quality</a></div>
+<div class="nextprev"><span>Checks and quality</span><a href="#licensing">Next: Licensing</a></div>
+<div class="nextprev"><span>Licensing</span><a href="#getting-started">Next: Getting started</a></div>
+        </main>
+    </div>
+
+    <script>
+        // Marks the section you are reading in the sidebar.
+        (function () {
+            var links = Array.prototype.slice.call(document.querySelectorAll('.sidebar a[href^="#"]'));
+            var sections = links.map(function (link) { return document.querySelector(link.getAttribute('href')); });
+            function update() {
+                var best = 0;
+                for (var i = 0; i < sections.length; i++) {
+                    if (sections[i] && sections[i].getBoundingClientRect().top <= 140) best = i;
+                }
+                links.forEach(function (link, i) { link.classList.toggle('active', i === best); });
+            }
+            document.addEventListener('scroll', update, { passive: true });
+            update();
+        })();
+    </script>
+
+</body>
+</html>
