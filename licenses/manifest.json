@@ -255,6 +255,11 @@
     "type": "txt"
   },
   {
+    "file": "unrar_license.txt",
+    "title": "Unrar License",
+    "type": "txt"
+  },
+  {
     "file": "voicechat.txt",
     "title": "Simple Voice Chat",
     "type": "txt"
