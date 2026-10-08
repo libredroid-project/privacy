@@ -30,4 +30,16 @@
     <changefreq>weekly</changefreq>
     <priority>0.8000</priority>
   </url>
+  <url>
+    <loc>https://host.kodanetwork.eu/licenses</loc>
+    <lastmod>2026-09-29T00:00:00+00:00</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.5000</priority>
+  </url>
+  <url>
+    <loc>https://host.kodanetwork.eu/impressum</loc>
+    <lastmod>2026-09-29T00:00:00+00:00</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.5000</priority>
+  </url>
 </urlset>
