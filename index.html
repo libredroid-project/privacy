@@ -97,13 +97,6 @@
 
         .container { max-width: 1200px; margin: 0 auto; padding: 0 24px; }
 
-        .bg-gradient {
-            position: fixed; inset: 0; z-index: -2; pointer-events: none;
-            background:
-                radial-gradient(ellipse 80% 50% at 50% 0%, rgba(255, 107, 0, 0.08), transparent 60%),
-                var(--md-surface);
-        }
-
         /* Top App Bar (Material 3) */
         .top-app-bar {
             position: sticky; top: 0; z-index: 100;
@@ -314,14 +307,6 @@
             background: linear-gradient(145deg, var(--md-surface-container) 0%, var(--md-surface-container-high) 100%);
             padding: 40px;
         }
-        .bento-card.b-hero::before {
-            content: '';
-            position: absolute;
-            top: -40px; right: -40px;
-            width: 240px; height: 240px;
-            background: radial-gradient(circle, var(--brand-container), transparent 65%);
-            pointer-events: none;
-        }
         .bento-card.b-wide { grid-column: span 3; }
         .bento-card.b-medium { grid-column: span 2; }
         .bento-card.b-small { grid-column: span 2; }
@@ -437,12 +422,6 @@
             background: var(--md-surface-container); border-radius: var(--shape-xl);
             padding: 64px 48px; text-align: center; position: relative;
             overflow: hidden; box-shadow: var(--elev-1);
-        }
-        .cta-card::before {
-            content: ''; position: absolute; top: -150px; left: 50%;
-            transform: translateX(-50%); width: 600px; height: 300px;
-            background: radial-gradient(ellipse, var(--brand-container), transparent 70%);
-            pointer-events: none;
         }
         .cta-card > * { position: relative; z-index: 1; }
         .cta-card h2 {
@@ -667,17 +646,6 @@
             overflow: hidden;
             box-shadow: var(--elev-2);
         }
-        .support-card::before {
-            content: '';
-            position: absolute;
-            top: -100px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 500px;
-            height: 250px;
-            background: radial-gradient(ellipse, rgba(255, 107, 0, 0.12), transparent 70%);
-            pointer-events: none;
-        }
         .support-content { position: relative; z-index: 1; }
         .support-card h2 {
             font-size: clamp(1.75rem, 3vw, 2.25rem);
@@ -757,8 +725,6 @@
     </style>
 </head>
 <body>
-
-    <div class="bg-gradient"></div>
 
     <!-- Top App Bar -->
     <header class="top-app-bar" id="nav-wrap">

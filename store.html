@@ -15,9 +15,26 @@
     <script src="https://accounts.google.com/gsi/client" async defer></script>
     <style>
         :root {
+            --md-primary: #FFB68C;
+            --md-on-primary: #5B2600;
+            --md-primary-container: #803D00;
+            --md-on-primary-container: #FFDCC2;
+            --md-secondary: #E2C1B0;
+            --md-on-secondary: #422B1F;
+            --md-secondary-container: #5B4032;
+            --md-on-secondary-container: #FFDCC2;
+            --md-tertiary: #D8C08C;
+            --md-on-tertiary: #3A2E05;
+            --md-tertiary-container: #524520;
+            --md-on-tertiary-container: #F4DCAB;
             --md-error: #FFB4AB;
+            --md-on-error: #690005;
+            --md-error-container: #93000A;
+            --md-on-error-container: #FFDAD6;
             --md-success: #6FBE7E;
+            --md-success-container: rgba(111, 190, 126, 0.15);
             --md-warning: #F59E0B;
+            --md-warning-container: rgba(245, 158, 11, 0.15);
             --md-surface: #1B1613;
             --md-on-surface: #EFE0D9;
             --md-on-surface-variant: #D8C2B5;
@@ -28,299 +45,1524 @@
             --md-surface-container: #231D18;
             --md-surface-container-high: #2D2620;
             --md-surface-container-highest: #382F29;
+            --md-inverse-surface: #EFE0D9;
+            --md-inverse-on-surface: #3A2D26;
+            --md-scrim: rgba(0, 0, 0, 0.6);
+
             --brand: #FF6B00;
             --brand-hover: #FF8533;
             --brand-container: rgba(255, 107, 0, 0.15);
+
+            --elev-1: 0 1px 2px rgba(0,0,0,0.3), 0 1px 3px 1px rgba(0,0,0,0.15);
+            --elev-2: 0 1px 2px rgba(0,0,0,0.3), 0 2px 6px 2px rgba(0,0,0,0.15);
+            --elev-3: 0 4px 8px 3px rgba(0,0,0,0.18), 0 1px 3px rgba(0,0,0,0.3);
+            --elev-4: 0 6px 10px 4px rgba(0,0,0,0.18), 0 2px 3px rgba(0,0,0,0.3);
+            --elev-5: 0 8px 12px 6px rgba(0,0,0,0.18), 0 4px 4px rgba(0,0,0,0.3);
+
+            --shape-xs: 4px;
             --shape-sm: 8px;
             --shape-md: 12px;
             --shape-lg: 16px;
+            --shape-xl: 28px;
             --shape-full: 999px;
+
+            --ease-emphasized: cubic-bezier(0.2, 0, 0, 1);
+            --ease-standard: cubic-bezier(0.4, 0, 0.2, 1);
+
+            --sidebar-width: 260px;
         }
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
             font-family: 'Roboto Flex', 'Roboto', sans-serif;
             background-color: var(--md-surface);
             color: var(--md-on-surface);
-            min-height: 100vh;
+            overflow-x: hidden;
+            display: flex;
+            height: 100vh;
             -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
         }
+        h1, h2, h3, h4 { font-family: 'Roboto Flex', sans-serif; font-weight: 500; letter-spacing: -0.01em; }
         a { text-decoration: none; color: inherit; }
-        .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; line-height: 1; user-select: none; }
+        ::selection { background: var(--md-primary-container); color: var(--md-on-primary-container); }
 
-        header.top {
-            display: flex; align-items: center; gap: 16px;
-            padding: 14px 24px; border-bottom: 1px solid var(--md-outline-variant);
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            line-height: 1;
+            user-select: none;
+        }
+        .material-symbols-outlined.fill { font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+
+        /* Mobile Top App Bar */
+        .top-app-bar {
+            display: none;
+            padding: 8px 12px;
+            background: var(--md-surface-container);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            align-items: center;
+            justify-content: space-between;
+            width: 100%;
+            position: fixed;
+            top: 0;
+            z-index: 100;
+            height: 64px;
+            box-shadow: var(--elev-1);
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: 500;
+            font-size: 1.125rem;
+            letter-spacing: 0;
+        }
+        .logo-mark {
+            width: 36px;
+            height: 36px;
+            border-radius: var(--shape-sm);
+            background: var(--md-surface-container-high);
+            display: grid;
+            place-items: center;
+            overflow: hidden;
+            box-shadow: var(--elev-1);
+            flex-shrink: 0;
+        }
+        .logo-mark img { width: 100%; height: 100%; object-fit: cover; display: block; }
+        .logo-text { color: var(--md-on-surface); }
+        .logo-text span { color: var(--brand); }
+
+        .icon-btn {
+            display: inline-grid;
+            place-items: center;
+            width: 44px;
+            height: 44px;
+            border-radius: var(--shape-full);
+            background: transparent;
+            color: var(--md-on-surface-variant);
+            border: none;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+            transition: background 0.2s var(--ease-standard), color 0.2s var(--ease-standard);
+        }
+        .icon-btn::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: var(--md-on-surface);
+            opacity: 0;
+            transition: opacity 0.2s var(--ease-standard);
+        }
+        .icon-btn:hover::before { opacity: 0.08; }
+        .icon-btn:hover { color: var(--md-on-surface); }
+        .icon-btn .material-symbols-outlined { font-size: 24px; }
+
+        /* Navigation Drawer (Material 3) */
+        .sidebar {
+            width: var(--sidebar-width);
             background: var(--md-surface-container-low);
-            position: sticky; top: 0; z-index: 40;
+            display: flex;
+            flex-direction: column;
+            padding: 16px 0;
+            transition: transform 0.35s var(--ease-emphasized);
+            z-index: 99;
+            position: relative;
+            flex-shrink: 0;
+            gap: 4px;
         }
-        .logo { display: flex; align-items: center; gap: 10px; font-weight: 600; font-size: 1.05rem; }
-        .logo img { width: 30px; height: 30px; border-radius: 8px; }
-        .logo span span { color: var(--brand); }
-        header.top nav { margin-left: auto; display: flex; gap: 8px; align-items: center; }
-        header.top nav a, header.top nav button {
-            font: inherit; font-size: 0.875rem; padding: 8px 14px; border-radius: var(--shape-full);
-            color: var(--md-on-surface-variant); background: transparent; border: 1px solid transparent; cursor: pointer;
-        }
-        header.top nav a:hover, header.top nav button:hover { color: var(--md-on-surface); background: var(--md-surface-container); }
-        header.top nav button.primary { background: var(--brand); color: #201007; font-weight: 600; }
-
-        main { max-width: 1100px; margin: 0 auto; padding: 32px 20px 80px; }
-        .hero h1 { font-size: 1.9rem; font-weight: 600; letter-spacing: -0.02em; }
-        .hero p { color: var(--md-on-surface-variant); margin-top: 8px; max-width: 640px; line-height: 1.5; }
-        .hero .notice {
-            margin-top: 16px; padding: 12px 16px; border-radius: var(--shape-md);
-            background: var(--md-surface-container); border: 1px solid var(--md-outline-variant);
-            font-size: 0.85rem; color: var(--md-on-surface-variant); max-width: 720px;
+        .sidebar .logo {
+            padding: 8px 20px 16px 20px;
+            margin-bottom: 4px;
         }
 
-        .toolbar { display: flex; gap: 12px; flex-wrap: wrap; align-items: center; margin: 24px 0 8px; }
-        .search { flex: 1; min-width: 220px; display: flex; align-items: center; gap: 8px;
-            background: var(--md-surface-container); border: 1px solid var(--md-outline-variant);
-            border-radius: var(--shape-full); padding: 10px 16px; }
-        .search input { flex: 1; background: transparent; border: 0; outline: 0; color: inherit; font: inherit; }
-        .chips { display: flex; gap: 8px; flex-wrap: wrap; margin: 12px 0 20px; }
-        .chip { padding: 7px 14px; border-radius: var(--shape-full); border: 1px solid var(--md-outline-variant);
-            background: transparent; color: var(--md-on-surface-variant); font: inherit; font-size: 0.85rem; cursor: pointer; }
-        .chip.active { background: var(--brand-container); border-color: var(--brand); color: var(--brand); }
+        /* App status indicator */
+        #app-status-indicator {
+            margin: 0 16px 16px 16px;
+            padding: 12px 16px;
+            background: var(--md-surface-container);
+            border-radius: var(--shape-md);
+            font-size: 0.8125rem;
+            position: relative;
+            overflow: hidden;
+            transition: background 0.3s var(--ease-standard);
+        }
+        #app-status-indicator::before {
+            content: '';
+            position: absolute;
+            top: 12px;
+            left: 0;
+            width: 4px;
+            height: calc(100% - 24px);
+            border-radius: 0 4px 4px 0;
+            background: var(--md-on-surface-variant);
+            transition: background 0.3s var(--ease-standard);
+        }
+        #app-status-indicator.online::before { background: var(--md-success); }
+        #app-status-indicator.warn::before { background: var(--md-warning); }
+        #app-status-indicator.offline::before { background: var(--md-on-surface-variant); }
 
-        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 16px; margin-top: 8px; }
-        .card { background: var(--md-surface-container-low); border: 1px solid var(--md-outline-variant);
-            border-radius: var(--shape-lg); padding: 18px; display: flex; flex-direction: column; gap: 10px; }
-        .card.clickable { cursor: pointer; transition: border-color .15s, background .15s; }
-        .card.clickable:hover { border-color: var(--brand); background: var(--md-surface-container); }
-        .card-head { display: flex; gap: 12px; align-items: center; }
-        .icon { width: 44px; height: 44px; border-radius: var(--shape-md); object-fit: cover; background: var(--md-surface-container-highest);
-            display: flex; align-items: center; justify-content: center; font-size: 20px; flex: none; }
-        .card-title { font-weight: 600; }
-        .card-sub { font-size: 0.8rem; color: var(--md-on-surface-variant); }
-        .card-summary { font-size: 0.875rem; color: var(--md-on-surface-variant); line-height: 1.45; min-height: 2.5em; }
-        .card-meta { display: flex; gap: 12px; flex-wrap: wrap; font-size: 0.75rem; color: var(--md-on-surface-variant); align-items: center; }
-        .badge { font-size: 0.7rem; font-weight: 600; padding: 3px 10px; border-radius: var(--shape-full); border: 1px solid var(--md-outline-variant); }
-        .badge.PENDING { color: var(--md-warning); border-color: var(--md-warning); }
-        .badge.APPROVED { color: var(--md-success); border-color: var(--md-success); }
-        .badge.REJECTED, .badge.DELISTED { color: var(--md-error); border-color: var(--md-error); }
-        .badge.WITHDRAWN { color: var(--md-outline); }
-        .empty { color: var(--md-on-surface-variant); padding: 40px 0; text-align: center; }
+        #app-status-indicator > div:first-child {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+        }
+        #app-status-badge {
+            background: var(--md-surface-container-high);
+            color: var(--md-on-surface-variant);
+            padding: 4px 10px;
+            border-radius: var(--shape-full);
+            font-weight: 500;
+            font-size: 0.6875rem;
+            letter-spacing: 0.04em;
+            transition: color 0.3s var(--ease-standard);
+        }
+        #app-status-desc {
+            font-size: 0.75rem;
+            color: var(--md-on-surface-variant);
+            margin-top: 6px;
+        }
 
-        .section-title { margin: 40px 0 8px; font-size: 1.2rem; font-weight: 600; }
+        /* Navigation items (Material 3 drawer items) */
+        .nav-section-label {
+            padding: 12px 28px 8px 28px;
+            font-size: 0.6875rem;
+            color: var(--md-on-surface-variant);
+            font-weight: 500;
+            letter-spacing: 0.08em;
+        }
 
-        .overlay { position: fixed; inset: 0; background: rgba(0,0,0,.65); display: none; align-items: flex-start;
-            justify-content: center; padding: 40px 16px; overflow-y: auto; z-index: 60; }
-        .overlay.active { display: flex; }
-        .sheet { background: var(--md-surface-container); border: 1px solid var(--md-outline-variant);
-            border-radius: var(--shape-lg); max-width: 680px; width: 100%; padding: 24px; }
-        .sheet h2 { font-size: 1.3rem; margin-bottom: 6px; }
-        .sheet .close { float: right; background: none; border: 0; color: var(--md-on-surface-variant); cursor: pointer; }
-        .sheet-body { margin-top: 16px; display: flex; flex-direction: column; gap: 14px; }
-        .detail-head { display: flex; gap: 14px; align-items: center; }
-        .detail-links { display: flex; gap: 14px; font-size: 0.85rem; }
-        .detail-links a { color: var(--brand); }
-        .shots { display: flex; gap: 8px; overflow-x: auto; }
-        .shots img { height: 120px; border-radius: var(--shape-sm); border: 1px solid var(--md-outline-variant); }
-        .version-row { border-top: 1px solid var(--md-outline-variant); padding: 10px 0; font-size: 0.85rem; }
-        .version-row:first-child { border-top: 0; }
-        .version-head { display: flex; gap: 10px; align-items: baseline; }
-        .version-head strong { font-size: 0.95rem; }
-        .version-row pre { white-space: pre-wrap; color: var(--md-on-surface-variant); font: inherit; font-size: 0.8rem; margin-top: 4px; }
-        .perm { display: inline-block; font-size: 0.72rem; border: 1px solid var(--md-outline-variant); border-radius: var(--shape-full);
-            padding: 2px 9px; margin: 2px 4px 0 0; color: var(--md-on-surface-variant); }
-        .btn { font: inherit; font-weight: 600; cursor: pointer; border-radius: var(--shape-full); padding: 11px 20px; border: 0;
-            background: var(--brand); color: #201007; }
-        .btn:hover { background: var(--brand-hover); }
-        .btn.ghost { background: transparent; color: var(--md-on-surface); border: 1px solid var(--md-outline-variant); }
-        .btn.danger { background: transparent; color: var(--md-error); border: 1px solid var(--md-error); }
-        .btn:disabled { opacity: .55; cursor: default; }
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 0 16px;
+            height: 56px;
+            margin: 0 12px;
+            color: var(--md-on-surface-variant);
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 0.875rem;
+            cursor: pointer;
+            position: relative;
+            border-radius: var(--shape-full);
+            transition: background 0.2s var(--ease-standard), color 0.2s var(--ease-standard);
+            overflow: hidden;
+        }
+        .nav-item::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: var(--md-on-surface);
+            opacity: 0;
+            transition: opacity 0.2s var(--ease-standard);
+            pointer-events: none;
+        }
+        .nav-item:hover::before { opacity: 0.08; }
+        .nav-item:hover { color: var(--md-on-surface); }
+        .nav-item .material-symbols-outlined { font-size: 24px; opacity: 0.9; }
+        .nav-item.active {
+            background: var(--brand-container);
+            color: var(--brand);
+        }
+        .nav-item.active::before { background: var(--brand); }
+        .nav-item.active:hover::before { opacity: 0.08; }
+        .nav-item.active .material-symbols-outlined { font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+
+        .sidebar-bottom {
+            margin-top: auto;
+            padding-top: 8px;
+        }
+        .sidebar-bottom .nav-item { color: var(--md-on-surface-variant); }
+        .sidebar-bottom .nav-item:hover {
+            color: var(--md-error);
+        }
+        .sidebar-bottom .nav-item:hover::before { background: var(--md-error); }
+        .sidebar-bottom .nav-item .material-symbols-outlined { color: inherit; }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            padding: 32px 5%;
+            overflow-y: auto;
+            position: relative;
+            z-index: 1;
+            min-width: 0;
+        }
+
+        .view-section { display: none; animation: fadeSlideIn 0.3s var(--ease-emphasized); }
+        .view-section.active { display: block; }
+        @keyframes fadeSlideIn {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Login */
+        #login-view {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            height: 100%;
+            background: var(--md-surface);
+            position: absolute;
+            z-index: 1000;
+            top: 0;
+            left: 0;
+            padding: 20px;
+        }
+        #login-view::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(ellipse 50% 50% at 50% 50%, var(--brand-container), transparent 70%);
+            pointer-events: none;
+        }
+
+        .login-card {
+            background: var(--md-surface-container);
+            border-radius: var(--shape-lg);
+            padding: 40px;
+            width: 100%;
+            max-width: 410px;
+            text-align: center;
+            position: relative;
+            z-index: 1;
+            box-shadow: var(--elev-3);
+            animation: loginIn 0.4s var(--ease-emphasized);
+        }
+        @keyframes loginIn {
+            from { opacity: 0; transform: translateY(12px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .login-card .logo {
+            justify-content: center;
+            margin-bottom: 28px;
+        }
+        .login-card h2 {
+            margin-bottom: 28px;
+            font-size: 1.5rem;
+            font-weight: 500;
+        }
+
+        .input-group {
+            margin-bottom: 16px;
+            text-align: left;
+        }
+        .input-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: var(--md-on-surface-variant);
+            font-size: 0.8125rem;
+            font-weight: 500;
+        }
+        .input-group input,
+        .input-group select {
+            width: 100%;
+            padding: 14px 16px;
+            background: var(--md-surface-container-low);
+            color: var(--md-on-surface);
+            font-family: inherit;
+            font-size: 0.9375rem;
+            border-radius: var(--shape-sm);
+            transition: background 0.2s var(--ease-standard), box-shadow 0.2s var(--ease-standard);
+        }
+        .input-group input:focus,
+        .input-group select:focus {
+            outline: none;
+            background: var(--md-surface-container-high);
+            box-shadow: inset 0 0 0 2px var(--brand);
+        }
+        .input-group input::placeholder { color: var(--md-on-surface-variant); opacity: 0.7; }
+
+        /* Material 3 Buttons */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            font-family: inherit;
+            font-weight: 500;
+            font-size: 0.875rem;
+            line-height: 1;
+            border-radius: var(--shape-full);
+            padding: 10px 24px;
+            min-height: 40px;
+            transition: box-shadow 0.2s var(--ease-standard), background 0.2s var(--ease-standard), transform 0.1s var(--ease-standard);
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+            border: none;
+            white-space: nowrap;
+            letter-spacing: 0.01em;
+        }
+        .btn .material-symbols-outlined { font-size: 18px; }
+        .btn::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: currentColor;
+            opacity: 0;
+            transition: opacity 0.2s var(--ease-standard);
+            pointer-events: none;
+        }
+        .btn:hover::before { opacity: 0.08; }
+        .btn:active::before { opacity: 0.12; }
+        .btn:active { transform: scale(0.98); }
+        .btn-full { width: 100%; }
+
+        .btn-filled {
+            background: var(--brand);
+            color: #fff;
+        }
+        .btn-filled:hover { box-shadow: var(--elev-1); background: var(--brand-hover); }
+
+        .btn-tonal {
+            background: var(--md-secondary-container);
+            color: var(--md-on-secondary-container);
+        }
+        .btn-tonal:hover { box-shadow: var(--elev-1); }
+
+        .btn-outlined {
+            background: transparent;
+            color: var(--brand);
+            box-shadow: inset 0 0 0 1px var(--md-outline);
+        }
+        .btn-outlined:hover { background: var(--brand-container); box-shadow: inset 0 0 0 1px var(--brand); }
+
+        .btn-text {
+            background: transparent;
+            color: var(--brand);
+            padding: 10px 12px;
+        }
+        .btn-text:hover { background: var(--brand-container); }
+
+        .error-msg {
+            color: var(--md-on-error-container);
+            margin-top: 12px;
+            font-size: 0.8125rem;
+            display: none;
+            padding: 12px 16px;
+            background: var(--md-error-container);
+            border-radius: var(--shape-sm);
+        }
+
+        .login-divider {
+            margin: 22px 0;
+            color: var(--md-on-surface-variant);
+            position: relative;
+            text-align: center;
+            font-size: 0.8125rem;
+        }
+        .login-divider span {
+            background: var(--md-surface-container);
+            padding: 0 12px;
+            position: relative;
+            z-index: 1;
+        }
+        .login-divider::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 0;
+            right: 0;
+            border-top: 1px solid var(--md-outline-variant);
+            z-index: 0;
+        }
+
+        /* Page Header */
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 28px;
+            gap: 16px;
+            flex-wrap: wrap;
+        }
+        .page-title {
+            font-size: 1.75rem;
+            font-weight: 500;
+            letter-spacing: -0.02em;
+        }
+
+        /* FAB (Floating Action Button) - Material 3 Extended FAB */
+        .fab {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: var(--brand);
+            color: #fff;
+            padding: 0 20px;
+            height: 56px;
+            border-radius: var(--shape-md);
+            border: none;
+            cursor: pointer;
+            font-family: inherit;
+            font-weight: 500;
+            font-size: 0.875rem;
+            box-shadow: var(--elev-3);
+            transition: box-shadow 0.2s var(--ease-standard), background 0.2s var(--ease-standard);
+            position: relative;
+            overflow: hidden;
+        }
+        .fab::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: #fff;
+            opacity: 0;
+            transition: opacity 0.2s var(--ease-standard);
+            pointer-events: none;
+        }
+        .fab:hover { box-shadow: var(--elev-4); background: var(--brand-hover); }
+        .fab:hover::before { opacity: 0.08; }
+        .fab:active::before { opacity: 0.12; }
+        .fab .material-symbols-outlined { font-size: 24px; }
+        .fab:disabled {
+            background: var(--md-surface-container-high);
+            color: var(--md-on-surface-variant);
+            box-shadow: none;
+            cursor: not-allowed;
+        }
+        .fab:disabled:hover { box-shadow: none; background: var(--md-surface-container-high); }
+        .fab:disabled:hover::before { opacity: 0; }
+
+        /* Info Box */
+        .info-box {
+            background: var(--md-surface-container);
+            padding: 48px 32px;
+            border-radius: var(--shape-lg);
+            text-align: center;
+            color: var(--md-on-surface-variant);
+            box-shadow: var(--elev-1);
+        }
+        .info-box p { margin-bottom: 6px; }
+        .info-box .icon-large {
+            width: 64px;
+            height: 64px;
+            margin: 0 auto 20px;
+            border-radius: var(--shape-full);
+            background: var(--brand-container);
+            color: var(--brand);
+            display: grid;
+            place-items: center;
+        }
+        .info-box .icon-large .material-symbols-outlined { font-size: 32px; }
+
+        /* Material 3 Cards Grid */
+        .items-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 16px;
+        }
+        .item-card {
+            background: var(--md-surface-container);
+            border-radius: var(--shape-md);
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            position: relative;
+            transition: box-shadow 0.2s var(--ease-standard), background 0.2s var(--ease-standard), transform 0.15s var(--ease-standard);
+            animation: cardIn 0.3s var(--ease-emphasized) both;
+        }
+        @keyframes cardIn {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .item-card:hover {
+            box-shadow: var(--elev-2);
+            background: var(--md-surface-container-high);
+            transform: translateY(-2px);
+        }
+        .item-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 12px;
+        }
+        .item-title {
+            font-size: 1.125rem;
+            font-weight: 500;
+            word-break: break-all;
+            font-family: 'Roboto Flex', sans-serif;
+            color: var(--md-on-surface);
+            letter-spacing: -0.005em;
+        }
+
+        /* Status badge as Material 3 chip */
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 12px;
+            border-radius: var(--shape-sm);
+            font-size: 0.6875rem;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            white-space: nowrap;
+        }
+        .status-badge::before {
+            content: '';
+            width: 6px;
+            height: 6px;
+            border-radius: var(--shape-full);
+            background: currentColor;
+        }
+        .status-online { background: var(--md-success-container); color: var(--md-success); }
+        .status-offline { background: var(--md-error-container); color: var(--md-error); }
+        .status-pending { background: var(--brand-container); color: var(--brand); }
+
+        .license-text {
+            white-space: pre-wrap;
+            word-break: break-word;
+            font-family: 'JetBrains Mono', ui-monospace, monospace;
+            font-size: 0.75rem;
+            line-height: 1.5;
+            color: var(--md-on-surface-variant);
+            max-height: 320px;
+            overflow-y: auto;
+            margin: 0;
+        }
+        .lang-switch {
+            display: inline-flex;
+            gap: 4px;
+            padding: 4px;
+            background: var(--md-surface-container-high, #2A221C);
+            border-radius: 999px;
+        }
+        .lang-switch button {
+            font: inherit;
+            font-size: 0.8125rem;
+            font-weight: 500;
+            color: var(--md-on-surface-variant);
+            background: transparent;
+            border: 0;
+            border-radius: 999px;
+            padding: 8px 18px;
+            cursor: pointer;
+            transition: background 0.2s var(--ease-standard, ease), color 0.2s var(--ease-standard, ease);
+        }
+        .lang-switch button:hover { color: var(--md-on-surface); }
+        .lang-switch button.active { background: var(--brand); color: #fff; }
+        .danger-rule {
+            border-left: 3px solid var(--brand);
+            background: var(--md-surface-container-high, #2A221C);
+            border-radius: var(--shape-sm, 8px);
+            padding: 16px 20px 4px;
+            margin: 20px 0;
+        }
+        .danger-rule .legal-section-title { margin-top: 0; color: var(--md-error); border-color: var(--md-error); }
+        .item-hint {
+            display: flex;
+            align-items: flex-start;
+            gap: 8px;
+            font-size: 0.8125rem;
+            line-height: 1.45;
+            color: var(--md-on-surface-variant);
+            background: var(--md-surface-container-high);
+            border-radius: var(--shape-sm, 8px);
+            padding: 12px 14px;
+        }
+        .item-hint .material-symbols-outlined { font-size: 18px; flex-shrink: 0; }
+        .item-hint.warn {
+            color: var(--md-on-surface);
+            background: var(--md-surface-container-highest, #332A22);
+            box-shadow: inset 3px 0 0 var(--brand);
+        }
+        .item-hint.warn .material-symbols-outlined { color: var(--brand); }
+        .btn-outline-card.primary-action {
+            background: var(--brand);
+            color: #fff;
+        }
+        .btn-outline-card.primary-action:hover { background: var(--brand-hover, #FF8533); }
+
+        .item-details {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            color: var(--md-on-surface-variant);
+            font-size: 0.8125rem;
+        }
+        .item-details span {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.8125rem;
+        }
+        .item-details span .material-symbols-outlined {
+            font-size: 16px;
+            opacity: 0.7;
+        }
+
+        .controls-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            margin-top: auto;
+        }
+
+        .btn-outline-card {
+            background: var(--md-surface-container-high);
+            color: var(--md-on-surface);
+            padding: 10px;
+            border-radius: var(--shape-sm);
+            cursor: pointer;
+            transition: background 0.2s var(--ease-standard), color 0.2s var(--ease-standard);
+            font-size: 0.8125rem;
+            font-weight: 500;
+            border: none;
+            font-family: inherit;
+            position: relative;
+            overflow: hidden;
+        }
+        .btn-outline-card::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: var(--md-on-surface);
+            opacity: 0;
+            transition: opacity 0.2s var(--ease-standard);
+        }
+        .btn-outline-card:hover::before { opacity: 0.08; }
+        .btn-outline-card:hover { color: var(--brand); }
+        .btn-outline-card.primary-action {
+            background: var(--brand);
+            color: #fff;
+        }
+        .btn-outline-card.primary-action::before { background: #fff; }
+        .btn-outline-card.primary-action:hover { color: #fff; }
+        .btn-outline-card.danger {
+            color: var(--md-error);
+            background: var(--md-error-container);
+        }
+        .btn-outline-card.danger::before { background: var(--md-error); }
+        .btn-outline-card.danger:hover { color: var(--md-error); }
+
+        .console-input {
+            display: flex;
+            gap: 8px;
+            margin-top: 8px;
+        }
+        .console-input input {
+            flex: 1;
+            padding: 10px 14px;
+            background: var(--md-surface-container-low);
+            color: var(--md-on-surface);
+            border-radius: var(--shape-sm);
+            font-family: 'Roboto Mono', 'Roboto Flex', monospace;
+            font-size: 0.8125rem;
+            transition: box-shadow 0.2s var(--ease-standard), background 0.2s var(--ease-standard);
+        }
+        .console-input input:focus {
+            outline: none;
+            background: var(--md-surface-container-high);
+            box-shadow: inset 0 0 0 2px var(--brand);
+        }
+        .console-input button {
+            background: var(--md-surface-container-high);
+            color: var(--md-on-surface);
+            border: none;
+            padding: 10px 16px;
+            border-radius: var(--shape-sm);
+            cursor: pointer;
+            transition: background 0.2s var(--ease-standard);
+            font-weight: 500;
+            font-size: 0.8125rem;
+            font-family: inherit;
+            position: relative;
+            overflow: hidden;
+        }
+        .console-input button::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: var(--md-on-surface);
+            opacity: 0;
+            transition: opacity 0.2s var(--ease-standard);
+        }
+        .console-input button:hover::before { opacity: 0.08; }
+        .console-input button:hover { background: var(--brand); color: #fff; }
+        .console-input button:hover::before { background: #fff; }
+
+        /* Material 3 Dialog */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--md-scrim);
+            z-index: 2000;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .modal.active {
+            display: flex;
+            animation: modalBgIn 0.2s var(--ease-standard);
+        }
+        @keyframes modalBgIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        .modal-content {
+            background: var(--md-surface-container-high);
+            padding: 24px;
+            border-radius: var(--shape-xl);
+            width: 100%;
+            max-width: 450px;
+            animation: modalIn 0.3s var(--ease-emphasized);
+            position: relative;
+            max-height: 92vh;
+            overflow-y: auto;
+            box-shadow: var(--elev-3);
+        }
+        @keyframes modalIn {
+            from { opacity: 0; transform: translateY(20px) scale(0.95); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 20px;
+            gap: 16px;
+        }
+        .modal-header h3 {
+            font-size: 1.5rem;
+            font-weight: 500;
+            letter-spacing: -0.01em;
+            flex: 1;
+        }
+
+        @media (max-width: 768px) {
+            body { flex-direction: column; }
+            .sidebar {
+                position: fixed;
+                height: 100%;
+                transform: translateX(-100%);
+                box-shadow: var(--elev-4);
+            }
+            .sidebar.open { transform: translateX(0); }
+            .top-app-bar { display: flex; }
+            .main-content { padding: 80px 16px 40px; }
+            .modal-content { max-width: 100%; border-radius: var(--shape-xl) var(--shape-xl) 0 0; align-self: flex-end; animation: sheetIn 0.3s var(--ease-emphasized); }
+            @keyframes sheetIn {
+                from { opacity: 0; transform: translateY(40px); }
+                to { opacity: 1; transform: translateY(0); }
+            }
+        }
+
+        ::-webkit-scrollbar { width: 10px; height: 10px; }
+        ::-webkit-scrollbar-track { background: var(--md-surface); }
+        ::-webkit-scrollbar-thumb { background: var(--md-surface-container-highest); border-radius: 5px; border: 2px solid var(--md-surface); }
+        ::-webkit-scrollbar-thumb:hover { background: var(--md-outline); }
+
+        /* Accordion (Material 3 List with expandable items) */
+        .accordion {
+            background: var(--md-surface-container-low);
+            border-radius: var(--shape-sm);
+            margin-bottom: 8px;
+            overflow: hidden;
+            transition: box-shadow 0.2s var(--ease-standard);
+        }
+        .accordion:hover { box-shadow: var(--elev-1); }
+        .accordion-header {
+            padding: 16px 20px;
+            background: transparent;
+            color: var(--md-on-surface);
+            font-weight: 500;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: background 0.2s var(--ease-standard);
+            font-size: 0.9375rem;
+            position: relative;
+        }
+        .accordion-header::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: var(--md-on-surface);
+            opacity: 0;
+            transition: opacity 0.2s var(--ease-standard);
+            pointer-events: none;
+        }
+        .accordion-header:hover::before { opacity: 0.08; }
+        .accordion-header .material-symbols-outlined { transition: transform 0.2s var(--ease-standard); color: var(--md-on-surface-variant); }
+        .accordion.active .accordion-header .material-symbols-outlined { transform: rotate(180deg); }
+        .accordion-content {
+            padding: 0 20px;
+            max-height: 0;
+            overflow-y: auto;
+            transition: max-height 0.35s var(--ease-standard), padding 0.35s var(--ease-standard);
+            color: var(--md-on-surface-variant);
+            font-size: 0.8125rem;
+            line-height: 1.6;
+            white-space: pre-wrap;
+            font-family: 'Roboto Mono', 'Roboto Flex', monospace;
+        }
+        .accordion.active .accordion-content {
+            padding: 16px 20px 20px 20px;
+            max-height: 400px;
+        }
+
+        /* Legal Content */
+        .legal-document {
+            max-width: 880px;
+            margin: 0 auto 24px;
+            background: var(--md-surface-container);
+            padding: 40px;
+            border-radius: var(--shape-lg);
+            box-shadow: var(--elev-1);
+        }
+        .legal-doc-title {
+            font-family: 'Roboto Flex', sans-serif;
+            font-size: 1.75rem;
+            color: var(--md-on-surface);
+            margin-bottom: 6px;
+            font-weight: 500;
+            letter-spacing: -0.02em;
+        }
+        .legal-section-title {
+            font-family: 'Roboto Flex', sans-serif;
+            font-size: 1.125rem;
+            margin-top: 32px;
+            margin-bottom: 12px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid var(--md-outline-variant);
+            color: var(--md-on-surface);
+            font-weight: 500;
+        }
+        .legal-paragraph {
+            color: var(--md-on-surface-variant);
+            line-height: 1.6;
+            margin-bottom: 12px;
+            font-size: 0.9375rem;
+        }
+        .legal-paragraph strong { color: var(--md-on-surface); font-weight: 600; }
+        .updated-date {
+            color: var(--md-on-surface-variant);
+            font-size: 0.8125rem;
+            margin-bottom: 28px;
+        }
+        .danger-rule {
+            background: var(--md-error-container);
+            padding: 16px 20px;
+            border-radius: var(--shape-sm);
+            margin: 24px 0;
+            color: var(--md-on-error-container);
+        }
+        .danger-rule .legal-paragraph { color: var(--md-on-error-container); margin-bottom: 8px; }
+        .danger-rule ul { color: var(--md-on-error-container); margin-left: 20px; margin-top: 8px; }
+        .legal-list {
+            margin-left: 0;
+            margin-bottom: 12px;
+            color: var(--md-on-surface-variant);
+            list-style: none;
+        }
+        .legal-list li {
+            margin-bottom: 8px;
+            position: relative;
+            padding-left: 18px;
+            font-size: 0.9375rem;
+            line-height: 1.6;
+        }
+        .legal-list li::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 11px;
+            width: 5px;
+            height: 5px;
+            border-radius: var(--shape-full);
+            background: var(--brand);
+        }
+
+        /* Wizard (Material 3 Full-screen dialog / Bottom sheet) */
+        .wizard-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--md-scrim);
+            z-index: 3000;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            opacity: 0;
+            transition: opacity 0.3s var(--ease-standard);
+            padding: 20px;
+        }
+        .wizard-overlay.active {
+            display: flex;
+            opacity: 1;
+        }
+        .wizard-container {
+            background: var(--md-surface-container-high);
+            border-radius: var(--shape-xl);
+            width: 100%;
+            max-width: 580px;
+            padding: 24px;
+            z-index: 1;
+            position: relative;
+            max-height: 92vh;
+            overflow-y: auto;
+            box-shadow: var(--elev-3);
+            animation: modalIn 0.3s var(--ease-emphasized);
+        }
+        .wizard-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        .wizard-header h2 {
+            font-family: 'Roboto Flex', sans-serif;
+            font-size: 1.5rem;
+            color: var(--md-on-surface);
+            font-weight: 500;
+            letter-spacing: -0.01em;
+        }
+
+        .wizard-progress {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 24px;
+        }
+        .wizard-progress-dot {
+            flex: 1;
+            height: 4px;
+            background: var(--md-surface-container-highest);
+            border-radius: 2px;
+            transition: background 0.3s var(--ease-standard);
+        }
+        .wizard-progress-dot.active { background: var(--brand); }
+        .wizard-progress-dot.done { background: var(--brand); opacity: 0.5; }
+
+        .wizard-step {
+            display: none;
+            animation: fadeIn 0.3s var(--ease-emphasized);
+        }
+        .wizard-step.active { display: block; }
+        .wizard-step h3 {
+            font-size: 1.125rem;
+            margin-bottom: 20px;
+            font-weight: 500;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .cards-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+        .software-card {
+            background: var(--md-surface-container-low);
+            border-radius: var(--shape-sm);
+            padding: 16px;
+            cursor: pointer;
+            transition: background 0.2s var(--ease-standard), box-shadow 0.2s var(--ease-standard);
+            position: relative;
+            overflow: hidden;
+        }
+        .software-card::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: var(--md-on-surface);
+            opacity: 0;
+            transition: opacity 0.2s var(--ease-standard);
+            pointer-events: none;
+        }
+        .software-card:hover::before { opacity: 0.08; }
+        .software-card:hover { box-shadow: var(--elev-1); }
+        .software-card.active {
+            background: var(--brand-container);
+            box-shadow: inset 0 0 0 2px var(--brand);
+        }
+        .software-card.active::before { background: var(--brand); }
+        .software-card h4 {
+            color: var(--md-on-surface);
+            font-size: 0.9375rem;
+            margin-bottom: 2px;
+            font-family: 'Roboto Flex', sans-serif;
+            font-weight: 500;
+        }
+        .software-card p {
+            color: var(--md-on-surface-variant);
+            font-size: 0.75rem;
+        }
+
+        .wizard-footer {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 28px;
+            gap: 10px;
+        }
+        .color-dot {
+            width: 32px;
+            height: 32px;
+            border-radius: var(--shape-full);
+            cursor: pointer;
+            box-shadow: inset 0 0 0 2px transparent;
+            transition: transform 0.2s var(--ease-emphasized);
+        }
+        .color-dot:hover { transform: scale(1.1); }
+        .color-dot.active {
+            box-shadow: inset 0 0 0 2px var(--md-surface-container-high), inset 0 0 0 4px var(--brand);
+            transform: scale(1.1);
+        }
+
+        input[type="range"] {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 100%;
+            height: 4px;
+            background: var(--md-surface-container-highest);
+            border-radius: 2px;
+            outline: none;
+        }
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: var(--shape-full);
+            background: var(--brand);
+            cursor: pointer;
+            box-shadow: var(--elev-1);
+            transition: transform 0.15s var(--ease-emphasized);
+        }
+        input[type="range"]::-webkit-slider-thumb:hover { transform: scale(1.1); box-shadow: var(--elev-2); }
+        input[type="range"]::-moz-range-thumb {
+            width: 20px;
+            height: 20px;
+            border-radius: var(--shape-full);
+            background: var(--brand);
+            cursor: pointer;
+            border: none;
+            box-shadow: var(--elev-1);
+        }
+
+        .wizard-container select,
+        .wizard-container input[type="text"],
+        .modal-content select,
+        .modal-content input[type="text"],
+        .modal-content input[type="number"],
+        .modal-content input[type="password"] {
+            background: var(--md-surface-container-low);
+            color: var(--md-on-surface);
+            padding: 14px 16px;
+            border-radius: var(--shape-sm);
+            width: 100%;
+            font-family: inherit;
+            font-size: 0.9375rem;
+            transition: box-shadow 0.2s var(--ease-standard), background 0.2s var(--ease-standard);
+        }
+        .wizard-container select:focus,
+        .wizard-container input[type="text"]:focus,
+        .modal-content select:focus,
+        .modal-content input:focus {
+            outline: none;
+            background: var(--md-surface-container-high);
+            box-shadow: inset 0 0 0 2px var(--brand);
+        }
+        .wizard-container select option,
+        .modal-content select option {
+            background: var(--md-surface-container);
+            color: var(--md-on-surface);
+        }
+
+        /* Section labels for property groups */
+        .property-label {
+            font-size: 0.75rem;
+            color: var(--brand);
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .property-label .material-symbols-outlined { font-size: 16px; }
+        .property-label.danger { color: var(--md-error); }
+        /* ---------- Device card (live usage reported by the app) ---------- */
+        .device-card {
+            margin-top: 24px;
+            background: var(--md-surface-container);
+            border-radius: var(--shape-md);
+            padding: 20px 24px;
+            box-shadow: var(--elev-1);
+        }
+        .device-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; margin-bottom: 16px; }
+        .device-title { margin: 0; font-size: 1.125rem; font-weight: 500; }
+        .device-sub { margin: 4px 0 0; font-size: 0.8125rem; color: var(--md-on-surface-variant); }
+        .device-live {
+            display: inline-flex; align-items: center; gap: 6px;
+            font-size: 0.75rem; color: #6FBE7E;
+        }
+        .device-live::before { content: ''; width: 7px; height: 7px; border-radius: 50%; background: currentColor; }
+        .device-live.stale { color: var(--md-on-surface-variant); }
+        .device-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; }
+        .device-item .label { font-size: 0.6875rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--md-on-surface-variant); margin-bottom: 4px; }
+        .device-item .value { font-size: 1.0625rem; font-weight: 500; }
+        .device-item .foot { font-size: 0.75rem; color: var(--md-on-surface-variant); margin-top: 2px; }
+        .device-bar { height: 6px; border-radius: 999px; background: var(--md-surface-container-highest); overflow: hidden; margin-top: 8px; }
+        .device-bar > span { display: block; height: 100%; background: var(--brand); }
+
+        /* ---------- Footer (same as the main page) ---------- */
+        .dash-footer {
+            margin-top: 48px;
+            padding-top: 24px;
+            border-top: 1px solid var(--md-outline-variant);
+            color: var(--md-on-surface-variant);
+        }
+        .dash-footer-grid {
+            display: grid;
+            grid-template-columns: minmax(0, 2fr) repeat(3, minmax(0, 1fr));
+            gap: 32px;
+        }
+        .dash-footer-brand { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; color: var(--md-on-surface); font-weight: 600; }
+        .dash-footer-brand img { width: 28px; height: 28px; border-radius: 6px; object-fit: cover; }
+        .dash-footer-brand span span { color: var(--brand); }
+        .dash-footer-note { margin: 0; font-size: 0.8125rem; line-height: 1.6; max-width: 62ch; }
+        .dash-footer-note strong { color: var(--md-on-surface); }
+        .dash-footer-col h4 {
+            margin: 0 0 10px; font-size: 0.75rem; text-transform: uppercase;
+            letter-spacing: 0.06em; color: var(--md-on-surface-variant);
+        }
+        .dash-footer-col a { display: block; padding: 3px 0; color: var(--md-on-surface-variant); text-decoration: none; font-size: 0.875rem; }
+        .dash-footer-col a:hover { color: var(--brand); }
+        .dash-footer-bottom {
+            display: flex; justify-content: space-between; gap: 12px;
+            margin-top: 24px; padding-top: 16px;
+            border-top: 1px solid var(--md-outline-variant);
+            font-size: 0.75rem;
+        }
+        @media (max-width: 900px) {
+            .dash-footer-grid { grid-template-columns: 1fr; }
+        }
+    
+        /* ── store page additions (same tokens as the dashboard) ── */
+        body.store .top-app-bar { display: flex; }
+        body.store .main-content { padding-top: 88px; }
+        @media (max-width: 768px) {
+            body.store .main-content { padding-top: 80px; }
+        }
+        .store-tools { display: flex; gap: 12px; flex-wrap: wrap; align-items: center; margin-bottom: 16px; }
+        .store-search {
+            flex: 1; min-width: 240px; display: flex; align-items: center; gap: 10px;
+            background: var(--md-surface-container); border-radius: var(--shape-full);
+            padding: 2px 18px; box-shadow: inset 0 0 0 1px var(--md-outline-variant);
+        }
+        .store-search input { flex: 1; border: 0; background: transparent; color: inherit; font: inherit; padding: 12px 0; outline: none; }
+        .store-search .material-symbols-outlined { color: var(--md-on-surface-variant); font-size: 20px; }
+        .chips-row { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 24px; }
+        .store-chip {
+            padding: 8px 16px; border-radius: var(--shape-full); border: 1px solid var(--md-outline-variant);
+            background: transparent; color: var(--md-on-surface-variant); font: inherit; font-size: 0.875rem; cursor: pointer;
+            transition: background 0.15s var(--ease-standard), color 0.15s var(--ease-standard);
+        }
+        .store-chip:hover { background: var(--md-surface-container-high); }
+        .store-chip.active { background: var(--brand-container); border-color: var(--brand); color: var(--brand); }
+        .item-card.clickable { cursor: pointer; }
+        .store-card-head { display: flex; gap: 14px; align-items: center; margin-bottom: 12px; }
+        .store-icon {
+            width: 48px; height: 48px; border-radius: var(--shape-md); object-fit: cover;
+            background: var(--md-surface-container-highest); display: grid; place-items: center; font-size: 22px; flex: none;
+        }
+        .store-name { font-weight: 500; font-size: 1.05rem; letter-spacing: -0.01em; }
+        .store-sub { font-size: 0.8rem; color: var(--md-on-surface-variant); margin-top: 2px; }
+        .store-summary { color: var(--md-on-surface-variant); font-size: 0.875rem; line-height: 1.5; flex: 1; }
+        .store-meta { display: flex; gap: 16px; flex-wrap: wrap; font-size: 0.78rem; color: var(--md-on-surface-variant); margin-top: 14px; align-items: center; }
+        .store-meta .material-symbols-outlined { font-size: 16px; vertical-align: -3px; margin-right: 3px; }
+        .store-badge { font-size: 0.7rem; font-weight: 600; padding: 3px 10px; border-radius: var(--shape-full); border: 1px solid currentColor; }
+        .store-badge.PENDING { color: var(--md-warning); }
+        .store-badge.APPROVED { color: var(--md-success); }
+        .store-badge.REJECTED, .store-badge.DELISTED { color: var(--md-error); }
+        .store-badge.WITHDRAWN { color: var(--md-on-surface-variant); }
+        .publisher-link { color: var(--brand); cursor: pointer; }
+        .publisher-link:hover { text-decoration: underline; }
+        .store-publisher {
+            display: flex; align-items: center; gap: 14px; margin-bottom: 20px;
+            background: var(--md-surface-container); padding: 16px 20px; border-radius: var(--shape-lg); box-shadow: var(--elev-1);
+        }
+        .store-empty { color: var(--md-on-surface-variant); padding: 48px 0; text-align: center; grid-column: 1 / -1; font-size: 0.9rem; }
+        .version-row { border-top: 1px solid var(--md-outline-variant); padding: 12px 0; }
+        .version-row:first-child { border-top: 0; padding-top: 0; }
+        .version-row pre { white-space: pre-wrap; font: inherit; font-size: 0.82rem; color: var(--md-on-surface-variant); margin-top: 6px; }
+        .perm-pill {
+            display: inline-block; font-size: 0.72rem; border: 1px solid var(--md-outline-variant);
+            border-radius: var(--shape-full); padding: 2px 10px; margin: 3px 5px 0 0; color: var(--md-on-surface-variant);
+        }
+        .shots-strip { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 4px; }
+        .shots-strip img { height: 120px; border-radius: var(--shape-sm); border: 1px solid var(--md-outline-variant); }
+        .link-row { display: inline-flex; align-items: center; gap: 6px; color: var(--brand); font-size: 0.85rem; cursor: pointer; margin-right: 16px; }
+        .link-row .material-symbols-outlined { font-size: 18px; }
+        .modal-content.wide { max-width: 680px; }
+        .modal-content.narrow { max-width: 420px; }
         .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
         .form-grid .wide { grid-column: 1 / -1; }
-        label.field { display: block; font-size: 0.8rem; color: var(--md-on-surface-variant); }
-        label.field input, label.field select, label.field textarea {
-            width: 100%; margin-top: 5px; padding: 10px 12px; border-radius: var(--shape-sm); font: inherit;
-            background: var(--md-surface-container-lowest); color: var(--md-on-surface); border: 1px solid var(--md-outline-variant);
-        }
-        label.field textarea { min-height: 90px; resize: vertical; }
-        .perm-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; font-size: 0.82rem; }
-        .perm-grid label { display: flex; gap: 8px; align-items: center; color: var(--md-on-surface-variant); }
-        .statusline { font-size: 0.85rem; margin-top: 4px; }
-        .statusline.err { color: var(--md-error); }
-        .statusline.ok { color: var(--md-success); }
-        .avatar-row { display: flex; align-items: center; gap: 12px; }
-        .avatar-row img, .avatar-row .mono { width: 44px; height: 44px; border-radius: 50%; object-fit: cover;
-            background: var(--md-surface-container-highest); display: flex; align-items: center; justify-content: center; font-weight: 600; }
-
-        footer.site { border-top: 1px solid var(--md-outline-variant); margin-top: 60px; padding: 28px 20px 40px;
-            color: var(--md-on-surface-variant); font-size: 0.8rem; }
-        footer.site .inner { max-width: 1100px; margin: 0 auto; display: flex; flex-wrap: wrap; gap: 24px; justify-content: space-between; }
-        footer.site a { color: var(--brand); }
-        footer.site .legal-links { display: flex; gap: 14px; flex-wrap: wrap; }
-
-        @media (max-width: 640px) {
-            .form-grid { grid-template-columns: 1fr; }
-            header.top nav a { display: none; }
-        }
-    </style>
+        @media (max-width: 640px) { .form-grid { grid-template-columns: 1fr; } }
+        .perm-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; font-size: 0.85rem; color: var(--md-on-surface-variant); }
+        .perm-grid label { display: flex; gap: 8px; align-items: center; }
+        .statusline { font-size: 0.85rem; margin-top: 10px; display: none; }
+        .statusline.err { color: var(--md-error); display: block; }
+        .statusline.ok { color: var(--md-success); display: block; }
+        .statusline.busy { color: var(--md-on-surface-variant); display: block; }
+</style>
 </head>
-<body>
-    <header class="top">
-        <a class="logo" href="index.html">
-            <img src="assets/logo.png" alt="KodaHosting logo">
-            <span>Koda<span>Hosting</span></span>
+<body class="store">
+
+    <!-- Top App Bar (always visible here, the store has no drawer) -->
+    <header class="top-app-bar">
+        <a href="index.html" class="logo" style="font-size: 1.0625rem;">
+            <div class="logo-mark">
+                <img src="assets/logo.png" alt="KodaHosting logo">
+            </div>
+            Koda<span>Hosting</span>
         </a>
-        <nav>
-            <a href="dashboard">Dashboard</a>
-            <a href="docs">Docs</a>
-            <span id="auth-area">
-                <button id="btn-sign-in">Sign in</button>
-            </span>
-        </nav>
+        <div style="display: flex; align-items: center; gap: 4px;">
+            <a href="dashboard" class="btn btn-text" style="padding: 0 14px;">Dashboard</a>
+            <a href="docs" class="btn btn-text" style="padding: 0 14px;">Docs</a>
+            <span id="auth-area"><button class="btn btn-tonal" id="btn-sign-in">Sign in</button></span>
+        </div>
     </header>
 
-    <main>
-        <div class="hero">
-            <h1>Extension Store</h1>
-            <p>Extensions for the KodaHosting app: language packs, themes, tweaks and tools, packaged as
-               <strong>.kodaext</strong> files. Every submission is reviewed before it appears here, the app installs
-               and updates directly from this store.</p>
-            <div class="notice" id="maintenance-notice" style="display:none"></div>
-        </div>
+    <main class="main-content">
+        <div class="view-section active">
 
-        <div class="toolbar">
-            <div class="search">
-                <span class="material-symbols-outlined">search</span>
-                <input id="input-search" type="search" placeholder="Search extensions" autocomplete="off">
-            </div>
-            <button class="btn" id="btn-submit" style="display:none">Submit extension</button>
-        </div>
-        <div class="chips" id="category-chips"></div>
-
-        <div class="grid" id="store-grid">
-            <div class="empty">Loading the store…</div>
-        </div>
-
-        <div id="mine-section" style="display:none">
-            <h2 class="section-title">My extensions</h2>
-            <p style="color:var(--md-on-surface-variant); font-size:0.875rem;">
-                Your submissions and their review status. If an extension was ended, the reason shows here.</p>
-            <div class="grid" id="mine-grid" style="margin-top:16px"></div>
-        </div>
-
-        <footer class="site">
-            <div class="inner">
-                <div style="max-width: 460px; line-height: 1.55;">
-                    <strong>About this store.</strong> Submissions are reviewed manually before publishing. Extensions run
-                    in the app's own sandbox with the permissions listed on the package. Layout and wording parts of this
-                    page were drafted with AI assistance and reviewed by the developer.
+            <div class="page-header">
+                <div>
+                    <h2 class="page-title" id="store-title">Extension Store</h2>
+                    <p id="store-subtitle" style="color: var(--md-on-surface-variant); margin-top: 6px; max-width: 720px; line-height: 1.5;">
+                        Extensions for the KodaHosting app: language packs, themes, tweaks and tools, packaged as
+                        <strong>.kodaext</strong> files. Every submission is reviewed before it appears here, and the app
+                        installs and updates directly from this store.
+                    </p>
                 </div>
-                <div class="legal-links">
-                    <a href="index.html">Main page</a>
-                    <a href="dashboard">Dashboard</a>
-                    <a href="privacy.html">Privacy</a>
-                    <a href="tos.html">Terms</a>
-                    <a href="licenses.html">Licenses</a>
-                    <a href="impressum.html">Impressum</a>
+                <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                    <button class="btn btn-tonal" id="btn-refresh">
+                        <span class="material-symbols-outlined">refresh</span> Refresh
+                    </button>
+                    <button class="btn btn-filled" id="btn-submit" style="display: none;">
+                        <span class="material-symbols-outlined">upload</span> Submit extension
+                    </button>
                 </div>
             </div>
-            <div class="inner" style="margin-top:18px">
-                <span>&copy; 2026 KodaHosting. KodaHosting is not an official Minecraft product and is not associated with Mojang or Microsoft.</span>
-                <span id="footer-status"></span>
+
+            <div class="store-publisher" id="publisher-bar" style="display: none;">
+                <div class="store-icon"><span class="material-symbols-outlined">person</span></div>
+                <div style="flex: 1;">
+                    <div class="store-name" id="publisher-name"></div>
+                    <div class="store-sub" id="publisher-count"></div>
+                </div>
+                <a class="btn btn-outlined" href="store">Show all</a>
             </div>
-        </footer>
+
+            <div class="info-box" id="maintenance-notice" style="display: none; padding: 16px 20px; text-align: left; margin-bottom: 20px;"></div>
+
+            <div class="store-tools">
+                <div class="store-search">
+                    <span class="material-symbols-outlined">search</span>
+                    <input id="input-search" type="search" placeholder="Search extensions" autocomplete="off">
+                </div>
+            </div>
+            <div class="chips-row" id="category-chips"></div>
+
+            <div class="items-grid" id="store-grid">
+                <div class="store-empty">Loading the store…</div>
+            </div>
+
+            <div id="mine-section" style="display: none; margin-top: 48px;">
+                <div class="page-header" style="margin-bottom: 16px;">
+                    <h2 class="page-title" style="font-size: 1.3rem;">My extensions</h2>
+                </div>
+                <p style="color: var(--md-on-surface-variant); font-size: 0.875rem; margin-bottom: 16px;">
+                    Your submissions and their review status. If an extension was ended, the reason shows here.</p>
+                <div class="items-grid" id="mine-grid"></div>
+            </div>
+
+            <footer class="dash-footer">
+                <div class="dash-footer-grid">
+                    <div>
+                        <div class="dash-footer-brand">
+                            <img src="assets/logo.png" alt="KodaHosting logo">
+                            <span>Koda<span>Hosting</span></span>
+                        </div>
+                        <p class="dash-footer-note">
+                            <strong>About this store.</strong> Submissions are reviewed manually before publishing, and every
+                            package is verified on upload (file hash and manifest). Extensions run in the app's own sandbox
+                            with the permissions listed on the package. Parts of this page were drafted with the assistance
+                            of an AI language model and reviewed by the developer.
+                        </p>
+                    </div>
+                    <div class="dash-footer-col">
+                        <h4>Store</h4>
+                        <a href="store">All extensions</a>
+                        <a href="#" id="footer-submit">Submit an extension</a>
+                        <a href="#" id="footer-mine">My extensions</a>
+                        <a href="docs">Developer Handbook</a>
+                    </div>
+                    <div class="dash-footer-col">
+                        <h4>Dashboard</h4>
+                        <a href="dashboard">Servers</a>
+                        <a href="dashboard">Account</a>
+                        <a href="dashboard">Support Tickets</a>
+                        <a href="dashboard">Status</a>
+                    </div>
+                    <div class="dash-footer-col">
+                        <h4>KodaHosting</h4>
+                        <a href="index.html">Main page</a>
+                        <a href="privacy.html">Privacy Policy</a>
+                        <a href="tos.html">Terms of Service</a>
+                        <a href="licenses.html">Licenses</a>
+                        <a href="impressum.html">Impressum</a>
+                    </div>
+                </div>
+                <div class="dash-footer-bottom">
+                    <span>&copy; 2026 KodaHosting. All rights reserved.</span>
+                    <span id="footer-status"></span>
+                </div>
+                <p style="text-align:center;font-size:12px;opacity:.75;padding:12px">KodaHosting is not an official Minecraft product, is not approved by or associated with Mojang or Microsoft, and is an independent project.</p>
+            </footer>
+        </div>
     </main>
 
     <!-- detail -->
-    <div class="overlay" id="overlay-detail">
-        <div class="sheet">
-            <button class="close material-symbols-outlined" onclick="closeOverlay('overlay-detail')">close</button>
+    <div class="modal" id="modal-detail">
+        <div class="modal-content wide">
+            <div class="modal-header">
+                <h3 id="detail-title">Extension</h3>
+                <button class="icon-btn" onclick="closeModal('modal-detail')" aria-label="Close">
+                    <span class="material-symbols-outlined">close</span>
+                </button>
+            </div>
             <div id="detail-content"></div>
         </div>
     </div>
 
     <!-- login -->
-    <div class="overlay" id="overlay-login">
-        <div class="sheet" style="max-width:420px">
-            <button class="close material-symbols-outlined" onclick="closeOverlay('overlay-login')">close</button>
-            <h2>Sign in</h2>
-            <p style="color:var(--md-on-surface-variant); font-size:0.85rem">Use the same account as in the KodaHosting app.</p>
-            <div class="sheet-body">
-                <label class="field">Email address
-                    <input type="email" id="input-email" placeholder="you@example.com">
-                </label>
-                <label class="field">Password
-                    <input type="password" id="input-password" placeholder="password">
-                </label>
-                <button class="btn" id="btn-login-email">Sign in with email</button>
-                <div class="statusline err" id="login-error" style="display:none"></div>
-                <div style="text-align:center; color:var(--md-on-surface-variant); font-size:0.8rem">or</div>
-                <div id="g_id_onload" data-client_id="558083145632-fbhjb8j1k4m8r14ui97shd9dnng0rlum.apps.googleusercontent.com"
-                     data-context="signin" data-ux_mode="popup" data-callback="handleGoogleLogin" data-auto_prompt="false"></div>
-                <div class="g_id_signin" data-type="standard" data-shape="rectangular" data-theme="outline"
-                     data-text="signin_with" data-size="large" data-logo_alignment="left" style="display:flex; justify-content:center"></div>
-                <p style="font-size:0.75rem; color:var(--md-on-surface-variant)">
-                    No account yet? Create one in the KodaHosting app (Settings &rarr; Account).</p>
+    <div class="modal" id="modal-login">
+        <div class="modal-content narrow">
+            <div class="modal-header">
+                <h3>Sign in</h3>
+                <button class="icon-btn" onclick="closeModal('modal-login')" aria-label="Close">
+                    <span class="material-symbols-outlined">close</span>
+                </button>
             </div>
+            <p style="color: var(--md-on-surface-variant); font-size: 0.875rem; margin-bottom: 16px;">
+                Use the same account as in the KodaHosting app.</p>
+            <div class="input-group">
+                <label>Email address</label>
+                <input type="email" id="input-email" placeholder="you@example.com">
+            </div>
+            <div class="input-group">
+                <label>Password</label>
+                <input type="password" id="input-password" placeholder="password">
+            </div>
+            <button class="btn btn-filled btn-full" id="btn-login-email">Sign in with email</button>
+            <div class="statusline err" id="login-error"></div>
+            <div style="text-align: center; color: var(--md-on-surface-variant); font-size: 0.8rem; margin: 14px 0;">or</div>
+            <div id="g_id_onload" data-client_id="558083145632-fbhjb8j1k4m8r14ui97shd9dnng0rlum.apps.googleusercontent.com"
+                 data-context="signin" data-ux_mode="popup" data-callback="handleGoogleLogin" data-auto_prompt="false"></div>
+            <div class="g_id_signin" data-type="standard" data-shape="rectangular" data-theme="outline"
+                 data-text="signin_with" data-size="large" data-logo_alignment="left" style="display:flex; justify-content:center"></div>
+            <p style="font-size: 0.78rem; color: var(--md-on-surface-variant); margin-top: 14px;">
+                No account yet? Create one in the KodaHosting app (Settings &rarr; Account).</p>
         </div>
     </div>
 
     <!-- submit -->
-    <div class="overlay" id="overlay-submit">
-        <div class="sheet">
-            <button class="close material-symbols-outlined" onclick="closeOverlay('overlay-submit')">close</button>
-            <h2 id="submit-title">Submit an extension</h2>
-            <p style="color:var(--md-on-surface-variant); font-size:0.85rem" id="submit-hint">
-                Package your extension as a .kodaext file first (see the extension docs). The review usually takes a day.</p>
-            <div class="sheet-body">
-                <div class="form-grid">
-                    <label class="field" id="field-extid">Extension id
-                        <input id="in-extid" placeholder="com.example.myextension" autocomplete="off">
-                    </label>
-                    <label class="field">Name
-                        <input id="in-name" placeholder="My extension" autocomplete="off">
-                    </label>
-                    <label class="field">Version
-                        <input id="in-version" placeholder="1.0.0" autocomplete="off">
-                    </label>
-                    <label class="field">Version code
-                        <input id="in-versioncode" inputmode="numeric" placeholder="1" autocomplete="off">
-                    </label>
-                    <label class="field">License
-                        <input id="in-license" placeholder="GPL-3.0-only" autocomplete="off">
-                    </label>
-                    <label class="field">Author
-                        <input id="in-author" placeholder="Your name" autocomplete="off">
-                    </label>
-                    <label class="field">Category
-                        <select id="in-category"></select>
-                    </label>
-                    <label class="field">Source code URL (recommended)
-                        <input id="in-source" placeholder="https://github.com/…" autocomplete="off">
-                    </label>
-                    <label class="field wide">Short summary (one line)
-                        <input id="in-summary" maxlength="200" placeholder="What does it do, in one sentence?">
-                    </label>
-                    <label class="field wide">Description
-                        <textarea id="in-description" placeholder="What it does, what it needs, anything the reviewer should know."></textarea>
-                    </label>
-                    <label class="field wide">Changelog for this version
-                        <textarea id="in-changelog" placeholder="- first release" style="min-height:70px"></textarea>
-                    </label>
-                </div>
-                <div>
-                    <div style="font-size:0.8rem; color:var(--md-on-surface-variant); margin-bottom:6px">Permissions the extension asks for</div>
-                    <div class="perm-grid" id="perm-grid"></div>
-                </div>
-                <div class="form-grid">
-                    <label class="field">Icon (png/jpg/webp, optional)
-                        <input type="file" id="in-icon" accept="image/png,image/jpeg,image/webp">
-                    </label>
-                    <label class="field">Screenshots (up to 4, optional)
-                        <input type="file" id="in-shots" accept="image/png,image/jpeg,image/webp" multiple>
-                    </label>
-                    <label class="field wide">Package (.kodaext, max 20 MB)
-                        <input type="file" id="in-package" accept=".kodaext,.zip">
-                    </label>
-                </div>
-                <button class="btn" id="btn-do-submit">Submit for review</button>
-                <div class="statusline" id="submit-status" style="display:none"></div>
+    <div class="modal" id="modal-submit">
+        <div class="modal-content wide">
+            <div class="modal-header">
+                <h3>Submit an extension</h3>
+                <button class="icon-btn" onclick="closeModal('modal-submit')" aria-label="Close">
+                    <span class="material-symbols-outlined">close</span>
+                </button>
             </div>
+            <p style="color: var(--md-on-surface-variant); font-size: 0.85rem; margin-bottom: 16px;">
+                Package your extension as a .kodaext file first (see the <a href="docs" style="color: var(--brand);">docs</a>).
+                The review usually takes a day.</p>
+            <div class="form-grid">
+                <div class="input-group" id="field-extid">
+                    <label>Extension id</label>
+                    <input id="in-extid" placeholder="com.example.myextension" autocomplete="off">
+                </div>
+                <div class="input-group">
+                    <label>Name</label>
+                    <input id="in-name" placeholder="My extension" autocomplete="off">
+                </div>
+                <div class="input-group">
+                    <label>Version</label>
+                    <input id="in-version" placeholder="1.0.0" autocomplete="off">
+                </div>
+                <div class="input-group">
+                    <label>Version code</label>
+                    <input id="in-versioncode" inputmode="numeric" placeholder="1" autocomplete="off">
+                </div>
+                <div class="input-group">
+                    <label>License</label>
+                    <input id="in-license" placeholder="GPL-3.0-only" autocomplete="off">
+                </div>
+                <div class="input-group">
+                    <label>Author</label>
+                    <input id="in-author" placeholder="Your name" autocomplete="off">
+                </div>
+                <div class="input-group">
+                    <label>Category</label>
+                    <select id="in-category"></select>
+                </div>
+                <div class="input-group">
+                    <label>Source code URL (recommended)</label>
+                    <input id="in-source" placeholder="https://github.com/…" autocomplete="off">
+                </div>
+                <div class="input-group wide">
+                    <label>Short summary (one line)</label>
+                    <input id="in-summary" maxlength="200" placeholder="What does it do, in one sentence?">
+                </div>
+                <div class="input-group wide">
+                    <label>Description</label>
+                    <textarea id="in-description" placeholder="What it does, what it needs, anything the reviewer should know." style="min-height: 90px;"></textarea>
+                </div>
+                <div class="input-group wide">
+                    <label>Changelog for this version</label>
+                    <textarea id="in-changelog" placeholder="- first release" style="min-height: 70px;"></textarea>
+                </div>
+            </div>
+            <div style="font-size: 0.8rem; color: var(--md-on-surface-variant); margin: 14px 0 6px;">Permissions the extension asks for</div>
+            <div class="perm-grid" id="perm-grid"></div>
+            <div class="form-grid" style="margin-top: 14px;">
+                <div class="input-group">
+                    <label>Icon (png/jpg/webp, optional)</label>
+                    <input type="file" id="in-icon" accept="image/png,image/jpeg,image/webp" style="padding: 8px 0;">
+                </div>
+                <div class="input-group">
+                    <label>Screenshots (up to 4, optional)</label>
+                    <input type="file" id="in-shots" accept="image/png,image/jpeg,image/webp" multiple style="padding: 8px 0;">
+                </div>
+                <div class="input-group wide">
+                    <label>Package (.kodaext, max 20 MB)</label>
+                    <input type="file" id="in-package" accept=".kodaext,.zip" style="padding: 8px 0;">
+                </div>
+            </div>
+            <button class="btn btn-filled btn-full" id="btn-do-submit" style="margin-top: 8px;">Submit for review</button>
+            <div class="statusline" id="submit-status"></div>
         </div>
     </div>
 
@@ -345,6 +1587,8 @@
         let mineItems = [];
         let activeCategory = 'all';
         let searchTerm = '';
+        const params = new URLSearchParams(window.location.search);
+        let publisherFilter = (params.get('author') || '').trim();
 
         function escapeHtml(value) {
             return String(value == null ? '' : value)
@@ -358,101 +1602,147 @@
             if (session) headers['Authorization'] = 'Bearer ' + session.access_token;
             const res = await fetch(API_BASE + path, Object.assign({}, options, { headers }));
             const body = await res.json().catch(() => ({}));
+            if (res.status === 401 && session) {
+                // the stored session is dead (for example the account was deleted) - drop it
+                await supabaseClient.auth.signOut().catch(() => {});
+            }
             if (!res.ok) throw new Error(body.error || ('HTTP ' + res.status));
             return body;
         }
 
-        function openOverlay(id) { document.getElementById(id).classList.add('active'); }
-        function closeOverlay(id) { document.getElementById(id).classList.remove('active'); }
+        function openModal(id) { document.getElementById(id).classList.add('active'); }
+        function closeModal(id) { document.getElementById(id).classList.remove('active'); }
+
+        function publisherUrl(author) {
+            if (!author) return '';
+            return '?author=' + encodeURIComponent(author);
+        }
 
         // ---------------------------------------------------------------- store list
         async function loadStore() {
             try {
                 const data = await api('/v1/extensions');
                 storeItems = data.items || [];
+                renderPublisherBar();
                 renderStore();
             } catch (e) {
                 document.getElementById('store-grid').innerHTML =
-                    '<div class="empty">The store could not be loaded: ' + escapeHtml(e.message) + '</div>';
+                    '<div class="store-empty">The store could not be loaded: ' + escapeHtml(e.message) + '</div>';
             }
         }
 
         function matches(item) {
+            if (publisherFilter && (item.author || '') !== publisherFilter) return false;
             if (activeCategory !== 'all' && item.category !== activeCategory) return false;
             if (!searchTerm) return true;
             const hay = (item.name + ' ' + (item.summary || '') + ' ' + (item.author || '')).toLowerCase();
             return hay.includes(searchTerm);
         }
 
-        function storeCard(item, clickable) {
+        function renderPublisherBar() {
+            const bar = document.getElementById('publisher-bar');
+            if (!publisherFilter) {
+                bar.style.display = 'none';
+                document.getElementById('store-title').textContent = 'Extension Store';
+                document.getElementById('store-subtitle').style.display = '';
+                document.title = 'KodaHosting | Extension Store';
+                return;
+            }
+            const count = storeItems.filter(item => (item.author || '') === publisherFilter).length;
+            document.getElementById('publisher-bar').style.display = '';
+            document.getElementById('publisher-name').textContent = publisherFilter;
+            document.getElementById('publisher-count').textContent =
+                count + (count === 1 ? ' published extension' : ' published extensions') + ' in the store';
+            document.getElementById('store-title').textContent = 'Publisher';
+            document.getElementById('store-subtitle').style.display = 'none';
+            document.title = publisherFilter + ' | KodaHosting Extension Store';
+        }
+
+        function storeCard(item) {
             const icon = item.icon_url
-                ? '<img class="icon" src="' + escapeHtml(item.icon_url) + '" alt="">'
-                : '<div class="icon">🧩</div>';
+                ? '<img class="store-icon" src="' + escapeHtml(item.icon_url) + '" alt="">'
+                : '<div class="store-icon">🧩</div>';
             const version = item.latest_version ? 'v' + escapeHtml(item.latest_version.version) : '';
-            return '<div class="card ' + (clickable ? 'clickable' : '') + '" data-ext="' + escapeHtml(item.ext_id) + '">' +
-                '<div class="card-head">' + icon +
-                '<div><div class="card-title">' + escapeHtml(item.name) + '</div>' +
-                '<div class="card-sub">' + escapeHtml(item.author || 'unknown author') + ' · ' + version + '</div></div></div>' +
-                '<div class="card-summary">' + escapeHtml(item.summary || '') + '</div>' +
-                '<div class="card-meta"><span class="material-symbols-outlined" style="font-size:16px">download</span>' +
-                (item.downloads || 0) + ' downloads · ' + escapeHtml(item.license || '') + '</div></div>';
+            const author = item.author
+                ? '<a class="publisher-link" href="' + publisherUrl(item.author) + '">' + escapeHtml(item.author) + '</a>'
+                : 'unknown author';
+            return '<div class="item-card clickable" data-ext="' + escapeHtml(item.ext_id) + '">' +
+                '<div class="store-card-head">' + icon +
+                '<div style="min-width: 0;"><div class="store-name">' + escapeHtml(item.name) + '</div>' +
+                '<div class="store-sub">' + author + (version ? ' · ' + version : '') + '</div></div></div>' +
+                '<div class="store-summary">' + escapeHtml(item.summary || '') + '</div>' +
+                '<div class="store-meta"><span><span class="material-symbols-outlined">download</span>' +
+                (item.downloads || 0) + '</span><span><span class="material-symbols-outlined">description</span>' +
+                escapeHtml(item.license || '') + '</span></div></div>';
         }
 
         function renderStore() {
             const grid = document.getElementById('store-grid');
             const visible = storeItems.filter(matches);
             grid.innerHTML = visible.length === 0
-                ? '<div class="empty">Nothing here yet. The first extensions will appear after review.</div>'
-                : visible.map(item => storeCard(item, true)).join('');
-            grid.querySelectorAll('.card.clickable').forEach(card => {
-                card.addEventListener('click', () => openDetail(card.dataset.ext));
+                ? '<div class="store-empty">' + (publisherFilter
+                    ? 'This publisher has no extensions in the store right now.'
+                    : 'Nothing here yet. The first extensions will appear after review.') + '</div>'
+                : visible.map(storeCard).join('');
+            grid.querySelectorAll('.item-card.clickable').forEach(card => {
+                card.addEventListener('click', (event) => {
+                    if (event.target.closest('.publisher-link')) return;
+                    openDetail(card.dataset.ext);
+                });
             });
         }
 
         // ---------------------------------------------------------------- detail
         async function openDetail(extId) {
             const content = document.getElementById('detail-content');
-            content.innerHTML = '<div class="empty">Loading…</div>';
-            openOverlay('overlay-detail');
+            content.innerHTML = '<div class="store-empty">Loading…</div>';
+            openModal('modal-detail');
             try {
                 const data = await api('/v1/extensions/' + encodeURIComponent(extId));
                 const ext = data.extension;
+                document.getElementById('detail-title').textContent = ext.name;
                 const icon = ext.icon_url
-                    ? '<img class="icon" src="' + escapeHtml(ext.icon_url) + '" alt="" style="width:56px;height:56px">'
-                    : '<div class="icon" style="width:56px;height:56px">🧩</div>';
+                    ? '<img class="store-icon" src="' + escapeHtml(ext.icon_url) + '" alt="" style="width: 56px; height: 56px;">'
+                    : '<div class="store-icon" style="width: 56px; height: 56px;">🧩</div>';
+                const author = ext.author
+                    ? '<a class="publisher-link" href="' + publisherUrl(ext.author) + '">' + escapeHtml(ext.author) + '</a>'
+                    : 'unknown author';
                 const versions = (ext.versions || []).map((v, index) => (
                     '<div class="version-row">' +
-                    '<div class="version-head"><strong>v' + escapeHtml(v.version) + '</strong>' +
-                    '<span style="color:var(--md-on-surface-variant)">' + escapeHtml(relativeDate(v.released_at)) + '</span>' +
-                    (index === 0 ? '<span class="badge APPROVED" style="margin-left:auto">latest</span>' : '') + '</div>' +
+                    '<div style="display: flex; gap: 10px; align-items: baseline; flex-wrap: wrap;">' +
+                    '<strong style="font-size: 0.95rem;">v' + escapeHtml(v.version) + '</strong>' +
+                    '<span style="color: var(--md-on-surface-variant); font-size: 0.8rem;">' + escapeHtml(relativeDate(v.released_at)) + '</span>' +
+                    (index === 0 ? '<span class="store-badge APPROVED" style="margin-left: auto;">latest</span>' : '') + '</div>' +
                     (v.permissions && v.permissions.length
-                        ? '<div style="margin-top:4px">' + v.permissions.map(p => '<span class="perm">' + escapeHtml(p) + '</span>').join('') + '</div>'
+                        ? '<div style="margin-top: 6px;">' + v.permissions.map(p => '<span class="perm-pill">' + escapeHtml(p) + '</span>').join('') + '</div>'
                         : '') +
                     (v.changelog ? '<pre>' + escapeHtml(v.changelog) + '</pre>' : '') +
-                    '<div style="margin-top:8px"><a class="btn" style="padding:7px 14px; font-size:0.8rem" target="_blank" rel="noopener" ' +
-                    'href="' + API_BASE + '/v1/extensions/' + encodeURIComponent(ext.ext_id) + '/download?version=' + encodeURIComponent(v.version_code) + '">Download .kodaext</a></div>' +
+                    '<div style="margin-top: 10px;"><a class="btn btn-outlined" style="padding: 8px 16px; font-size: 0.8rem;" target="_blank" rel="noopener" ' +
+                    'href="' + API_BASE + '/v1/extensions/' + encodeURIComponent(ext.ext_id) + '/download?version=' + encodeURIComponent(v.version_code) + '">' +
+                    '<span class="material-symbols-outlined" style="font-size: 16px;">download</span> Download .kodaext</a></div>' +
                     '</div>'
                 )).join('');
                 const shots = (ext.screenshots || []).length
-                    ? '<div class="shots">' + ext.screenshots.map(s => '<img src="' + escapeHtml(s) + '" alt="">').join('') + '</div>'
+                    ? '<div class="shots-strip">' + ext.screenshots.map(s => '<img src="' + escapeHtml(s) + '" alt="">').join('') + '</div>'
                     : '';
                 content.innerHTML =
-                    '<div class="detail-head">' + icon +
-                    '<div><h2>' + escapeHtml(ext.name) + '</h2>' +
-                    '<div class="card-sub">' + escapeHtml(ext.ext_id) + ' · by ' + escapeHtml(ext.author || 'unknown') +
-                    ' · ' + (ext.downloads || 0) + ' downloads</div></div></div>' +
-                    '<div class="sheet-body">' +
-                    '<div style="line-height:1.5; white-space:pre-wrap">' + escapeHtml(ext.description || ext.summary || '') + '</div>' +
+                    '<div class="store-card-head">' + icon +
+                    '<div><div class="store-sub">' + escapeHtml(ext.ext_id) + ' · by ' + author + '</div>' +
+                    '<div class="store-meta" style="margin-top: 6px;"><span><span class="material-symbols-outlined">download</span>' +
+                    (ext.downloads || 0) + ' downloads</span><span><span class="material-symbols-outlined">description</span>' +
+                    escapeHtml(ext.license || '-') + '</span></div></div></div>' +
+                    '<div style="display: flex; flex-direction: column; gap: 16px; margin-top: 8px;">' +
+                    '<div style="line-height: 1.55; white-space: pre-wrap;">' + escapeHtml(ext.description || ext.summary || '') + '</div>' +
                     shots +
-                    '<div class="detail-links">' +
-                    (ext.source_url ? '<a href="' + escapeHtml(ext.source_url) + '" target="_blank" rel="noopener">Source code</a>' : '') +
-                    (ext.homepage_url ? '<a href="' + escapeHtml(ext.homepage_url) + '" target="_blank" rel="noopener">Homepage</a>' : '') +
-                    '<span style="color:var(--md-on-surface-variant)">License: ' + escapeHtml(ext.license || '-') + '</span></div>' +
-                    '<div><div style="font-weight:600; margin-bottom:4px">Versions</div>' + versions + '</div>' +
-                    '<div style="font-size:0.78rem; color:var(--md-on-surface-variant)">Open the KodaHosting app &rarr; Extensions &rarr; Discover to see it in the app.</div>' +
+                    '<div>' +
+                    (ext.source_url ? '<a class="link-row" href="' + escapeHtml(ext.source_url) + '" target="_blank" rel="noopener"><span class="material-symbols-outlined">code</span>Source code</a>' : '') +
+                    (ext.homepage_url ? '<a class="link-row" href="' + escapeHtml(ext.homepage_url) + '" target="_blank" rel="noopener"><span class="material-symbols-outlined">public</span>Homepage</a>' : '') +
+                    '</div>' +
+                    '<div><div style="font-weight: 500; margin-bottom: 4px;">Versions</div>' + versions + '</div>' +
+                    '<div style="font-size: 0.8rem; color: var(--md-on-surface-variant);">Open the KodaHosting app &rarr; Extensions &rarr; Discover to see it in the app.</div>' +
                     '</div>';
             } catch (e) {
-                content.innerHTML = '<div class="empty">Could not load this extension: ' + escapeHtml(e.message) + '</div>';
+                content.innerHTML = '<div class="store-empty">Could not load this extension: ' + escapeHtml(e.message) + '</div>';
             }
         }
 
@@ -466,7 +1756,11 @@
         }
 
         // ---------------------------------------------------------------- auth
-        document.getElementById('btn-sign-in').addEventListener('click', () => openOverlay('overlay-login'));
+        function bindSignIn() {
+            const button = document.getElementById('btn-sign-in');
+            if (button) button.addEventListener('click', () => openModal('modal-login'));
+        }
+        bindSignIn();
         document.getElementById('btn-login-email').addEventListener('click', async () => {
             const errorMsg = document.getElementById('login-error');
             errorMsg.style.display = 'none';
@@ -489,10 +1783,10 @@
             const authArea = document.getElementById('auth-area');
             const mineSection = document.getElementById('mine-section');
             if (session) {
-                closeOverlay('overlay-login');
+                closeModal('modal-login');
                 document.getElementById('btn-submit').style.display = '';
                 mineSection.style.display = '';
-                authArea.innerHTML = '<button id="btn-sign-out">Sign out</button>';
+                authArea.innerHTML = '<button class="btn btn-tonal" id="btn-sign-out">Sign out</button>';
                 document.getElementById('btn-sign-out').addEventListener('click', async () => {
                     await supabaseClient.auth.signOut();
                 });
@@ -500,8 +1794,8 @@
             } else {
                 document.getElementById('btn-submit').style.display = 'none';
                 mineSection.style.display = 'none';
-                authArea.innerHTML = '<button id="btn-sign-in">Sign in</button>';
-                document.getElementById('btn-sign-in').addEventListener('click', () => openOverlay('overlay-login'));
+                authArea.innerHTML = '<button class="btn btn-tonal" id="btn-sign-in">Sign in</button>';
+                bindSignIn();
                 mineItems = [];
                 renderMine();
             }
@@ -516,7 +1810,7 @@
                 renderMine();
             } catch (e) {
                 document.getElementById('mine-grid').innerHTML =
-                    '<div class="empty">Could not load your extensions: ' + escapeHtml(e.message) + '</div>';
+                    '<div class="store-empty">Could not load your extensions: ' + escapeHtml(e.message) + '</div>';
             }
         }
 
@@ -524,28 +1818,28 @@
             const grid = document.getElementById('mine-grid');
             if (!session) { grid.innerHTML = ''; return; }
             if (mineItems.length === 0) {
-                grid.innerHTML = '<div class="empty">You have not submitted anything yet.</div>';
+                grid.innerHTML = '<div class="store-empty">You have not submitted anything yet. Use "Submit extension" above.</div>';
                 return;
             }
             grid.innerHTML = mineItems.map(item => {
                 const latest = item.versions && item.versions[0];
                 const ended = item.status === 'REJECTED' || item.status === 'DELISTED' || item.status === 'WITHDRAWN';
-                return '<div class="card">' +
-                    '<div class="card-head"><div class="icon">🧩</div>' +
-                    '<div style="flex:1"><div class="card-title">' + escapeHtml(item.name) + '</div>' +
-                    '<div class="card-sub">' + escapeHtml(item.ext_id) + (latest ? ' · v' + escapeHtml(latest.version) : '') + '</div></div>' +
-                    '<span class="badge ' + escapeHtml(item.status) + '">' + escapeHtml(item.status) + '</span></div>' +
+                return '<div class="item-card">' +
+                    '<div class="store-card-head"><div class="store-icon">🧩</div>' +
+                    '<div style="flex: 1; min-width: 0;"><div class="store-name">' + escapeHtml(item.name) + '</div>' +
+                    '<div class="store-sub">' + escapeHtml(item.ext_id) + (latest ? ' · v' + escapeHtml(latest.version) : '') + '</div></div>' +
+                    '<span class="store-badge ' + escapeHtml(item.status) + '">' + escapeHtml(item.status) + '</span></div>' +
                     (ended && item.review_note
-                        ? '<div class="card-summary" style="color:var(--md-error)">Reason: ' + escapeHtml(item.review_note) + '</div>'
+                        ? '<div class="store-summary" style="color: var(--md-error);">Reason: ' + escapeHtml(item.review_note) + '</div>'
                         : item.review_note
-                            ? '<div class="card-summary">Review note: ' + escapeHtml(item.review_note) + '</div>'
+                            ? '<div class="store-summary">Review note: ' + escapeHtml(item.review_note) + '</div>'
                             : '') +
-                    '<div class="card-meta"><span>' + (item.downloads || 0) + ' downloads</span>' +
+                    '<div class="store-meta"><span><span class="material-symbols-outlined">download</span>' + (item.downloads || 0) + '</span>' +
                     (item.published_at ? '<span>published ' + escapeHtml(relativeDate(item.published_at)) + '</span>' : '') +
                     (item.ended_at ? '<span>ended ' + escapeHtml(relativeDate(item.ended_at)) + '</span>' : '') + '</div>' +
                     (item.status !== 'WITHDRAWN'
-                        ? '<div><button class="btn ghost" style="padding:7px 14px; font-size:0.8rem" data-withdraw="' + escapeHtml(item.ext_id) + '">Withdraw</button></div>'
-                        : '<div class="card-meta">Withdrawn - submit a new version to bring it back into review.</div>') +
+                        ? '<div style="margin-top: 14px;"><button class="btn btn-outlined" style="padding: 8px 16px; font-size: 0.8rem;" data-withdraw="' + escapeHtml(item.ext_id) + '">Withdraw</button></div>'
+                        : '<div class="store-meta">Withdrawn - submit a new version to bring it back into review.</div>') +
                     '</div>';
             }).join('');
             grid.querySelectorAll('[data-withdraw]').forEach(button => {
@@ -562,15 +1856,21 @@
 
         // ---------------------------------------------------------------- submit
         document.getElementById('btn-submit').addEventListener('click', () => openSubmit());
+        document.getElementById('footer-submit').addEventListener('click', (event) => { event.preventDefault(); openSubmit(); });
+        document.getElementById('footer-mine').addEventListener('click', (event) => {
+            event.preventDefault();
+            if (!session) { openModal('modal-login'); return; }
+            document.getElementById('mine-section').scrollIntoView({ behavior: 'smooth' });
+        });
         document.getElementById('in-category').innerHTML =
             CATEGORIES.filter(c => c[0] !== 'all').map(c => '<option value="' + c[0] + '">' + c[1] + '</option>').join('');
         document.getElementById('perm-grid').innerHTML =
             PERMISSIONS.map(p => '<label><input type="checkbox" value="' + p + '"> ' + p + '</label>').join('');
 
         function openSubmit() {
-            if (!session) { openOverlay('overlay-login'); return; }
+            if (!session) { openModal('modal-login'); return; }
             document.getElementById('submit-status').style.display = 'none';
-            openOverlay('overlay-submit');
+            openModal('modal-submit');
         }
 
         async function sha256Hex(file) {
@@ -613,10 +1913,10 @@
                 if (pkg.size > 20 * 1024 * 1024) throw new Error('The package must be under 20 MB.');
 
                 button.disabled = true;
-                setStatus('', 'Hashing the package…');
+                setStatus('busy', 'Hashing the package…');
                 const sha256 = await sha256Hex(pkg);
 
-                setStatus('', 'Uploading images…');
+                setStatus('busy', 'Uploading images…');
                 const iconFile = document.getElementById('in-icon').files[0];
                 const iconUrl = iconFile ? await uploadImage(iconFile) : null;
                 const shotFiles = Array.from(document.getElementById('in-shots').files).slice(0, 4);
@@ -643,7 +1943,7 @@
                     file_size: pkg.size,
                 };
 
-                setStatus('', 'Creating the submission…');
+                setStatus('busy', 'Creating the submission…');
                 const mine = mineItems.find(item => item.ext_id === extId);
                 const created = mine
                     ? await api('/v1/extensions/' + encodeURIComponent(extId) + '/versions', {
@@ -653,13 +1953,13 @@
                         method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(metadata),
                     });
 
-                setStatus('', 'Uploading the package…');
+                setStatus('busy', 'Uploading the package…');
                 const put = await fetch(created.upload.signed_url, {
                     method: 'PUT', headers: { 'Content-Type': 'application/zip' }, body: pkg,
                 });
                 if (!put.ok) throw new Error('package upload failed (' + put.status + ')');
 
-                setStatus('', 'Verifying the package…');
+                setStatus('busy', 'Verifying the package…');
                 await api('/v1/extensions/' + encodeURIComponent(extId) + '/finalize', {
                     method: 'POST', headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ version_code: versionCode }),
@@ -673,6 +1973,7 @@
                     id_taken: 'This extension id is already taken by another author - pick a different one.',
                     too_many_pending_submissions: 'You already have 3 submissions in review. Wait for the review before adding more.',
                     version_code_too_low: 'The version code must be higher than your last submitted one.',
+                    pending_version_exists: 'One version is already in review for this extension. Wait for the review before submitting the next one.',
                     sha256_mismatch: 'The uploaded package does not match what was announced - please try again.',
                 };
                 setStatus('err', messages[e.message] || ('Could not submit: ' + e.message));
@@ -687,13 +1988,13 @@
                 const res = await fetch(API_BASE + '/v1/status');
                 const status = await res.json();
                 const bit = document.getElementById('footer-status');
-                bit.textContent = 'API: online · ' + status.servers.total + ' servers, ' +
+                bit.textContent = 'API online · ' + status.servers.total + ' servers, ' +
                     status.servers.players_online + ' players · ' + status.extensions.published + ' extensions';
                 if (status.maintenance && status.maintenance.active) {
                     const notice = document.getElementById('maintenance-notice');
                     notice.style.display = '';
-                    notice.textContent = 'Maintenance is active right now' +
-                        (status.maintenance.reason ? ': ' + status.maintenance.reason : '.') +
+                    notice.innerHTML = '<strong>Maintenance is active right now' +
+                        (status.maintenance.reason ? ':</strong> ' + escapeHtml(status.maintenance.reason) : '.</strong>') +
                         ' Some things may be unavailable.';
                 }
             } catch (e) {
@@ -702,11 +2003,11 @@
         }
 
         document.getElementById('category-chips').innerHTML =
-            CATEGORIES.map(c => '<button class="chip' + (c[0] === 'all' ? ' active' : '') + '" data-cat="' + c[0] + '">' + c[1] + '</button>').join('');
-        document.querySelectorAll('#category-chips .chip').forEach(chip => {
+            CATEGORIES.map(c => '<button class="store-chip' + (c[0] === 'all' ? ' active' : '') + '" data-cat="' + c[0] + '">' + c[1] + '</button>').join('');
+        document.querySelectorAll('#category-chips .store-chip').forEach(chip => {
             chip.addEventListener('click', () => {
                 activeCategory = chip.dataset.cat;
-                document.querySelectorAll('#category-chips .chip').forEach(el => el.classList.toggle('active', el === chip));
+                document.querySelectorAll('#category-chips .store-chip').forEach(el => el.classList.toggle('active', el === chip));
                 renderStore();
             });
         });
@@ -714,11 +2015,16 @@
             searchTerm = event.target.value.trim().toLowerCase();
             renderStore();
         });
+        document.getElementById('btn-refresh').addEventListener('click', loadStore);
 
         supabaseClient.auth.getSession().then(({ data }) => applySession(data.session));
         supabaseClient.auth.onAuthStateChange((_event, authSession) => applySession(authSession));
 
-        loadStore();
+        loadStore().then(() => {
+            // deep link from the dashboard: store?ext=<id> opens the detail directly
+            const extParam = params.get('ext');
+            if (extParam) openDetail(extParam);
+        });
         loadStatus();
     </script>
 </body>

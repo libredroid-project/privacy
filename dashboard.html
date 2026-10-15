@@ -93,26 +93,6 @@
         }
         .material-symbols-outlined.fill { font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
 
-        /* Background orbs */
-        .bg-orb {
-            position: fixed;
-            border-radius: 50%;
-            filter: blur(120px);
-            pointer-events: none;
-            z-index: 0;
-            opacity: 0.18;
-        }
-        .bg-orb-1 { width: 500px; height: 500px; background: var(--brand); top: -200px; left: -200px; animation: orbDrift1 30s infinite ease-in-out; }
-        .bg-orb-2 { width: 400px; height: 400px; background: var(--brand); bottom: -150px; right: -150px; animation: orbDrift2 35s infinite ease-in-out; }
-        @keyframes orbDrift1 {
-            0%, 100% { transform: translate(0, 0) scale(1); }
-            50% { transform: translate(120px, 100px) scale(1.1); }
-        }
-        @keyframes orbDrift2 {
-            0%, 100% { transform: translate(0, 0) scale(1); }
-            50% { transform: translate(-100px, -120px) scale(1.15); }
-        }
-
         /* Mobile Top App Bar */
         .top-app-bar {
             display: none;
@@ -1280,9 +1260,6 @@
 </head>
 <body>
 
-    <div class="bg-orb bg-orb-1"></div>
-    <div class="bg-orb bg-orb-2"></div>
-
     <!-- Mobile Top App Bar -->
     <header class="top-app-bar">
         <button class="icon-btn" onclick="toggleSidebar()" aria-label="Open menu">
@@ -1450,15 +1427,25 @@
         <div id="tab-extensions" class="view-section">
             <div class="page-header">
                 <h2 class="page-title">Extensions</h2>
+                <a class="btn-outline-card primary-action" href="store" style="text-decoration:none;">Open the store</a>
             </div>
             <div class="info-box" style="margin-bottom: 24px;">
                 <div class="icon-large">
                     <span class="material-symbols-outlined fill">extension</span>
                 </div>
-                <p>Your store submissions and their review status. If an extension was ended, the reason shows up here.</p>
+                <p>Everything that is published in the store, plus your own submissions and their review state.</p>
                 <p style="margin-top: 8px; font-size: 0.875rem;">
-                    Browse and submit extensions on the <a href="store" style="color: var(--brand);">Extension Store</a> page.
-                </p>
+                    Submitting happens on the <a href="store" style="color: var(--brand);">Extension Store</a> page,
+                    installing in the KodaHosting app under Extensions &rarr; Discover.</p>
+            </div>
+
+            <div class="page-header" style="margin-bottom:16px;">
+                <h2 class="page-title" style="font-size:1.3rem;">In the store</h2>
+            </div>
+            <div class="items-grid" id="all-extensions-container"></div>
+
+            <div class="page-header" style="margin-top:32px; margin-bottom:16px;">
+                <h2 class="page-title" style="font-size:1.3rem;">My submissions</h2>
             </div>
             <div class="items-grid" id="my-extensions-container"></div>
         </div>
@@ -1475,6 +1462,7 @@
                             <div id="account-nickname-line" style="font-weight:600; font-size:1.05rem;"></div>
                             <div id="account-email-line" style="color: var(--md-on-surface-variant); font-size:0.875rem;"></div>
                             <div id="account-meta-line" style="color: var(--md-on-surface-variant); font-size:0.8rem; margin-top:4px;"></div>
+                            <div id="account-info-line" style="color: var(--md-on-surface-variant); font-size:0.8rem; margin-top:2px;"></div>
                         </div>
                         <div style="display:flex; gap:8px; flex-wrap:wrap;">
                             <button class="btn-outline-card" id="btn-avatar-pick">Change picture</button>
@@ -1501,9 +1489,17 @@
                         <button class="btn-outline-card primary-action" id="btn-save-password">Change</button>
                     </div>
                     <div id="password-status" style="font-size:0.8rem; margin-top:8px; display:none"></div>
-                    <p style="font-size:0.8rem; color:var(--md-on-surface-variant); margin-top:8px;">More account settings (linked devices, account linking, deletion) live in the app under Settings &rarr; Account.</p>
+                    <p style="font-size:0.8rem; color:var(--md-on-surface-variant); margin-top:8px;">More account settings (account linking, deletion) live in the app under Settings &rarr; Account.</p>
                 </div>
             </div>
+
+            <div class="page-header" style="margin-top:32px; margin-bottom:16px;">
+                <h2 class="page-title" style="font-size:1.3rem;">Your devices</h2>
+            </div>
+            <p style="color: var(--md-on-surface-variant); font-size:0.875rem; margin-bottom:16px;">
+                Every phone with the KodaHosting app signed into this account. Live values come from the app's heartbeat;
+                unlinking a device keeps its servers and settings, the app simply runs standalone again.</p>
+            <div class="items-grid" id="devices-container"></div>
         </div>
 
         <div id="tab-status" class="view-section">
@@ -1512,6 +1508,14 @@
             </div>
             <p class="page-sub" style="margin-bottom:16px">Live values from api.kodanetwork.eu and the tunnel server.</p>
             <div class="items-grid" id="status-grid"></div>
+
+            <div class="page-header" style="margin-top:32px; margin-bottom:16px;">
+                <h2 class="page-title" style="font-size:1.3rem;">Community servers</h2>
+            </div>
+            <p style="color: var(--md-on-surface-variant); font-size:0.875rem; margin-bottom:16px;">
+                The public directory: name, status, version, players and MOTD of all KodaHosting servers.
+                Also available for everyone as <code>GET /v1/servers</code> on the API.</p>
+            <div class="items-grid" id="community-servers-container"></div>
         </div>
 
         <div id="tab-licenses" class="view-section">
@@ -1622,6 +1626,10 @@
             if (session) headers['Authorization'] = 'Bearer ' + session.access_token;
             const res = await fetch(API_BASE + path, Object.assign({}, options, { headers }));
             const body = await res.json().catch(() => ({}));
+            if (res.status === 401 && session) {
+                // the stored session is dead (for example the account was deleted) - drop it
+                await supabaseClient.auth.signOut().catch(() => {});
+            }
             if (!res.ok) throw new Error(body.error || ('HTTP ' + res.status));
             return body;
         }
@@ -1703,7 +1711,7 @@
             }
             if (tabId === 'legal') loadLegalTexts();
             if (tabId === 'account') loadAccount();
-            if (tabId === 'extensions') loadMyExtensions();
+            if (tabId === 'extensions') { loadAllExtensions(); loadMyExtensions(); }
             if (tabId === 'tickets') loadTickets();
             if (tabId === 'status') loadPlatformStatus();
             if (window.innerWidth <= 768) toggleSidebar();
@@ -2168,9 +2176,63 @@
                 document.getElementById('account-email-line').textContent = me.email || '';
                 document.getElementById('account-meta-line').textContent =
                     me.server_count + ' server(s) · ' + me.device_count + ' device(s) · ' + me.extension_count + ' extension submission(s)';
+                const info = [];
+                if (me.member_since) info.push('Member since ' + new Date(me.member_since).toLocaleDateString());
+                if (me.mc_username) info.push('Minecraft account: ' + me.mc_username);
+                info.push(me.two_fa ? '2FA: on' : '2FA: off');
+                document.getElementById('account-info-line').textContent = info.join('  ·  ');
                 document.getElementById('input-nickname').value = me.nickname || '';
+                loadDevices();
             } catch (e) {
                 showLine('nickname-status', 'err', 'Could not load the account: ' + e.message);
+            }
+        }
+
+        /** the account's devices with their live telemetry and the unlink action. */
+        async function loadDevices() {
+            const grid = document.getElementById('devices-container');
+            grid.innerHTML = '<p style="color:var(--md-on-surface-variant); grid-column:1/-1; padding:20px;">Loading…</p>';
+            try {
+                const data = await api('/v1/me/devices');
+                if (!data.items.length) {
+                    grid.innerHTML = '<p style="color:var(--md-on-surface-variant); grid-column:1/-1; padding:20px;">' +
+                        'No devices linked to this account yet. Sign in with this account in the app (Settings, Account) to link one.</p>';
+                    return;
+                }
+                grid.innerHTML = data.items.map(device => {
+                    const accounts = device.accounts.filter(a => a.mc_username)
+                        .map(a => escapeHtml(a.mc_username) + (a.is_main ? ' (main)' : '')).join(', ')
+                        || 'no Minecraft account linked';
+                    const ram = device.total_ram_mb && device.free_ram_mb != null
+                        ? (device.total_ram_mb - device.free_ram_mb) + ' / ' + device.total_ram_mb + ' MB' : '--';
+                    const state = device.app_state === 'FOREGROUND' ? { label: 'active', cls: 'status-online' }
+                        : device.app_state === 'BACKGROUND' ? { label: 'in background', cls: 'status-pending' }
+                        : { label: 'offline', cls: 'status-offline' };
+                    return '<div class="item-card">' +
+                        '<div class="item-header"><div class="item-title">' + escapeHtml(device.model || 'Android device') + '</div>' +
+                        '<div class="status-badge ' + state.cls + '">' + state.label + '</div></div>' +
+                        '<div class="item-details">' +
+                        '<span><span class="material-symbols-outlined">person</span>' + accounts + '</span>' +
+                        '<span><span class="material-symbols-outlined">memory</span>' + ram + '</span>' +
+                        '<span><span class="material-symbols-outlined">battery_full</span>' +
+                        (device.battery != null ? device.battery + '%' : '--') + (device.charging ? ' charging' : '') + '</span>' +
+                        '<span><span class="material-symbols-outlined">android</span>' + escapeHtml(device.os || '--') + ' · app ' + escapeHtml(device.app_version || '--') + '</span>' +
+                        '<span><span class="material-symbols-outlined">schedule</span>' + relativeTime(device.last_ping) + '</span>' +
+                        '</div>' +
+                        '<div style="margin-top:14px;"><button class="btn-outline-card" data-unlink="' + escapeHtml(device.app_uuid) + '">Unlink device</button></div>' +
+                        '</div>';
+                }).join('');
+                grid.querySelectorAll('[data-unlink]').forEach(button => {
+                    button.addEventListener('click', async () => {
+                        if (!confirm('Unlink this device from the account? The app keeps working with its servers and settings, and you can link it again by signing in.')) return;
+                        try {
+                            await api('/v1/me/devices/' + encodeURIComponent(button.dataset.unlink) + '/unlink', { method: 'POST' });
+                            loadAccount();
+                        } catch (e) { alert('Could not unlink: ' + e.message); }
+                    });
+                });
+            } catch (e) {
+                grid.innerHTML = '<p style="color:var(--md-error); grid-column:1/-1; padding:20px;">Could not load devices: ' + escapeHtml(e.message) + '</p>';
             }
         }
 
@@ -2246,6 +2308,47 @@
                 document.getElementById('input-new-password').value = '';
             }
         });
+
+        /** the whole store directory, with publisher links into the store page. */
+        async function loadAllExtensions() {
+            const grid = document.getElementById('all-extensions-container');
+            grid.innerHTML = '<p style="color:var(--md-on-surface-variant); grid-column:1/-1; padding:20px;">Loading…</p>';
+            try {
+                const data = await api('/v1/extensions');
+                if (!data.items.length) {
+                    grid.innerHTML = '<p style="color:var(--md-on-surface-variant); grid-column:1/-1; padding:20px;">' +
+                        'The store is empty right now. Be the first - <a href="store" style="color:var(--brand)">submit an extension</a>.</p>';
+                    return;
+                }
+                grid.innerHTML = data.items.map(item => {
+                    const icon = item.icon_url
+                        ? '<img src="' + escapeHtml(item.icon_url) + '" alt="" style="width:44px;height:44px;border-radius:var(--shape-md);object-fit:cover;background:var(--md-surface-container-highest);flex:none;">'
+                        : '<div style="width:44px;height:44px;border-radius:var(--shape-md);background:var(--md-surface-container-highest);display:grid;place-items:center;font-size:20px;flex:none;">🧩</div>';
+                    const author = item.author
+                        ? '<a href="store?author=' + encodeURIComponent(item.author) + '" style="color:var(--brand)">' + escapeHtml(item.author) + '</a>'
+                        : 'unknown author';
+                    const version = item.latest_version ? 'v' + escapeHtml(item.latest_version.version) : '';
+                    return '<div class="item-card clickable" data-store-ext="' + escapeHtml(item.ext_id) + '">' +
+                        '<div style="display:flex;gap:14px;align-items:center;">' + icon +
+                        '<div style="min-width:0;flex:1;"><div style="font-weight:600;">' + escapeHtml(item.name) + '</div>' +
+                        '<div style="font-size:0.8rem;color:var(--md-on-surface-variant);margin-top:2px;">' + author + ' · ' + version + '</div></div>' +
+                        '<span class="material-symbols-outlined" style="color:var(--md-on-surface-variant);">chevron_right</span></div>' +
+                        '<div class="item-details" style="margin-top:12px;">' +
+                        '<span><span class="material-symbols-outlined">download</span>' + (item.downloads || 0) + '</span>' +
+                        '<span><span class="material-symbols-outlined">description</span>' + escapeHtml(item.license || '-') + '</span>' +
+                        '</div></div>';
+                }).join('');
+                grid.querySelectorAll('[data-store-ext]').forEach(card => {
+                    card.style.cursor = 'pointer';
+                    card.addEventListener('click', (event) => {
+                        if (event.target.closest('a')) return;
+                        window.location = 'store?ext=' + encodeURIComponent(card.dataset.storeExt);
+                    });
+                });
+            } catch (e) {
+                grid.innerHTML = '<p style="color:var(--md-error); grid-column:1/-1; padding:20px;">Could not load the store: ' + escapeHtml(e.message) + '</p>';
+            }
+        }
 
         async function loadMyExtensions() {
             const container = document.getElementById('my-extensions-container');
@@ -2386,8 +2489,37 @@
                     '<div style="font-size:1.15rem; font-weight:600; margin:4px 0;">' + escapeHtml(item.value) + '</div>' +
                     '<div style="font-size:0.75rem; color:var(--md-on-surface-variant);">' + escapeHtml(item.foot) + '</div></div>'
                 )).join('');
+                loadCommunityServers();
             } catch (e) {
                 grid.innerHTML = '<p style="color:var(--md-error); grid-column:1/-1; padding:20px;">Status unavailable: ' + escapeHtml(e.message) + '</p>';
+            }
+        }
+
+        /** the public server directory (GET /v1/servers on the api). */
+        async function loadCommunityServers() {
+            const container = document.getElementById('community-servers-container');
+            container.innerHTML = '<p style="color:var(--md-on-surface-variant); grid-column:1/-1; padding:20px;">Loading…</p>';
+            try {
+                const res = await fetch(API_BASE + '/v1/servers?limit=12');
+                const data = await res.json();
+                if (!data.items || data.items.length === 0) {
+                    container.innerHTML = '<p style="color:var(--md-on-surface-variant); grid-column:1/-1; padding:20px;">No servers in the directory right now.</p>';
+                    return;
+                }
+                const colors = { ONLINE: 'status-online', OFFLINE: 'status-offline', HIBERNATED: 'status-offline' };
+                container.innerHTML = data.items.map(server => (
+                    '<div class="item-card">' +
+                    '<div class="item-header"><div class="item-title">' + escapeHtml(server.host) + '.' + escapeHtml(server.domain) + '</div>' +
+                    '<div class="status-badge ' + (colors[server.status] || 'status-offline') + '">' + escapeHtml(server.status) + '</div></div>' +
+                    (server.motd ? '<div style="color:var(--md-on-surface-variant); font-size:0.85rem; margin-top:6px;">' + escapeHtml(server.motd) + '</div>' : '') +
+                    '<div class="item-details"><span><span class="material-symbols-outlined">group</span>' +
+                    server.players_online + ' / ' + server.players_max + '</span>' +
+                    (server.version ? '<span><span class="material-symbols-outlined">tag</span>' + escapeHtml(server.version) + '</span>' : '') +
+                    (server.gamemode ? '<span><span class="material-symbols-outlined">sports_esports</span>' + escapeHtml(server.gamemode) + '</span>' : '') +
+                    '</div></div>'
+                )).join('');
+            } catch (e) {
+                container.innerHTML = '<p style="color:var(--md-error); grid-column:1/-1; padding:20px;">Could not load servers: ' + escapeHtml(e.message) + '</p>';
             }
         }
 
