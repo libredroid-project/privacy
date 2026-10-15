@@ -1,0 +1,725 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <link rel="icon" type="image/png" href="assets/logo.png">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KodaHosting | Extension Store</title>
+    <link rel="canonical" href="https://host.kodanetwork.eu/store">
+    <meta name="description" content="Browse, download and submit KodaHosting app extensions (.kodaext). Published extensions are reviewed before they appear here.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto+Flex:opsz,wght@8..144,300;8..144,400;8..144,500;8..144,600;8..144,700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0&display=swap">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
+    <style>
+        :root {
+            --md-error: #FFB4AB;
+            --md-success: #6FBE7E;
+            --md-warning: #F59E0B;
+            --md-surface: #1B1613;
+            --md-on-surface: #EFE0D9;
+            --md-on-surface-variant: #D8C2B5;
+            --md-outline: #A08C7F;
+            --md-outline-variant: #534339;
+            --md-surface-container-lowest: #150F0D;
+            --md-surface-container-low: #1E1814;
+            --md-surface-container: #231D18;
+            --md-surface-container-high: #2D2620;
+            --md-surface-container-highest: #382F29;
+            --brand: #FF6B00;
+            --brand-hover: #FF8533;
+            --brand-container: rgba(255, 107, 0, 0.15);
+            --shape-sm: 8px;
+            --shape-md: 12px;
+            --shape-lg: 16px;
+            --shape-full: 999px;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Roboto Flex', 'Roboto', sans-serif;
+            background-color: var(--md-surface);
+            color: var(--md-on-surface);
+            min-height: 100vh;
+            -webkit-font-smoothing: antialiased;
+        }
+        a { text-decoration: none; color: inherit; }
+        .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; line-height: 1; user-select: none; }
+
+        header.top {
+            display: flex; align-items: center; gap: 16px;
+            padding: 14px 24px; border-bottom: 1px solid var(--md-outline-variant);
+            background: var(--md-surface-container-low);
+            position: sticky; top: 0; z-index: 40;
+        }
+        .logo { display: flex; align-items: center; gap: 10px; font-weight: 600; font-size: 1.05rem; }
+        .logo img { width: 30px; height: 30px; border-radius: 8px; }
+        .logo span span { color: var(--brand); }
+        header.top nav { margin-left: auto; display: flex; gap: 8px; align-items: center; }
+        header.top nav a, header.top nav button {
+            font: inherit; font-size: 0.875rem; padding: 8px 14px; border-radius: var(--shape-full);
+            color: var(--md-on-surface-variant); background: transparent; border: 1px solid transparent; cursor: pointer;
+        }
+        header.top nav a:hover, header.top nav button:hover { color: var(--md-on-surface); background: var(--md-surface-container); }
+        header.top nav button.primary { background: var(--brand); color: #201007; font-weight: 600; }
+
+        main { max-width: 1100px; margin: 0 auto; padding: 32px 20px 80px; }
+        .hero h1 { font-size: 1.9rem; font-weight: 600; letter-spacing: -0.02em; }
+        .hero p { color: var(--md-on-surface-variant); margin-top: 8px; max-width: 640px; line-height: 1.5; }
+        .hero .notice {
+            margin-top: 16px; padding: 12px 16px; border-radius: var(--shape-md);
+            background: var(--md-surface-container); border: 1px solid var(--md-outline-variant);
+            font-size: 0.85rem; color: var(--md-on-surface-variant); max-width: 720px;
+        }
+
+        .toolbar { display: flex; gap: 12px; flex-wrap: wrap; align-items: center; margin: 24px 0 8px; }
+        .search { flex: 1; min-width: 220px; display: flex; align-items: center; gap: 8px;
+            background: var(--md-surface-container); border: 1px solid var(--md-outline-variant);
+            border-radius: var(--shape-full); padding: 10px 16px; }
+        .search input { flex: 1; background: transparent; border: 0; outline: 0; color: inherit; font: inherit; }
+        .chips { display: flex; gap: 8px; flex-wrap: wrap; margin: 12px 0 20px; }
+        .chip { padding: 7px 14px; border-radius: var(--shape-full); border: 1px solid var(--md-outline-variant);
+            background: transparent; color: var(--md-on-surface-variant); font: inherit; font-size: 0.85rem; cursor: pointer; }
+        .chip.active { background: var(--brand-container); border-color: var(--brand); color: var(--brand); }
+
+        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 16px; margin-top: 8px; }
+        .card { background: var(--md-surface-container-low); border: 1px solid var(--md-outline-variant);
+            border-radius: var(--shape-lg); padding: 18px; display: flex; flex-direction: column; gap: 10px; }
+        .card.clickable { cursor: pointer; transition: border-color .15s, background .15s; }
+        .card.clickable:hover { border-color: var(--brand); background: var(--md-surface-container); }
+        .card-head { display: flex; gap: 12px; align-items: center; }
+        .icon { width: 44px; height: 44px; border-radius: var(--shape-md); object-fit: cover; background: var(--md-surface-container-highest);
+            display: flex; align-items: center; justify-content: center; font-size: 20px; flex: none; }
+        .card-title { font-weight: 600; }
+        .card-sub { font-size: 0.8rem; color: var(--md-on-surface-variant); }
+        .card-summary { font-size: 0.875rem; color: var(--md-on-surface-variant); line-height: 1.45; min-height: 2.5em; }
+        .card-meta { display: flex; gap: 12px; flex-wrap: wrap; font-size: 0.75rem; color: var(--md-on-surface-variant); align-items: center; }
+        .badge { font-size: 0.7rem; font-weight: 600; padding: 3px 10px; border-radius: var(--shape-full); border: 1px solid var(--md-outline-variant); }
+        .badge.PENDING { color: var(--md-warning); border-color: var(--md-warning); }
+        .badge.APPROVED { color: var(--md-success); border-color: var(--md-success); }
+        .badge.REJECTED, .badge.DELISTED { color: var(--md-error); border-color: var(--md-error); }
+        .badge.WITHDRAWN { color: var(--md-outline); }
+        .empty { color: var(--md-on-surface-variant); padding: 40px 0; text-align: center; }
+
+        .section-title { margin: 40px 0 8px; font-size: 1.2rem; font-weight: 600; }
+
+        .overlay { position: fixed; inset: 0; background: rgba(0,0,0,.65); display: none; align-items: flex-start;
+            justify-content: center; padding: 40px 16px; overflow-y: auto; z-index: 60; }
+        .overlay.active { display: flex; }
+        .sheet { background: var(--md-surface-container); border: 1px solid var(--md-outline-variant);
+            border-radius: var(--shape-lg); max-width: 680px; width: 100%; padding: 24px; }
+        .sheet h2 { font-size: 1.3rem; margin-bottom: 6px; }
+        .sheet .close { float: right; background: none; border: 0; color: var(--md-on-surface-variant); cursor: pointer; }
+        .sheet-body { margin-top: 16px; display: flex; flex-direction: column; gap: 14px; }
+        .detail-head { display: flex; gap: 14px; align-items: center; }
+        .detail-links { display: flex; gap: 14px; font-size: 0.85rem; }
+        .detail-links a { color: var(--brand); }
+        .shots { display: flex; gap: 8px; overflow-x: auto; }
+        .shots img { height: 120px; border-radius: var(--shape-sm); border: 1px solid var(--md-outline-variant); }
+        .version-row { border-top: 1px solid var(--md-outline-variant); padding: 10px 0; font-size: 0.85rem; }
+        .version-row:first-child { border-top: 0; }
+        .version-head { display: flex; gap: 10px; align-items: baseline; }
+        .version-head strong { font-size: 0.95rem; }
+        .version-row pre { white-space: pre-wrap; color: var(--md-on-surface-variant); font: inherit; font-size: 0.8rem; margin-top: 4px; }
+        .perm { display: inline-block; font-size: 0.72rem; border: 1px solid var(--md-outline-variant); border-radius: var(--shape-full);
+            padding: 2px 9px; margin: 2px 4px 0 0; color: var(--md-on-surface-variant); }
+        .btn { font: inherit; font-weight: 600; cursor: pointer; border-radius: var(--shape-full); padding: 11px 20px; border: 0;
+            background: var(--brand); color: #201007; }
+        .btn:hover { background: var(--brand-hover); }
+        .btn.ghost { background: transparent; color: var(--md-on-surface); border: 1px solid var(--md-outline-variant); }
+        .btn.danger { background: transparent; color: var(--md-error); border: 1px solid var(--md-error); }
+        .btn:disabled { opacity: .55; cursor: default; }
+        .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+        .form-grid .wide { grid-column: 1 / -1; }
+        label.field { display: block; font-size: 0.8rem; color: var(--md-on-surface-variant); }
+        label.field input, label.field select, label.field textarea {
+            width: 100%; margin-top: 5px; padding: 10px 12px; border-radius: var(--shape-sm); font: inherit;
+            background: var(--md-surface-container-lowest); color: var(--md-on-surface); border: 1px solid var(--md-outline-variant);
+        }
+        label.field textarea { min-height: 90px; resize: vertical; }
+        .perm-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; font-size: 0.82rem; }
+        .perm-grid label { display: flex; gap: 8px; align-items: center; color: var(--md-on-surface-variant); }
+        .statusline { font-size: 0.85rem; margin-top: 4px; }
+        .statusline.err { color: var(--md-error); }
+        .statusline.ok { color: var(--md-success); }
+        .avatar-row { display: flex; align-items: center; gap: 12px; }
+        .avatar-row img, .avatar-row .mono { width: 44px; height: 44px; border-radius: 50%; object-fit: cover;
+            background: var(--md-surface-container-highest); display: flex; align-items: center; justify-content: center; font-weight: 600; }
+
+        footer.site { border-top: 1px solid var(--md-outline-variant); margin-top: 60px; padding: 28px 20px 40px;
+            color: var(--md-on-surface-variant); font-size: 0.8rem; }
+        footer.site .inner { max-width: 1100px; margin: 0 auto; display: flex; flex-wrap: wrap; gap: 24px; justify-content: space-between; }
+        footer.site a { color: var(--brand); }
+        footer.site .legal-links { display: flex; gap: 14px; flex-wrap: wrap; }
+
+        @media (max-width: 640px) {
+            .form-grid { grid-template-columns: 1fr; }
+            header.top nav a { display: none; }
+        }
+    </style>
+</head>
+<body>
+    <header class="top">
+        <a class="logo" href="index.html">
+            <img src="assets/logo.png" alt="KodaHosting logo">
+            <span>Koda<span>Hosting</span></span>
+        </a>
+        <nav>
+            <a href="dashboard">Dashboard</a>
+            <a href="docs">Docs</a>
+            <span id="auth-area">
+                <button id="btn-sign-in">Sign in</button>
+            </span>
+        </nav>
+    </header>
+
+    <main>
+        <div class="hero">
+            <h1>Extension Store</h1>
+            <p>Extensions for the KodaHosting app: language packs, themes, tweaks and tools, packaged as
+               <strong>.kodaext</strong> files. Every submission is reviewed before it appears here, the app installs
+               and updates directly from this store.</p>
+            <div class="notice" id="maintenance-notice" style="display:none"></div>
+        </div>
+
+        <div class="toolbar">
+            <div class="search">
+                <span class="material-symbols-outlined">search</span>
+                <input id="input-search" type="search" placeholder="Search extensions" autocomplete="off">
+            </div>
+            <button class="btn" id="btn-submit" style="display:none">Submit extension</button>
+        </div>
+        <div class="chips" id="category-chips"></div>
+
+        <div class="grid" id="store-grid">
+            <div class="empty">Loading the store…</div>
+        </div>
+
+        <div id="mine-section" style="display:none">
+            <h2 class="section-title">My extensions</h2>
+            <p style="color:var(--md-on-surface-variant); font-size:0.875rem;">
+                Your submissions and their review status. If an extension was ended, the reason shows here.</p>
+            <div class="grid" id="mine-grid" style="margin-top:16px"></div>
+        </div>
+
+        <footer class="site">
+            <div class="inner">
+                <div style="max-width: 460px; line-height: 1.55;">
+                    <strong>About this store.</strong> Submissions are reviewed manually before publishing. Extensions run
+                    in the app's own sandbox with the permissions listed on the package. Layout and wording parts of this
+                    page were drafted with AI assistance and reviewed by the developer.
+                </div>
+                <div class="legal-links">
+                    <a href="index.html">Main page</a>
+                    <a href="dashboard">Dashboard</a>
+                    <a href="privacy.html">Privacy</a>
+                    <a href="tos.html">Terms</a>
+                    <a href="licenses.html">Licenses</a>
+                    <a href="impressum.html">Impressum</a>
+                </div>
+            </div>
+            <div class="inner" style="margin-top:18px">
+                <span>&copy; 2026 KodaHosting. KodaHosting is not an official Minecraft product and is not associated with Mojang or Microsoft.</span>
+                <span id="footer-status"></span>
+            </div>
+        </footer>
+    </main>
+
+    <!-- detail -->
+    <div class="overlay" id="overlay-detail">
+        <div class="sheet">
+            <button class="close material-symbols-outlined" onclick="closeOverlay('overlay-detail')">close</button>
+            <div id="detail-content"></div>
+        </div>
+    </div>
+
+    <!-- login -->
+    <div class="overlay" id="overlay-login">
+        <div class="sheet" style="max-width:420px">
+            <button class="close material-symbols-outlined" onclick="closeOverlay('overlay-login')">close</button>
+            <h2>Sign in</h2>
+            <p style="color:var(--md-on-surface-variant); font-size:0.85rem">Use the same account as in the KodaHosting app.</p>
+            <div class="sheet-body">
+                <label class="field">Email address
+                    <input type="email" id="input-email" placeholder="you@example.com">
+                </label>
+                <label class="field">Password
+                    <input type="password" id="input-password" placeholder="password">
+                </label>
+                <button class="btn" id="btn-login-email">Sign in with email</button>
+                <div class="statusline err" id="login-error" style="display:none"></div>
+                <div style="text-align:center; color:var(--md-on-surface-variant); font-size:0.8rem">or</div>
+                <div id="g_id_onload" data-client_id="558083145632-fbhjb8j1k4m8r14ui97shd9dnng0rlum.apps.googleusercontent.com"
+                     data-context="signin" data-ux_mode="popup" data-callback="handleGoogleLogin" data-auto_prompt="false"></div>
+                <div class="g_id_signin" data-type="standard" data-shape="rectangular" data-theme="outline"
+                     data-text="signin_with" data-size="large" data-logo_alignment="left" style="display:flex; justify-content:center"></div>
+                <p style="font-size:0.75rem; color:var(--md-on-surface-variant)">
+                    No account yet? Create one in the KodaHosting app (Settings &rarr; Account).</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- submit -->
+    <div class="overlay" id="overlay-submit">
+        <div class="sheet">
+            <button class="close material-symbols-outlined" onclick="closeOverlay('overlay-submit')">close</button>
+            <h2 id="submit-title">Submit an extension</h2>
+            <p style="color:var(--md-on-surface-variant); font-size:0.85rem" id="submit-hint">
+                Package your extension as a .kodaext file first (see the extension docs). The review usually takes a day.</p>
+            <div class="sheet-body">
+                <div class="form-grid">
+                    <label class="field" id="field-extid">Extension id
+                        <input id="in-extid" placeholder="com.example.myextension" autocomplete="off">
+                    </label>
+                    <label class="field">Name
+                        <input id="in-name" placeholder="My extension" autocomplete="off">
+                    </label>
+                    <label class="field">Version
+                        <input id="in-version" placeholder="1.0.0" autocomplete="off">
+                    </label>
+                    <label class="field">Version code
+                        <input id="in-versioncode" inputmode="numeric" placeholder="1" autocomplete="off">
+                    </label>
+                    <label class="field">License
+                        <input id="in-license" placeholder="GPL-3.0-only" autocomplete="off">
+                    </label>
+                    <label class="field">Author
+                        <input id="in-author" placeholder="Your name" autocomplete="off">
+                    </label>
+                    <label class="field">Category
+                        <select id="in-category"></select>
+                    </label>
+                    <label class="field">Source code URL (recommended)
+                        <input id="in-source" placeholder="https://github.com/…" autocomplete="off">
+                    </label>
+                    <label class="field wide">Short summary (one line)
+                        <input id="in-summary" maxlength="200" placeholder="What does it do, in one sentence?">
+                    </label>
+                    <label class="field wide">Description
+                        <textarea id="in-description" placeholder="What it does, what it needs, anything the reviewer should know."></textarea>
+                    </label>
+                    <label class="field wide">Changelog for this version
+                        <textarea id="in-changelog" placeholder="- first release" style="min-height:70px"></textarea>
+                    </label>
+                </div>
+                <div>
+                    <div style="font-size:0.8rem; color:var(--md-on-surface-variant); margin-bottom:6px">Permissions the extension asks for</div>
+                    <div class="perm-grid" id="perm-grid"></div>
+                </div>
+                <div class="form-grid">
+                    <label class="field">Icon (png/jpg/webp, optional)
+                        <input type="file" id="in-icon" accept="image/png,image/jpeg,image/webp">
+                    </label>
+                    <label class="field">Screenshots (up to 4, optional)
+                        <input type="file" id="in-shots" accept="image/png,image/jpeg,image/webp" multiple>
+                    </label>
+                    <label class="field wide">Package (.kodaext, max 20 MB)
+                        <input type="file" id="in-package" accept=".kodaext,.zip">
+                    </label>
+                </div>
+                <button class="btn" id="btn-do-submit">Submit for review</button>
+                <div class="statusline" id="submit-status" style="display:none"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ---------------------------------------------------------------- setup
+        const SUPABASE_URL = 'https://scsezpfrrmpyuapblbxk.supabase.co';
+        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNjc2V6cGZycm1weXVhcGJsYnhrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY5NDE4MjYsImV4cCI6MjA5MjUxNzgyNn0.rHro6kQpXHAnxEaFxozYzsKY8IHIUlot-7-Q4LNbZT8';
+        const API_BASE = 'https://api.kodanetwork.eu';
+        const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+        const CATEGORIES = [
+            ['all', 'All'], ['tools', 'Tools'], ['ui', 'Interface'], ['language', 'Language packs'],
+            ['theme', 'Themes'], ['gameplay', 'Gameplay'], ['other', 'Other']
+        ];
+        const PERMISSIONS = [
+            'storage', 'servers.read', 'console.read', 'console.send', 'servers.control',
+            'players.read', 'players.actions', 'files.read', 'notifications'
+        ];
+
+        let session = null;
+        let storeItems = [];
+        let mineItems = [];
+        let activeCategory = 'all';
+        let searchTerm = '';
+
+        function escapeHtml(value) {
+            return String(value == null ? '' : value)
+                .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+        }
+
+        /** every call to api.kodanetwork.eu goes through here; adds the jwt when signed in. */
+        async function api(path, options = {}) {
+            const headers = Object.assign({}, options.headers || {});
+            if (session) headers['Authorization'] = 'Bearer ' + session.access_token;
+            const res = await fetch(API_BASE + path, Object.assign({}, options, { headers }));
+            const body = await res.json().catch(() => ({}));
+            if (!res.ok) throw new Error(body.error || ('HTTP ' + res.status));
+            return body;
+        }
+
+        function openOverlay(id) { document.getElementById(id).classList.add('active'); }
+        function closeOverlay(id) { document.getElementById(id).classList.remove('active'); }
+
+        // ---------------------------------------------------------------- store list
+        async function loadStore() {
+            try {
+                const data = await api('/v1/extensions');
+                storeItems = data.items || [];
+                renderStore();
+            } catch (e) {
+                document.getElementById('store-grid').innerHTML =
+                    '<div class="empty">The store could not be loaded: ' + escapeHtml(e.message) + '</div>';
+            }
+        }
+
+        function matches(item) {
+            if (activeCategory !== 'all' && item.category !== activeCategory) return false;
+            if (!searchTerm) return true;
+            const hay = (item.name + ' ' + (item.summary || '') + ' ' + (item.author || '')).toLowerCase();
+            return hay.includes(searchTerm);
+        }
+
+        function storeCard(item, clickable) {
+            const icon = item.icon_url
+                ? '<img class="icon" src="' + escapeHtml(item.icon_url) + '" alt="">'
+                : '<div class="icon">🧩</div>';
+            const version = item.latest_version ? 'v' + escapeHtml(item.latest_version.version) : '';
+            return '<div class="card ' + (clickable ? 'clickable' : '') + '" data-ext="' + escapeHtml(item.ext_id) + '">' +
+                '<div class="card-head">' + icon +
+                '<div><div class="card-title">' + escapeHtml(item.name) + '</div>' +
+                '<div class="card-sub">' + escapeHtml(item.author || 'unknown author') + ' · ' + version + '</div></div></div>' +
+                '<div class="card-summary">' + escapeHtml(item.summary || '') + '</div>' +
+                '<div class="card-meta"><span class="material-symbols-outlined" style="font-size:16px">download</span>' +
+                (item.downloads || 0) + ' downloads · ' + escapeHtml(item.license || '') + '</div></div>';
+        }
+
+        function renderStore() {
+            const grid = document.getElementById('store-grid');
+            const visible = storeItems.filter(matches);
+            grid.innerHTML = visible.length === 0
+                ? '<div class="empty">Nothing here yet. The first extensions will appear after review.</div>'
+                : visible.map(item => storeCard(item, true)).join('');
+            grid.querySelectorAll('.card.clickable').forEach(card => {
+                card.addEventListener('click', () => openDetail(card.dataset.ext));
+            });
+        }
+
+        // ---------------------------------------------------------------- detail
+        async function openDetail(extId) {
+            const content = document.getElementById('detail-content');
+            content.innerHTML = '<div class="empty">Loading…</div>';
+            openOverlay('overlay-detail');
+            try {
+                const data = await api('/v1/extensions/' + encodeURIComponent(extId));
+                const ext = data.extension;
+                const icon = ext.icon_url
+                    ? '<img class="icon" src="' + escapeHtml(ext.icon_url) + '" alt="" style="width:56px;height:56px">'
+                    : '<div class="icon" style="width:56px;height:56px">🧩</div>';
+                const versions = (ext.versions || []).map((v, index) => (
+                    '<div class="version-row">' +
+                    '<div class="version-head"><strong>v' + escapeHtml(v.version) + '</strong>' +
+                    '<span style="color:var(--md-on-surface-variant)">' + escapeHtml(relativeDate(v.released_at)) + '</span>' +
+                    (index === 0 ? '<span class="badge APPROVED" style="margin-left:auto">latest</span>' : '') + '</div>' +
+                    (v.permissions && v.permissions.length
+                        ? '<div style="margin-top:4px">' + v.permissions.map(p => '<span class="perm">' + escapeHtml(p) + '</span>').join('') + '</div>'
+                        : '') +
+                    (v.changelog ? '<pre>' + escapeHtml(v.changelog) + '</pre>' : '') +
+                    '<div style="margin-top:8px"><a class="btn" style="padding:7px 14px; font-size:0.8rem" target="_blank" rel="noopener" ' +
+                    'href="' + API_BASE + '/v1/extensions/' + encodeURIComponent(ext.ext_id) + '/download?version=' + encodeURIComponent(v.version_code) + '">Download .kodaext</a></div>' +
+                    '</div>'
+                )).join('');
+                const shots = (ext.screenshots || []).length
+                    ? '<div class="shots">' + ext.screenshots.map(s => '<img src="' + escapeHtml(s) + '" alt="">').join('') + '</div>'
+                    : '';
+                content.innerHTML =
+                    '<div class="detail-head">' + icon +
+                    '<div><h2>' + escapeHtml(ext.name) + '</h2>' +
+                    '<div class="card-sub">' + escapeHtml(ext.ext_id) + ' · by ' + escapeHtml(ext.author || 'unknown') +
+                    ' · ' + (ext.downloads || 0) + ' downloads</div></div></div>' +
+                    '<div class="sheet-body">' +
+                    '<div style="line-height:1.5; white-space:pre-wrap">' + escapeHtml(ext.description || ext.summary || '') + '</div>' +
+                    shots +
+                    '<div class="detail-links">' +
+                    (ext.source_url ? '<a href="' + escapeHtml(ext.source_url) + '" target="_blank" rel="noopener">Source code</a>' : '') +
+                    (ext.homepage_url ? '<a href="' + escapeHtml(ext.homepage_url) + '" target="_blank" rel="noopener">Homepage</a>' : '') +
+                    '<span style="color:var(--md-on-surface-variant)">License: ' + escapeHtml(ext.license || '-') + '</span></div>' +
+                    '<div><div style="font-weight:600; margin-bottom:4px">Versions</div>' + versions + '</div>' +
+                    '<div style="font-size:0.78rem; color:var(--md-on-surface-variant)">Open the KodaHosting app &rarr; Extensions &rarr; Discover to see it in the app.</div>' +
+                    '</div>';
+            } catch (e) {
+                content.innerHTML = '<div class="empty">Could not load this extension: ' + escapeHtml(e.message) + '</div>';
+            }
+        }
+
+        function relativeDate(value) {
+            if (!value) return '';
+            const days = Math.round((Date.now() - new Date(value).getTime()) / 86400000);
+            if (days <= 0) return 'today';
+            if (days === 1) return 'yesterday';
+            if (days < 30) return days + ' days ago';
+            return new Date(value).toLocaleDateString();
+        }
+
+        // ---------------------------------------------------------------- auth
+        document.getElementById('btn-sign-in').addEventListener('click', () => openOverlay('overlay-login'));
+        document.getElementById('btn-login-email').addEventListener('click', async () => {
+            const errorMsg = document.getElementById('login-error');
+            errorMsg.style.display = 'none';
+            const { error } = await supabaseClient.auth.signInWithPassword({
+                email: document.getElementById('input-email').value,
+                password: document.getElementById('input-password').value,
+            });
+            if (error) { errorMsg.textContent = error.message; errorMsg.style.display = 'block'; }
+        });
+
+        async function handleGoogleLogin(response) {
+            const errorMsg = document.getElementById('login-error');
+            errorMsg.style.display = 'none';
+            const { error } = await supabaseClient.auth.signInWithIdToken({ provider: 'google', token: response.credential });
+            if (error) { errorMsg.textContent = 'Google login error: ' + error.message; errorMsg.style.display = 'block'; }
+        }
+
+        function applySession(authSession) {
+            session = authSession;
+            const authArea = document.getElementById('auth-area');
+            const mineSection = document.getElementById('mine-section');
+            if (session) {
+                closeOverlay('overlay-login');
+                document.getElementById('btn-submit').style.display = '';
+                mineSection.style.display = '';
+                authArea.innerHTML = '<button id="btn-sign-out">Sign out</button>';
+                document.getElementById('btn-sign-out').addEventListener('click', async () => {
+                    await supabaseClient.auth.signOut();
+                });
+                loadMine();
+            } else {
+                document.getElementById('btn-submit').style.display = 'none';
+                mineSection.style.display = 'none';
+                authArea.innerHTML = '<button id="btn-sign-in">Sign in</button>';
+                document.getElementById('btn-sign-in').addEventListener('click', () => openOverlay('overlay-login'));
+                mineItems = [];
+                renderMine();
+            }
+        }
+
+        // ---------------------------------------------------------------- my extensions
+        async function loadMine() {
+            if (!session) { mineItems = []; renderMine(); return; }
+            try {
+                const data = await api('/v1/me/extensions');
+                mineItems = data.items || [];
+                renderMine();
+            } catch (e) {
+                document.getElementById('mine-grid').innerHTML =
+                    '<div class="empty">Could not load your extensions: ' + escapeHtml(e.message) + '</div>';
+            }
+        }
+
+        function renderMine() {
+            const grid = document.getElementById('mine-grid');
+            if (!session) { grid.innerHTML = ''; return; }
+            if (mineItems.length === 0) {
+                grid.innerHTML = '<div class="empty">You have not submitted anything yet.</div>';
+                return;
+            }
+            grid.innerHTML = mineItems.map(item => {
+                const latest = item.versions && item.versions[0];
+                const ended = item.status === 'REJECTED' || item.status === 'DELISTED' || item.status === 'WITHDRAWN';
+                return '<div class="card">' +
+                    '<div class="card-head"><div class="icon">🧩</div>' +
+                    '<div style="flex:1"><div class="card-title">' + escapeHtml(item.name) + '</div>' +
+                    '<div class="card-sub">' + escapeHtml(item.ext_id) + (latest ? ' · v' + escapeHtml(latest.version) : '') + '</div></div>' +
+                    '<span class="badge ' + escapeHtml(item.status) + '">' + escapeHtml(item.status) + '</span></div>' +
+                    (ended && item.review_note
+                        ? '<div class="card-summary" style="color:var(--md-error)">Reason: ' + escapeHtml(item.review_note) + '</div>'
+                        : item.review_note
+                            ? '<div class="card-summary">Review note: ' + escapeHtml(item.review_note) + '</div>'
+                            : '') +
+                    '<div class="card-meta"><span>' + (item.downloads || 0) + ' downloads</span>' +
+                    (item.published_at ? '<span>published ' + escapeHtml(relativeDate(item.published_at)) + '</span>' : '') +
+                    (item.ended_at ? '<span>ended ' + escapeHtml(relativeDate(item.ended_at)) + '</span>' : '') + '</div>' +
+                    (item.status !== 'WITHDRAWN'
+                        ? '<div><button class="btn ghost" style="padding:7px 14px; font-size:0.8rem" data-withdraw="' + escapeHtml(item.ext_id) + '">Withdraw</button></div>'
+                        : '<div class="card-meta">Withdrawn - submit a new version to bring it back into review.</div>') +
+                    '</div>';
+            }).join('');
+            grid.querySelectorAll('[data-withdraw]').forEach(button => {
+                button.addEventListener('click', async () => {
+                    if (!confirm('Withdraw this extension from the store?')) return;
+                    try {
+                        await api('/v1/extensions/' + encodeURIComponent(button.dataset.withdraw) + '/withdraw', { method: 'POST' });
+                        loadMine();
+                        loadStore();
+                    } catch (e) { alert('Could not withdraw: ' + e.message); }
+                });
+            });
+        }
+
+        // ---------------------------------------------------------------- submit
+        document.getElementById('btn-submit').addEventListener('click', () => openSubmit());
+        document.getElementById('in-category').innerHTML =
+            CATEGORIES.filter(c => c[0] !== 'all').map(c => '<option value="' + c[0] + '">' + c[1] + '</option>').join('');
+        document.getElementById('perm-grid').innerHTML =
+            PERMISSIONS.map(p => '<label><input type="checkbox" value="' + p + '"> ' + p + '</label>').join('');
+
+        function openSubmit() {
+            if (!session) { openOverlay('overlay-login'); return; }
+            document.getElementById('submit-status').style.display = 'none';
+            openOverlay('overlay-submit');
+        }
+
+        async function sha256Hex(file) {
+            const buf = await file.arrayBuffer();
+            const digest = await crypto.subtle.digest('SHA-256', buf);
+            return Array.from(new Uint8Array(digest)).map(b => b.toString(16).padStart(2, '0')).join('');
+        }
+
+        /** uploads one image through /v1/assets and returns its public url. */
+        async function uploadImage(file) {
+            const data = await api('/v1/assets', {
+                method: 'POST', headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ content_type: file.type }),
+            });
+            const put = await fetch(data.upload.signed_url, { method: 'PUT', headers: { 'Content-Type': file.type }, body: file });
+            if (!put.ok) throw new Error('image upload failed (' + put.status + ')');
+            return data.public_url;
+        }
+
+        document.getElementById('btn-do-submit').addEventListener('click', async () => {
+            const statusEl = document.getElementById('submit-status');
+            const button = document.getElementById('btn-do-submit');
+            const setStatus = (kind, text) => {
+                statusEl.className = 'statusline ' + kind;
+                statusEl.textContent = text;
+                statusEl.style.display = 'block';
+            };
+            try {
+                const extId = document.getElementById('in-extid').value.trim();
+                const name = document.getElementById('in-name').value.trim();
+                const version = document.getElementById('in-version').value.trim();
+                const versionCode = parseInt(document.getElementById('in-versioncode').value, 10);
+                const license = document.getElementById('in-license').value.trim();
+                const pkg = document.getElementById('in-package').files[0];
+                if (!/^[a-z0-9]+(\.[a-z0-9_-]+)+$/.test(extId)) throw new Error('The id must look like com.example.name (lowercase, dots).');
+                if (!name) throw new Error('A name is required.');
+                if (!versionCode || versionCode < 1) throw new Error('A version code (whole number) is required.');
+                if (!license) throw new Error('A license is required.');
+                if (!pkg) throw new Error('Pick the .kodaext package.');
+                if (pkg.size > 20 * 1024 * 1024) throw new Error('The package must be under 20 MB.');
+
+                button.disabled = true;
+                setStatus('', 'Hashing the package…');
+                const sha256 = await sha256Hex(pkg);
+
+                setStatus('', 'Uploading images…');
+                const iconFile = document.getElementById('in-icon').files[0];
+                const iconUrl = iconFile ? await uploadImage(iconFile) : null;
+                const shotFiles = Array.from(document.getElementById('in-shots').files).slice(0, 4);
+                const shotUrls = [];
+                for (const shot of shotFiles) shotUrls.push(await uploadImage(shot));
+
+                const permissions = Array.from(document.querySelectorAll('#perm-grid input:checked')).map(el => el.value);
+                const metadata = {
+                    ext_id: extId,
+                    name,
+                    version,
+                    version_code: versionCode,
+                    license,
+                    author: document.getElementById('in-author').value.trim() || null,
+                    summary: document.getElementById('in-summary').value.trim() || null,
+                    description: document.getElementById('in-description').value.trim() || null,
+                    category: document.getElementById('in-category').value,
+                    source_url: document.getElementById('in-source').value.trim() || null,
+                    changelog: document.getElementById('in-changelog').value.trim() || null,
+                    permissions,
+                    icon_url: iconUrl,
+                    screenshots: shotUrls,
+                    sha256,
+                    file_size: pkg.size,
+                };
+
+                setStatus('', 'Creating the submission…');
+                const mine = mineItems.find(item => item.ext_id === extId);
+                const created = mine
+                    ? await api('/v1/extensions/' + encodeURIComponent(extId) + '/versions', {
+                        method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(metadata),
+                    })
+                    : await api('/v1/extensions', {
+                        method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(metadata),
+                    });
+
+                setStatus('', 'Uploading the package…');
+                const put = await fetch(created.upload.signed_url, {
+                    method: 'PUT', headers: { 'Content-Type': 'application/zip' }, body: pkg,
+                });
+                if (!put.ok) throw new Error('package upload failed (' + put.status + ')');
+
+                setStatus('', 'Verifying the package…');
+                await api('/v1/extensions/' + encodeURIComponent(extId) + '/finalize', {
+                    method: 'POST', headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ version_code: versionCode }),
+                });
+
+                setStatus('ok', 'Submitted! Your extension is now in review. The status shows up under "My extensions".');
+                loadMine();
+            } catch (e) {
+                const messages = {
+                    already_submitted: 'This id is already submitted. Use the version fields to upload a new version of your own extension.',
+                    id_taken: 'This extension id is already taken by another author - pick a different one.',
+                    too_many_pending_submissions: 'You already have 3 submissions in review. Wait for the review before adding more.',
+                    version_code_too_low: 'The version code must be higher than your last submitted one.',
+                    sha256_mismatch: 'The uploaded package does not match what was announced - please try again.',
+                };
+                setStatus('err', messages[e.message] || ('Could not submit: ' + e.message));
+            } finally {
+                button.disabled = false;
+            }
+        });
+
+        // ---------------------------------------------------------------- status + boot
+        async function loadStatus() {
+            try {
+                const res = await fetch(API_BASE + '/v1/status');
+                const status = await res.json();
+                const bit = document.getElementById('footer-status');
+                bit.textContent = 'API: online · ' + status.servers.total + ' servers, ' +
+                    status.servers.players_online + ' players · ' + status.extensions.published + ' extensions';
+                if (status.maintenance && status.maintenance.active) {
+                    const notice = document.getElementById('maintenance-notice');
+                    notice.style.display = '';
+                    notice.textContent = 'Maintenance is active right now' +
+                        (status.maintenance.reason ? ': ' + status.maintenance.reason : '.') +
+                        ' Some things may be unavailable.';
+                }
+            } catch (e) {
+                document.getElementById('footer-status').textContent = 'API status unavailable';
+            }
+        }
+
+        document.getElementById('category-chips').innerHTML =
+            CATEGORIES.map(c => '<button class="chip' + (c[0] === 'all' ? ' active' : '') + '" data-cat="' + c[0] + '">' + c[1] + '</button>').join('');
+        document.querySelectorAll('#category-chips .chip').forEach(chip => {
+            chip.addEventListener('click', () => {
+                activeCategory = chip.dataset.cat;
+                document.querySelectorAll('#category-chips .chip').forEach(el => el.classList.toggle('active', el === chip));
+                renderStore();
+            });
+        });
+        document.getElementById('input-search').addEventListener('input', event => {
+            searchTerm = event.target.value.trim().toLowerCase();
+            renderStore();
+        });
+
+        supabaseClient.auth.getSession().then(({ data }) => applySession(data.session));
+        supabaseClient.auth.onAuthStateChange((_event, authSession) => applySession(authSession));
+
+        loadStore();
+        loadStatus();
+    </script>
+</body>
+</html>

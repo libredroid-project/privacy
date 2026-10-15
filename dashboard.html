@@ -1327,8 +1327,20 @@
             <span class="material-symbols-outlined">confirmation_number</span>
             Support Tickets
         </div>
+        <div class="nav-item" onclick="switchTab('extensions')">
+            <span class="material-symbols-outlined">extension</span>
+            Extensions
+        </div>
+        <div class="nav-item" onclick="switchTab('account')">
+            <span class="material-symbols-outlined">person</span>
+            Account
+        </div>
 
         <div class="nav-section-label" style="margin-top: 16px;">Info</div>
+        <div class="nav-item" onclick="switchTab('status')">
+            <span class="material-symbols-outlined">monitor_heart</span>
+            Status
+        </div>
         <div class="nav-item" onclick="switchTab('licenses')">
             <span class="material-symbols-outlined">description</span>
             Licenses
@@ -1415,13 +1427,91 @@
             <div class="page-header">
                 <h2 class="page-title">Support Tickets</h2>
             </div>
-            <div class="info-box">
-                <div class="icon-large">
-                    <span class="material-symbols-outlined fill">mail</span>
+            <p class="page-sub" style="margin-bottom:16px">Your tickets, as opened in the app. You can read and reply here.
+                Personal (mental support) chats stay end-to-end encrypted and only exist in the app.</p>
+            <div id="ticket-detail" style="display:none; margin-bottom:24px;">
+                <button class="btn-outline-card" id="btn-ticket-back" style="margin-bottom:12px">&larr; Back to the list</button>
+                <div class="item-card" style="max-width:none">
+                    <div class="item-header">
+                        <div class="item-title" id="ticket-detail-title"></div>
+                        <div class="status-badge" id="ticket-detail-status"></div>
+                    </div>
+                    <div id="ticket-messages" style="display:flex; flex-direction:column; gap:10px; margin:16px 0; max-height:50vh; overflow-y:auto;"></div>
+                    <div style="display:flex; gap:10px;">
+                        <input id="ticket-reply" placeholder="Write a reply…" style="flex:1">
+                        <button class="btn-outline-card primary-action" id="btn-ticket-reply">Send</button>
+                    </div>
+                    <div id="ticket-reply-status" style="font-size:0.8rem; margin-top:8px; display:none"></div>
                 </div>
-                <p>Support Ticket management is fully integrated into the KodaHosting Android App.</p>
-                <p style="margin-top: 8px; font-size: 0.875rem;">Please use the app to open and manage tickets directly.</p>
             </div>
+            <div class="items-grid" id="tickets-container"></div>
+        </div>
+
+        <div id="tab-extensions" class="view-section">
+            <div class="page-header">
+                <h2 class="page-title">Extensions</h2>
+            </div>
+            <div class="info-box" style="margin-bottom: 24px;">
+                <div class="icon-large">
+                    <span class="material-symbols-outlined fill">extension</span>
+                </div>
+                <p>Your store submissions and their review status. If an extension was ended, the reason shows up here.</p>
+                <p style="margin-top: 8px; font-size: 0.875rem;">
+                    Browse and submit extensions on the <a href="store" style="color: var(--brand);">Extension Store</a> page.
+                </p>
+            </div>
+            <div class="items-grid" id="my-extensions-container"></div>
+        </div>
+
+        <div id="tab-account" class="view-section">
+            <div class="page-header">
+                <h2 class="page-title">Account</h2>
+            </div>
+            <div class="items-grid" style="grid-template-columns: 1fr;">
+                <div class="item-card" style="max-width:none">
+                    <div style="display:flex; align-items:center; gap:16px; flex-wrap:wrap;">
+                        <img id="account-avatar" alt="" style="width:64px; height:64px; border-radius:50%; object-fit:cover; background: var(--md-surface-container-highest);">
+                        <div style="flex:1; min-width:200px;">
+                            <div id="account-nickname-line" style="font-weight:600; font-size:1.05rem;"></div>
+                            <div id="account-email-line" style="color: var(--md-on-surface-variant); font-size:0.875rem;"></div>
+                            <div id="account-meta-line" style="color: var(--md-on-surface-variant); font-size:0.8rem; margin-top:4px;"></div>
+                        </div>
+                        <div style="display:flex; gap:8px; flex-wrap:wrap;">
+                            <button class="btn-outline-card" id="btn-avatar-pick">Change picture</button>
+                            <button class="btn-outline-card" id="btn-avatar-remove">Remove picture</button>
+                        </div>
+                        <input type="file" id="input-avatar-file" accept="image/png,image/jpeg" style="display:none">
+                    </div>
+                    <div id="avatar-status" style="font-size:0.8rem; margin-top:8px; display:none"></div>
+                </div>
+
+                <div class="item-card" style="max-width:none">
+                    <h3 style="font-size:1rem; margin-bottom:12px;">Nickname</h3>
+                    <div style="display:flex; gap:10px; max-width:420px;">
+                        <input id="input-nickname" maxlength="24" placeholder="Your nickname" style="flex:1">
+                        <button class="btn-outline-card primary-action" id="btn-save-nickname">Save</button>
+                    </div>
+                    <div id="nickname-status" style="font-size:0.8rem; margin-top:8px; display:none"></div>
+                </div>
+
+                <div class="item-card" style="max-width:none">
+                    <h3 style="font-size:1rem; margin-bottom:12px;">Password</h3>
+                    <div style="display:flex; gap:10px; max-width:420px;">
+                        <input type="password" id="input-new-password" placeholder="New password" style="flex:1">
+                        <button class="btn-outline-card primary-action" id="btn-save-password">Change</button>
+                    </div>
+                    <div id="password-status" style="font-size:0.8rem; margin-top:8px; display:none"></div>
+                    <p style="font-size:0.8rem; color:var(--md-on-surface-variant); margin-top:8px;">More account settings (linked devices, account linking, deletion) live in the app under Settings &rarr; Account.</p>
+                </div>
+            </div>
+        </div>
+
+        <div id="tab-status" class="view-section">
+            <div class="page-header">
+                <h2 class="page-title">Status</h2>
+            </div>
+            <p class="page-sub" style="margin-bottom:16px">Live values from api.kodanetwork.eu and the tunnel server.</p>
+            <div class="items-grid" id="status-grid"></div>
         </div>
 
         <div id="tab-licenses" class="view-section">
@@ -1484,6 +1574,9 @@
                     <a href="#" data-dash-tab="servers">Servers</a>
                     <a href="#" data-dash-tab="databases">Databases</a>
                     <a href="#" data-dash-tab="tickets">Support Tickets</a>
+                    <a href="#" data-dash-tab="extensions">Extensions</a>
+                    <a href="#" data-dash-tab="account">Account</a>
+                    <a href="#" data-dash-tab="status">Status</a>
                     <a href="#" data-dash-tab="licenses">Licenses</a>
                     <a href="#" data-dash-tab="legal">Legal</a>
                 </div>
@@ -1498,6 +1591,7 @@
                 <div class="dash-footer-col">
                     <h4>Developers</h4>
                     <a href="docs">Developer Handbook</a>
+                    <a href="store">Extension Store</a>
                     <a href="https://github.com/libredroid-project/KodaNetwork/tree/main/extensions">Extension docs</a>
                     <a href="https://github.com/libredroid-project/KodaNetwork">Source code (GitHub)</a>
                 </div>
@@ -1514,7 +1608,23 @@
     <script>
         const SUPABASE_URL = 'https://scsezpfrrmpyuapblbxk.supabase.co';
         const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNjc2V6cGZycm1weXVhcGJsYnhrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY5NDE4MjYsImV4cCI6MjA5MjUxNzgyNn0.rHro6kQpXHAnxEaFxozYzsKY8IHIUlot-7-Q4LNbZT8';
+        const API_BASE = 'https://api.kodanetwork.eu';
         const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+        /**
+         * Everything that is not login/legal goes through api.kodanetwork.eu: the
+         * browser sends the supabase session token as the bearer and the api answers
+         * with the account, ticket, extension and status data.
+         */
+        async function api(path, options = {}) {
+            const { data: { session } } = await supabaseClient.auth.getSession();
+            const headers = Object.assign({}, options.headers || {});
+            if (session) headers['Authorization'] = 'Bearer ' + session.access_token;
+            const res = await fetch(API_BASE + path, Object.assign({}, options, { headers }));
+            const body = await res.json().catch(() => ({}));
+            if (!res.ok) throw new Error(body.error || ('HTTP ' + res.status));
+            return body;
+        }
 
         let currentUser = null;
         let refreshTimer = null;
@@ -1592,6 +1702,10 @@
                 loadLicenses();
             }
             if (tabId === 'legal') loadLegalTexts();
+            if (tabId === 'account') loadAccount();
+            if (tabId === 'extensions') loadMyExtensions();
+            if (tabId === 'tickets') loadTickets();
+            if (tabId === 'status') loadPlatformStatus();
             if (window.innerWidth <= 768) toggleSidebar();
         }
 
@@ -2019,6 +2133,262 @@
         function renderError(message) {
             const container = document.getElementById('servers-container');
             container.innerHTML = `<p style="color: var(--md-error); grid-column: 1 / -1; text-align: center; padding: 40px; font-size: 0.875rem;">Could not load your servers: ${escapeHtml(message)}</p>`;
+        }
+
+        // ================================================================
+        // Account, extensions, tickets and status (all through the api)
+        // ================================================================
+
+        function showLine(id, kind, text) {
+            const el = document.getElementById(id);
+            if (!el) return;
+            el.style.display = 'block';
+            el.style.color = kind === 'err' ? 'var(--md-error)' : kind === 'ok' ? 'var(--md-success)' : 'var(--md-on-surface-variant)';
+            el.textContent = text;
+        }
+
+        let accountData = null;
+
+        function avatarUrl(me) {
+            if (me.avatar_url) return me.avatar_url;
+            if (me.mc_uuid) return 'https://crafatar.com/avatars/' + encodeURIComponent(me.mc_uuid) + '?size=80&overlay';
+            const initial = (me.nickname || me.email || 'K').charAt(0).toUpperCase();
+            return 'data:image/svg+xml;utf8,' + encodeURIComponent(
+                '<svg xmlns="http://www.w3.org/2000/svg" width="80" height="80"><rect width="80" height="80" fill="#382F29"/>' +
+                '<text x="40" y="53" font-size="34" fill="#D8C2B5" text-anchor="middle" font-family="sans-serif">' + initial + '</text></svg>');
+        }
+
+        async function loadAccount() {
+            try {
+                const data = await api('/v1/me');
+                accountData = data.me;
+                const me = data.me;
+                document.getElementById('account-avatar').src = avatarUrl(me);
+                document.getElementById('account-nickname-line').textContent = me.nickname || 'No nickname set';
+                document.getElementById('account-email-line').textContent = me.email || '';
+                document.getElementById('account-meta-line').textContent =
+                    me.server_count + ' server(s) · ' + me.device_count + ' device(s) · ' + me.extension_count + ' extension submission(s)';
+                document.getElementById('input-nickname').value = me.nickname || '';
+            } catch (e) {
+                showLine('nickname-status', 'err', 'Could not load the account: ' + e.message);
+            }
+        }
+
+        document.getElementById('btn-avatar-pick').addEventListener('click', () => {
+            document.getElementById('input-avatar-file').click();
+        });
+
+        document.getElementById('input-avatar-file').addEventListener('change', async (event) => {
+            const file = event.target.files[0];
+            if (!file) return;
+            try {
+                if (file.size > 2 * 1024 * 1024) throw new Error('the picture must be under 2 MB');
+                const upload = await api('/v1/me/avatar', {
+                    method: 'POST', headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ content_type: file.type }),
+                });
+                const put = await fetch(upload.upload.signed_url, {
+                    method: 'PUT', headers: { 'Content-Type': file.type }, body: file,
+                });
+                if (!put.ok) throw new Error('upload failed (' + put.status + ')');
+                await api('/v1/me', {
+                    method: 'PATCH', headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ avatar_url: upload.public_url }),
+                });
+                document.getElementById('avatar-status').style.display = 'none';
+                loadAccount();
+            } catch (e) {
+                showLine('avatar-status', 'err', 'Could not update the picture: ' + e.message);
+            }
+            event.target.value = '';
+        });
+
+        document.getElementById('btn-avatar-remove').addEventListener('click', async () => {
+            try {
+                await api('/v1/me/avatar', { method: 'DELETE' });
+                loadAccount();
+            } catch (e) {
+                showLine('avatar-status', 'err', 'Could not remove the picture: ' + e.message);
+            }
+        });
+
+        document.getElementById('btn-save-nickname').addEventListener('click', async () => {
+            const nickname = document.getElementById('input-nickname').value.trim();
+            if (nickname.length < 2 || nickname.length > 24) {
+                showLine('nickname-status', 'err', 'The nickname must be between 2 and 24 characters.');
+                return;
+            }
+            try {
+                await api('/v1/me', {
+                    method: 'PATCH', headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ nickname }),
+                });
+                showLine('nickname-status', 'ok', 'Nickname saved.');
+                loadAccount();
+            } catch (e) {
+                showLine('nickname-status', 'err',
+                    e.message === 'account_not_linked'
+                        ? 'This login is not linked to an app account yet - link it in the app under Settings, Account.'
+                        : 'Could not save: ' + e.message);
+            }
+        });
+
+        document.getElementById('btn-save-password').addEventListener('click', async () => {
+            const password = document.getElementById('input-new-password').value;
+            if (password.length < 6) {
+                showLine('password-status', 'err', 'The password needs at least 6 characters.');
+                return;
+            }
+            const { error } = await supabaseClient.auth.updateUser({ password });
+            if (error) showLine('password-status', 'err', 'Could not change the password: ' + error.message);
+            else {
+                showLine('password-status', 'ok', 'Password changed.');
+                document.getElementById('input-new-password').value = '';
+            }
+        });
+
+        async function loadMyExtensions() {
+            const container = document.getElementById('my-extensions-container');
+            container.innerHTML = '<p style="color:var(--md-on-surface-variant); grid-column:1/-1; padding:20px;">Loading…</p>';
+            try {
+                const data = await api('/v1/me/extensions');
+                if (!data.items.length) {
+                    container.innerHTML = '<p style="color:var(--md-on-surface-variant); grid-column:1/-1; text-align:center; padding:40px; font-size:0.875rem;">You have not submitted anything yet. Head to the <a href="store" style="color:var(--brand)">Extension Store</a> to submit your first one.</p>';
+                    return;
+                }
+                const colors = { PENDING: 'var(--md-warning)', APPROVED: 'var(--md-success)', REJECTED: 'var(--md-error)', DELISTED: 'var(--md-error)', WITHDRAWN: 'var(--md-outline)' };
+                container.innerHTML = data.items.map(item => {
+                    const latest = (item.versions || [])[0];
+                    const ended = ['REJECTED', 'DELISTED', 'WITHDRAWN'].includes(item.status);
+                    return '<div class="item-card">' +
+                        '<div class="item-header"><div class="item-title">' + escapeHtml(item.name) +
+                        '</div><div class="status-badge" style="color:' + colors[item.status] + '">' + escapeHtml(item.status) + '</div></div>' +
+                        '<div class="item-details"><span>' + escapeHtml(item.ext_id) + '</span>' +
+                        (latest ? '<span>v' + escapeHtml(latest.version) + '</span>' : '') +
+                        '<span>' + (item.downloads || 0) + ' downloads</span></div>' +
+                        (item.review_note
+                            ? '<div class="item-hint' + (ended ? ' warn' : '') + '"><span class="material-symbols-outlined">' +
+                              (ended ? 'block' : 'info') + '</span>' + escapeHtml(item.review_note) + '</div>'
+                            : '') +
+                        (ended
+                            ? '<div class="item-hint"><span class="material-symbols-outlined">history</span>Ended ' +
+                              escapeHtml(relativeTime(item.ended_at)) + ' - submit a new version on the store page to return to review.</div>'
+                            : '') +
+                        '</div>';
+                }).join('');
+            } catch (e) {
+                container.innerHTML = '<p style="color:var(--md-error); grid-column:1/-1; padding:20px;">Could not load your extensions: ' + escapeHtml(e.message) + '</p>';
+            }
+        }
+
+        let currentTicket = null;
+
+        async function loadTickets() {
+            document.getElementById('ticket-detail').style.display = 'none';
+            const container = document.getElementById('tickets-container');
+            container.innerHTML = '<p style="color:var(--md-on-surface-variant); grid-column:1/-1; padding:20px;">Loading…</p>';
+            try {
+                const data = await api('/v1/me/tickets');
+                if (!data.items.length) {
+                    container.innerHTML = '<p style="color:var(--md-on-surface-variant); grid-column:1/-1; text-align:center; padding:40px; font-size:0.875rem;">No tickets yet. Open one in the app, it appears here.</p>';
+                    return;
+                }
+                const colors = { OPEN: 'var(--md-success)', CLOSE_REQUESTED: 'var(--md-warning)', RESOLVED: 'var(--md-on-surface-variant)', CLOSED: 'var(--md-on-surface-variant)' };
+                container.innerHTML = data.items.map(ticket => (
+                    '<div class="item-card clickable" data-ticket="' + escapeHtml(ticket.id) + '">' +
+                    '<div class="item-header"><div class="item-title">' + escapeHtml(ticket.title) + '</div>' +
+                    '<div class="status-badge" style="color:' + (colors[ticket.status] || 'inherit') + '">' + escapeHtml(ticket.status) + '</div></div>' +
+                    '<div class="item-details"><span>' + escapeHtml(ticket.ticket_type) + '</span>' +
+                    '<span>' + relativeTime(ticket.created_at) + '</span></div>' +
+                    (ticket.last_message
+                        ? '<div class="item-hint"><span class="material-symbols-outlined">chat</span>' +
+                          escapeHtml((ticket.last_message.is_admin ? 'Team: ' : '') + ticket.last_message.message) + '</div>'
+                        : '') +
+                    '</div>'
+                )).join('');
+                container.querySelectorAll('[data-ticket]').forEach(card => {
+                    card.addEventListener('click', () => openTicket(card.dataset.ticket));
+                });
+            } catch (e) {
+                container.innerHTML = '<p style="color:var(--md-error); grid-column:1/-1; padding:20px;">Could not load tickets: ' + escapeHtml(e.message) + '</p>';
+            }
+        }
+
+        async function openTicket(ticketId) {
+            try {
+                const data = await api('/v1/me/tickets/' + encodeURIComponent(ticketId));
+                currentTicket = data.ticket;
+                document.getElementById('ticket-detail-title').textContent = currentTicket.title;
+                document.getElementById('ticket-detail-status').textContent = currentTicket.status;
+                const closed = ['RESOLVED', 'CLOSED'].includes(currentTicket.status);
+                document.getElementById('ticket-reply').disabled = closed;
+                document.getElementById('btn-ticket-reply').disabled = closed;
+                document.getElementById('ticket-messages').innerHTML = currentTicket.messages.map(message => {
+                    const mine = !message.is_admin;
+                    return '<div style="align-self:' + (mine ? 'flex-end' : 'flex-start') + '; max-width:80%; ' +
+                        'background:' + (mine ? 'var(--brand-container)' : 'var(--md-surface-container-high)') + '; ' +
+                        'border-radius: var(--shape-md); padding:10px 14px; font-size:0.875rem;">' +
+                        (message.is_admin ? '<div style="font-size:0.7rem; color:var(--brand); margin-bottom:2px;">Team</div>' : '') +
+                        '<div style="white-space:pre-wrap">' + escapeHtml(message.message) + '</div>' +
+                        (message.attachment_url ? '<div style="margin-top:6px"><a href="' + escapeHtml(message.attachment_url) + '" target="_blank" rel="noopener" style="color:var(--brand); font-size:0.8rem;">Attachment</a></div>' : '') +
+                        '<div style="font-size:0.68rem; color:var(--md-on-surface-variant); margin-top:4px;">' + relativeTime(message.created_at) + '</div>' +
+                        '</div>';
+                }).join('');
+                document.getElementById('ticket-detail').style.display = 'block';
+                document.getElementById('ticket-reply-status').style.display = 'none';
+            } catch (e) {
+                alert('Could not open the ticket: ' + e.message);
+            }
+        }
+
+        document.getElementById('btn-ticket-back').addEventListener('click', () => {
+            document.getElementById('ticket-detail').style.display = 'none';
+        });
+
+        document.getElementById('btn-ticket-reply').addEventListener('click', async () => {
+            if (!currentTicket) return;
+            const input = document.getElementById('ticket-reply');
+            const message = input.value.trim();
+            if (!message) return;
+            try {
+                await api('/v1/me/tickets/' + encodeURIComponent(currentTicket.id) + '/messages', {
+                    method: 'POST', headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ message }),
+                });
+                input.value = '';
+                openTicket(currentTicket.id);
+                loadTickets();
+            } catch (e) {
+                showLine('ticket-reply-status', 'err',
+                    e.message === 'slow_down' ? 'That was too fast - wait a moment.' : 'Could not send: ' + e.message);
+            }
+        });
+
+        async function loadPlatformStatus() {
+            const grid = document.getElementById('status-grid');
+            grid.innerHTML = '<p style="color:var(--md-on-surface-variant); grid-column:1/-1; padding:20px;">Loading…</p>';
+            try {
+                const status = await api('/v1/status');
+                const vps = status.vps;
+                const items = [
+                    { label: 'API', value: status.ok ? 'Online' : 'Down', foot: 'api.kodanetwork.eu · v' + status.api.version },
+                    { label: 'Servers', value: String(status.servers.total), foot: status.servers.players_online + ' players online' },
+                    { label: 'Store', value: String(status.extensions.published), foot: 'published extensions' },
+                    { label: 'Tunnel server', value: vps ? (vps.stale ? 'No fresh data' : 'Online') : 'No data',
+                      foot: vps ? 'load ' + vps.load1 + ' · RAM ' + vps.ram_used_pct + '% · ' + vps.open_tunnels + ' tunnels · up ' + Math.floor((vps.uptime_seconds || 0) / 86400) + ' d' : '' },
+                    { label: 'Latest release', value: status.release ? status.release.version_name : '-',
+                      foot: status.release ? status.release.channel + ' · ' + relativeTime(status.release.published_at) : 'no release yet' },
+                    { label: 'Maintenance', value: status.maintenance && status.maintenance.active ? 'Active' : 'None',
+                      foot: status.maintenance && status.maintenance.reason ? status.maintenance.reason : 'everything running normally' },
+                ];
+                grid.innerHTML = items.map(item => (
+                    '<div class="item-card"><div style="font-size:0.75rem; color:var(--md-on-surface-variant);">' + escapeHtml(item.label) + '</div>' +
+                    '<div style="font-size:1.15rem; font-weight:600; margin:4px 0;">' + escapeHtml(item.value) + '</div>' +
+                    '<div style="font-size:0.75rem; color:var(--md-on-surface-variant);">' + escapeHtml(item.foot) + '</div></div>'
+                )).join('');
+            } catch (e) {
+                grid.innerHTML = '<p style="color:var(--md-error); grid-column:1/-1; padding:20px;">Status unavailable: ' + escapeHtml(e.message) + '</p>';
+            }
         }
 
         checkSession();

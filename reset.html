@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <link rel="icon" type="image/png" href="assets/logo.png">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KodaHosting | Reset Password</title>
+    <link rel="canonical" href="https://host.kodanetwork.eu/reset">
+    <meta name="description" content="Set a new password for your KodaHosting account.">
+    <meta name="robots" content="noindex">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto+Flex:opsz,wght@8..144,300;8..144,400;8..144,500;8..144,600;8..144,700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        :root {
+            --md-error: #FFB4AB; --md-success: #6FBE7E;
+            --md-surface: #1B1613; --md-on-surface: #EFE0D9;
+            --md-on-surface-variant: #D8C2B5; --md-outline-variant: #534339;
+            --md-surface-container: #231D18; --md-surface-container-lowest: #150F0D;
+            --brand: #FF6B00; --brand-hover: #FF8533;
+            --shape-sm: 8px; --shape-md: 12px; --shape-lg: 16px; --shape-full: 999px;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Roboto Flex', 'Roboto', sans-serif; background: var(--md-surface); color: var(--md-on-surface);
+            min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 20px; -webkit-font-smoothing: antialiased; }
+        .card { background: var(--md-surface-container); border: 1px solid var(--md-outline-variant); border-radius: var(--shape-lg);
+            padding: 32px; width: 100%; max-width: 420px; }
+        .logo { display: flex; align-items: center; gap: 10px; font-weight: 600; margin-bottom: 20px; }
+        .logo img { width: 32px; height: 32px; border-radius: 8px; }
+        .logo span span { color: var(--brand); }
+        h1 { font-size: 1.3rem; margin-bottom: 6px; }
+        p.sub { color: var(--md-on-surface-variant); font-size: 0.875rem; margin-bottom: 20px; line-height: 1.5; }
+        label { display: block; font-size: 0.8rem; color: var(--md-on-surface-variant); margin-bottom: 12px; }
+        input { width: 100%; margin-top: 5px; padding: 11px 14px; border-radius: var(--shape-sm); font: inherit;
+            background: var(--md-surface-container-lowest); color: var(--md-on-surface); border: 1px solid var(--md-outline-variant); }
+        button { width: 100%; font: inherit; font-weight: 600; cursor: pointer; border: 0; border-radius: var(--shape-full);
+            padding: 12px 20px; background: var(--brand); color: #201007; margin-top: 6px; }
+        button:hover { background: var(--brand-hover); }
+        button:disabled { opacity: .55; cursor: default; }
+        .status { font-size: 0.875rem; margin-top: 14px; display: none; line-height: 1.5; }
+        .status.err { color: var(--md-error); }
+        .status.ok { color: var(--md-success); }
+        .hint { font-size: 0.8rem; color: var(--md-on-surface-variant); margin-top: 16px; line-height: 1.5; }
+        .hint a { color: var(--brand); }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <a class="logo" href="index.html">
+            <img src="assets/logo.png" alt="KodaHosting logo">
+            <span>Koda<span>Hosting</span></span>
+        </a>
+        <h1>Set a new password</h1>
+        <p class="sub">This page opens from the password reset email. Enter your new password below.</p>
+
+        <div id="form-area" style="display:none">
+            <label>New password
+                <input type="password" id="input-password" minlength="6" placeholder="at least 6 characters">
+            </label>
+            <label>Repeat password
+                <input type="password" id="input-password-repeat" minlength="6" placeholder="repeat it">
+            </label>
+            <button id="btn-save">Save password</button>
+        </div>
+
+        <div class="status" id="status-line"></div>
+
+        <p class="hint" id="fallback-hint">
+            The link in the email is only valid for a short time. If you landed here without a link,
+            request a new email in the KodaHosting app (Settings &rarr; Account &rarr; Password forgotten)
+            or <a href="dashboard">sign in</a> if your password still works.
+        </p>
+    </div>
+
+    <script>
+        const SUPABASE_URL = 'https://scsezpfrrmpyuapblbxk.supabase.co';
+        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNjc2V6cGZycm1weXVhcGJsYnhrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY5NDE4MjYsImV4cCI6MjA5MjUxNzgyNn0.rHro6kQpXHAnxEaFxozYzsKY8IHIUlot-7-Q4LNbZT8';
+        const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+        const statusLine = document.getElementById('status-line');
+        function showStatus(kind, text) {
+            statusLine.className = 'status ' + kind;
+            statusLine.textContent = text;
+            statusLine.style.display = 'block';
+        }
+
+        // The recovery link carries a session in the URL hash; supabase-js picks it
+        // up automatically (detectSessionInUrl is on by default), so a session here
+        // means the link was valid.
+        supabaseClient.auth.getSession().then(({ data }) => {
+            if (data.session) {
+                document.getElementById('form-area').style.display = 'block';
+                document.getElementById('fallback-hint').style.display = 'none';
+            } else {
+                showStatus('err', 'No valid reset link found. Please open this page through the link in the email.');
+            }
+        });
+
+        supabaseClient.auth.onAuthStateChange((event, session) => {
+            if (event === 'PASSWORD_RECOVERY' || session) {
+                document.getElementById('form-area').style.display = 'block';
+                document.getElementById('fallback-hint').style.display = 'none';
+            }
+        });
+
+        document.getElementById('btn-save').addEventListener('click', async () => {
+            const password = document.getElementById('input-password').value;
+            const repeat = document.getElementById('input-password-repeat').value;
+            if (password.length < 6) { showStatus('err', 'The password needs at least 6 characters.'); return; }
+            if (password !== repeat) { showStatus('err', 'The two passwords do not match.'); return; }
+            const button = document.getElementById('btn-save');
+            button.disabled = true;
+            const { error } = await supabaseClient.auth.updateUser({ password });
+            button.disabled = false;
+            if (error) {
+                showStatus('err', 'Could not save the password: ' + error.message);
+            } else {
+                showStatus('ok', 'Password saved. You can now sign in with it - ');
+                statusLine.innerHTML += '<a href="dashboard" style="color:var(--brand)">open the dashboard</a>.';
+            }
+        });
+    </script>
+</body>
+</html>
