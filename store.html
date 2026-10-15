@@ -1324,6 +1324,50 @@
         .statusline.err { color: var(--md-error); display: block; }
         .statusline.ok { color: var(--md-success); display: block; }
         .statusline.busy { color: var(--md-on-surface-variant); display: block; }
+
+        /* ── form fields: never the browser's white default ── */
+        .item-card input:not([type="checkbox"]):not([type="radio"]),
+        .item-card select,
+        .item-card textarea,
+        .modal-content input:not([type="checkbox"]):not([type="radio"]),
+        .modal-content select,
+        .modal-content textarea {
+            width: 100%;
+            background: var(--md-surface-container-lowest);
+            color: var(--md-on-surface);
+            border: 1px solid var(--md-outline-variant);
+            border-radius: var(--shape-sm);
+            padding: 12px 14px;
+            font: inherit;
+            outline: none;
+        }
+        .item-card input:focus, .item-card select:focus, .item-card textarea:focus,
+        .modal-content input:focus, .modal-content select:focus, .modal-content textarea:focus {
+            border-color: var(--brand);
+        }
+        input[type="file"] { color: var(--md-on-surface-variant); width: auto !important; padding: 0 !important; background: transparent !important; border: 0 !important; }
+        input[type="file"]::file-selector-button {
+            background: var(--md-surface-container-high); color: var(--md-on-surface);
+            border: 1px solid var(--md-outline-variant); border-radius: var(--shape-full);
+            padding: 9px 16px; margin-right: 12px; font: inherit; cursor: pointer;
+        }
+        input[type="file"]::file-selector-button:hover { background: var(--md-surface-container-highest); }
+
+        /* ── overload screen: shown when the api throttles this client (429) ── */
+        .overload {
+            display: none; position: fixed; inset: 0; z-index: 3000;
+            background: var(--md-scrim); align-items: center; justify-content: center; padding: 20px;
+        }
+        .overload.active { display: flex; animation: modalBgIn 0.2s var(--ease-standard); }
+        .overload-card {
+            background: var(--md-surface-container-high); border-radius: var(--shape-xl);
+            padding: 32px; max-width: 420px; width: 100%; text-align: center; box-shadow: var(--elev-4);
+            animation: modalIn 0.3s var(--ease-emphasized);
+        }
+        .overload-card .material-symbols-outlined { font-size: 44px; color: var(--brand); }
+        .overload-card h3 { font-size: 1.25rem; margin: 12px 0 8px; font-weight: 500; }
+        .overload-card p { color: var(--md-on-surface-variant); font-size: 0.9rem; line-height: 1.5; }
+        .overload-count { font-size: 1.6rem; font-weight: 600; margin: 18px 0; color: var(--brand); }
 </style>
 </head>
 <body class="store">
@@ -1566,6 +1610,18 @@
         </div>
     </div>
 
+    <!-- overload screen: when the api throttles this client -->
+    <div class="overload" id="overload">
+        <div class="overload-card">
+            <span class="material-symbols-outlined">hourglass_top</span>
+            <h3>The service is busy right now</h3>
+            <p>Too many requests came from your connection in a short time. You cannot continue for a moment:
+               please wait, then try again.</p>
+            <div class="overload-count" id="overload-count"></div>
+            <button class="btn btn-filled" id="overload-retry" disabled>Try again</button>
+        </div>
+    </div>
+
     <script>
         // ---------------------------------------------------------------- setup
         const SUPABASE_URL = 'https://scsezpfrrmpyuapblbxk.supabase.co';
@@ -1606,9 +1662,37 @@
                 // the stored session is dead (for example the account was deleted) - drop it
                 await supabaseClient.auth.signOut().catch(() => {});
             }
+            if (res.status === 429) showOverload(Number(body.retry_after) || 30);
             if (!res.ok) throw new Error(body.error || ('HTTP ' + res.status));
             return body;
         }
+
+        /** the "busy, please wait" screen: blocks the page until the countdown ends. */
+        let overloadTimer = null;
+        function showOverload(seconds) {
+            const overlay = document.getElementById('overload');
+            const count = document.getElementById('overload-count');
+            const retry = document.getElementById('overload-retry');
+            let left = Math.max(1, Math.min(seconds, 600));
+            overlay.classList.add('active');
+            retry.disabled = true;
+            count.textContent = 'Please wait ' + left + ' s';
+            if (overloadTimer) clearInterval(overloadTimer);
+            overloadTimer = setInterval(() => {
+                left -= 1;
+                if (left <= 0) {
+                    clearInterval(overloadTimer);
+                    overloadTimer = null;
+                    count.textContent = 'You can continue now';
+                    retry.disabled = false;
+                } else {
+                    count.textContent = 'Please wait ' + left + ' s';
+                }
+            }, 1000);
+        }
+        document.getElementById('overload-retry').addEventListener('click', () => {
+            document.getElementById('overload').classList.remove('active');
+        });
 
         function openModal(id) { document.getElementById(id).classList.add('active'); }
         function closeModal(id) { document.getElementById(id).classList.remove('active'); }

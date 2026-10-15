@@ -1256,6 +1256,103 @@
         @media (max-width: 900px) {
             .dash-footer-grid { grid-template-columns: 1fr; }
         }
+
+        /* ── profile header (account page, Google/Apple style) ── */
+        .profile-header {
+            display: flex; align-items: center; gap: 20px; flex-wrap: wrap;
+            background: var(--md-surface-container); border-radius: var(--shape-lg);
+            padding: 24px; box-shadow: var(--elev-1); margin-bottom: 24px;
+        }
+        .profile-avatar {
+            width: 72px; height: 72px; border-radius: 50%; object-fit: cover;
+            background: var(--md-surface-container-highest); flex: none; box-shadow: var(--elev-1);
+        }
+        .profile-identity { flex: 1; min-width: 220px; }
+        .profile-name { font-size: 1.25rem; font-weight: 500; letter-spacing: -0.01em; }
+        .profile-mail { color: var(--md-on-surface-variant); font-size: 0.9rem; margin-top: 2px; }
+        .profile-meta { color: var(--md-on-surface-variant); font-size: 0.8rem; margin-top: 6px; }
+        .profile-actions { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+
+        /* ── settings card: one surface, hairline-separated rows ── */
+        .settings-card {
+            background: var(--md-surface-container); border-radius: var(--shape-lg);
+            box-shadow: var(--elev-1); overflow: hidden;
+        }
+        .settings-row {
+            display: flex; align-items: center; gap: 20px; flex-wrap: wrap;
+            padding: 18px 24px; border-top: 1px solid var(--md-outline-variant);
+        }
+        .settings-row:first-child { border-top: 0; }
+        .settings-label { flex: 1; min-width: 220px; }
+        .settings-title { font-weight: 500; font-size: 0.95rem; }
+        .settings-sub { color: var(--md-on-surface-variant); font-size: 0.8rem; margin-top: 2px; }
+        .settings-control { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+        .settings-control input { width: 220px; }
+        .settings-pill {
+            font-size: 0.8rem; font-weight: 600; padding: 4px 14px; border-radius: var(--shape-full);
+            border: 1px solid var(--md-outline-variant); color: var(--md-on-surface-variant);
+        }
+        .settings-pill.on { color: var(--md-success); border-color: var(--md-success); }
+        .settings-note { font-size: 0.8rem; color: var(--md-on-surface-variant); }
+        .settings-status { font-size: 0.85rem; margin-top: 10px; display: none; }
+        .settings-status.ok { color: var(--md-success); display: block; }
+        .settings-status.err { color: var(--md-error); display: block; }
+
+        /* ── device tiles ── */
+        .device-tile {
+            width: 56px; height: 56px; border-radius: var(--shape-md); flex: none;
+            background: var(--md-surface-container-highest); color: var(--md-on-surface-variant);
+            display: grid; place-items: center;
+        }
+        .device-tile .material-symbols-outlined { font-size: 28px; }
+
+        /* ── form fields: never the browser's white default ── */
+        .item-card input:not([type="checkbox"]):not([type="radio"]),
+        .item-card select,
+        .item-card textarea,
+        .settings-card input:not([type="checkbox"]):not([type="radio"]),
+        .settings-card select,
+        .settings-card textarea,
+        .modal-content input:not([type="checkbox"]):not([type="radio"]),
+        .modal-content select,
+        .modal-content textarea {
+            width: 100%;
+            background: var(--md-surface-container-lowest);
+            color: var(--md-on-surface);
+            border: 1px solid var(--md-outline-variant);
+            border-radius: var(--shape-sm);
+            padding: 12px 14px;
+            font: inherit;
+            outline: none;
+        }
+        .item-card input:focus, .item-card select:focus, .item-card textarea:focus,
+        .settings-card input:focus, .settings-card select:focus, .settings-card textarea:focus,
+        .modal-content input:focus, .modal-content select:focus, .modal-content textarea:focus {
+            border-color: var(--brand);
+        }
+        input[type="file"] { color: var(--md-on-surface-variant); width: auto !important; padding: 0 !important; background: transparent !important; border: 0 !important; }
+        input[type="file"]::file-selector-button {
+            background: var(--md-surface-container-high); color: var(--md-on-surface);
+            border: 1px solid var(--md-outline-variant); border-radius: var(--shape-full);
+            padding: 9px 16px; margin-right: 12px; font: inherit; cursor: pointer;
+        }
+        input[type="file"]::file-selector-button:hover { background: var(--md-surface-container-highest); }
+
+        /* ── overload screen: shown when the api throttles this client (429) ── */
+        .overload {
+            display: none; position: fixed; inset: 0; z-index: 3000;
+            background: var(--md-scrim); align-items: center; justify-content: center; padding: 20px;
+        }
+        .overload.active { display: flex; animation: modalBgIn 0.2s var(--ease-standard); }
+        .overload-card {
+            background: var(--md-surface-container-high); border-radius: var(--shape-xl);
+            padding: 32px; max-width: 420px; width: 100%; text-align: center; box-shadow: var(--elev-4);
+            animation: modalIn 0.3s var(--ease-emphasized);
+        }
+        .overload-card .material-symbols-outlined { font-size: 44px; color: var(--brand); }
+        .overload-card h3 { font-size: 1.25rem; margin: 12px 0 8px; font-weight: 500; }
+        .overload-card p { color: var(--md-on-surface-variant); font-size: 0.9rem; line-height: 1.5; }
+        .overload-count { font-size: 1.6rem; font-weight: 600; margin: 18px 0; color: var(--brand); }
     </style>
 </head>
 <body>
@@ -1454,46 +1551,74 @@
             <div class="page-header">
                 <h2 class="page-title">Account</h2>
             </div>
-            <div class="items-grid" style="grid-template-columns: 1fr;">
-                <div class="item-card" style="max-width:none">
-                    <div style="display:flex; align-items:center; gap:16px; flex-wrap:wrap;">
-                        <img id="account-avatar" alt="" style="width:64px; height:64px; border-radius:50%; object-fit:cover; background: var(--md-surface-container-highest);">
-                        <div style="flex:1; min-width:200px;">
-                            <div id="account-nickname-line" style="font-weight:600; font-size:1.05rem;"></div>
-                            <div id="account-email-line" style="color: var(--md-on-surface-variant); font-size:0.875rem;"></div>
-                            <div id="account-meta-line" style="color: var(--md-on-surface-variant); font-size:0.8rem; margin-top:4px;"></div>
-                            <div id="account-info-line" style="color: var(--md-on-surface-variant); font-size:0.8rem; margin-top:2px;"></div>
-                        </div>
-                        <div style="display:flex; gap:8px; flex-wrap:wrap;">
-                            <button class="btn-outline-card" id="btn-avatar-pick">Change picture</button>
-                            <button class="btn-outline-card" id="btn-avatar-remove">Remove picture</button>
-                        </div>
-                        <input type="file" id="input-avatar-file" accept="image/png,image/jpeg" style="display:none">
-                    </div>
-                    <div id="avatar-status" style="font-size:0.8rem; margin-top:8px; display:none"></div>
-                </div>
 
-                <div class="item-card" style="max-width:none">
-                    <h3 style="font-size:1rem; margin-bottom:12px;">Nickname</h3>
-                    <div style="display:flex; gap:10px; max-width:420px;">
-                        <input id="input-nickname" maxlength="24" placeholder="Your nickname" style="flex:1">
-                        <button class="btn-outline-card primary-action" id="btn-save-nickname">Save</button>
-                    </div>
-                    <div id="nickname-status" style="font-size:0.8rem; margin-top:8px; display:none"></div>
+            <!-- profile header: who you are, what you have -->
+            <div class="profile-header">
+                <img id="account-avatar" alt="" class="profile-avatar">
+                <div class="profile-identity">
+                    <div id="account-nickname-line" class="profile-name"></div>
+                    <div id="account-email-line" class="profile-mail"></div>
+                    <div id="account-meta-line" class="profile-meta"></div>
+                    <div id="account-info-line" class="profile-meta"></div>
                 </div>
+                <div class="profile-actions">
+                    <button class="btn btn-tonal" id="btn-avatar-pick">
+                        <span class="material-symbols-outlined">photo_camera</span> Change picture
+                    </button>
+                    <button class="btn btn-text" id="btn-avatar-remove">Remove</button>
+                </div>
+                <input type="file" id="input-avatar-file" accept="image/png,image/jpeg" style="display:none">
+            </div>
+            <div id="avatar-status" class="settings-status"></div>
 
-                <div class="item-card" style="max-width:none">
-                    <h3 style="font-size:1rem; margin-bottom:12px;">Password</h3>
-                    <div style="display:flex; gap:10px; max-width:420px;">
-                        <input type="password" id="input-new-password" placeholder="New password" style="flex:1">
-                        <button class="btn-outline-card primary-action" id="btn-save-password">Change</button>
+            <!-- settings live in one card, rows separated by hairlines -->
+            <div class="settings-card">
+                <div class="settings-row">
+                    <div class="settings-label">
+                        <div class="settings-title">Nickname</div>
+                        <div class="settings-sub">Shown to you on the website and used as the device name fallback</div>
                     </div>
-                    <div id="password-status" style="font-size:0.8rem; margin-top:8px; display:none"></div>
-                    <p style="font-size:0.8rem; color:var(--md-on-surface-variant); margin-top:8px;">More account settings (account linking, deletion) live in the app under Settings &rarr; Account.</p>
+                    <div class="settings-control">
+                        <input id="input-nickname" maxlength="24" placeholder="Your nickname">
+                        <button class="btn btn-filled" id="btn-save-nickname">Save</button>
+                    </div>
+                </div>
+                <div class="settings-row">
+                    <div class="settings-label">
+                        <div class="settings-title">Password</div>
+                        <div class="settings-sub">Used for the website and the app</div>
+                    </div>
+                    <div class="settings-control">
+                        <input type="password" id="input-new-password" placeholder="New password">
+                        <button class="btn btn-filled" id="btn-save-password">Change</button>
+                    </div>
+                </div>
+                <div class="settings-row">
+                    <div class="settings-label">
+                        <div class="settings-title">Two-factor</div>
+                        <div class="settings-sub">Set up and changed in the app</div>
+                    </div>
+                    <div class="settings-control"><span class="settings-pill" id="account-2fa-badge">--</span></div>
+                </div>
+                <div class="settings-row">
+                    <div class="settings-label">
+                        <div class="settings-title">Minecraft account</div>
+                        <div class="settings-sub" id="account-mc-line">--</div>
+                    </div>
+                    <div class="settings-control"><span class="settings-note">Linking happens in the app</span></div>
+                </div>
+                <div class="settings-row">
+                    <div class="settings-label">
+                        <div class="settings-title">Account settings in the app</div>
+                        <div class="settings-sub">Linked accounts, deletion and more live in the KodaHosting app under Settings, Account</div>
+                    </div>
+                    <div class="settings-control"><span class="settings-note">App</span></div>
                 </div>
             </div>
+            <div id="nickname-status" class="settings-status"></div>
+            <div id="password-status" class="settings-status"></div>
 
-            <div class="page-header" style="margin-top:32px; margin-bottom:16px;">
+            <div class="page-header" style="margin-top:36px; margin-bottom:16px;">
                 <h2 class="page-title" style="font-size:1.3rem;">Your devices</h2>
             </div>
             <p style="color: var(--md-on-surface-variant); font-size:0.875rem; margin-bottom:16px;">
@@ -1609,6 +1734,18 @@
     </main>
 
 
+    <!-- overload screen: when the api throttles this client -->
+    <div class="overload" id="overload">
+        <div class="overload-card">
+            <span class="material-symbols-outlined">hourglass_top</span>
+            <h3>The service is busy right now</h3>
+            <p>Too many requests came from your connection in a short time. You cannot continue for a moment:
+               please wait, then try again.</p>
+            <div class="overload-count" id="overload-count"></div>
+            <button class="btn btn-filled" id="overload-retry" disabled>Try again</button>
+        </div>
+    </div>
+
     <script>
         const SUPABASE_URL = 'https://scsezpfrrmpyuapblbxk.supabase.co';
         const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNjc2V6cGZycm1weXVhcGJsYnhrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY5NDE4MjYsImV4cCI6MjA5MjUxNzgyNn0.rHro6kQpXHAnxEaFxozYzsKY8IHIUlot-7-Q4LNbZT8';
@@ -1630,9 +1767,37 @@
                 // the stored session is dead (for example the account was deleted) - drop it
                 await supabaseClient.auth.signOut().catch(() => {});
             }
+            if (res.status === 429) showOverload(Number(body.retry_after) || 30);
             if (!res.ok) throw new Error(body.error || ('HTTP ' + res.status));
             return body;
         }
+
+        /** the "busy, please wait" screen: blocks the page until the countdown ends. */
+        let overloadTimer = null;
+        function showOverload(seconds) {
+            const overlay = document.getElementById('overload');
+            const count = document.getElementById('overload-count');
+            const retry = document.getElementById('overload-retry');
+            let left = Math.max(1, Math.min(seconds, 600));
+            overlay.classList.add('active');
+            retry.disabled = true;
+            count.textContent = 'Please wait ' + left + ' s';
+            if (overloadTimer) clearInterval(overloadTimer);
+            overloadTimer = setInterval(() => {
+                left -= 1;
+                if (left <= 0) {
+                    clearInterval(overloadTimer);
+                    overloadTimer = null;
+                    count.textContent = 'You can continue now';
+                    retry.disabled = false;
+                } else {
+                    count.textContent = 'Please wait ' + left + ' s';
+                }
+            }, 1000);
+        }
+        document.getElementById('overload-retry').addEventListener('click', () => {
+            document.getElementById('overload').classList.remove('active');
+        });
 
         let currentUser = null;
         let refreshTimer = null;
@@ -2178,14 +2343,43 @@
                     me.server_count + ' server(s) · ' + me.device_count + ' device(s) · ' + me.extension_count + ' extension submission(s)';
                 const info = [];
                 if (me.member_since) info.push('Member since ' + new Date(me.member_since).toLocaleDateString());
-                if (me.mc_username) info.push('Minecraft account: ' + me.mc_username);
-                info.push(me.two_fa ? '2FA: on' : '2FA: off');
+                if (me.linked_since) info.push('linked with the app since ' + new Date(me.linked_since).toLocaleDateString());
                 document.getElementById('account-info-line').textContent = info.join('  ·  ');
+                const badge = document.getElementById('account-2fa-badge');
+                badge.textContent = me.two_fa ? 'On' : 'Off';
+                badge.classList.toggle('on', !!me.two_fa);
+                document.getElementById('account-mc-line').textContent = me.mc_username
+                    ? me.mc_username + ' (linked)'
+                    : 'No Minecraft account linked yet';
                 document.getElementById('input-nickname').value = me.nickname || '';
                 loadDevices();
             } catch (e) {
                 showLine('nickname-status', 'err', 'Could not load the account: ' + e.message);
             }
+        }
+
+        /**
+         * friendly names for the model codes the app reports (Build.MODEL). anything
+         * unknown falls back to the raw code, so nothing is ever hidden.
+         */
+        const DEVICE_NAMES = {
+            '2512BPNDAC': 'Xiaomi 17 Ultra',
+            '2407FPN8EG': 'Xiaomi 14T Pro',
+            '2107113SG': 'Xiaomi 11T Pro',
+            'CPH2797': 'OPPO Find X9',
+            'SM-A725F': 'Galaxy A72',
+            'SM-X510': 'Galaxy Tab S9 FE'
+        };
+        function deviceName(model) {
+            if (!model) return 'Android device';
+            if (DEVICE_NAMES[model]) return DEVICE_NAMES[model];
+            if (/^sdk_gphone/i.test(model)) return 'Android emulator';
+            return model;
+        }
+        function deviceSymbol(model) {
+            const m = model || '';
+            if (m.startsWith('SM-X') || /tab/i.test(m)) return 'tablet_android';
+            return 'smartphone';
         }
 
         /** the account's devices with their live telemetry and the unlink action. */
@@ -2208,15 +2402,21 @@
                     const state = device.app_state === 'FOREGROUND' ? { label: 'active', cls: 'status-online' }
                         : device.app_state === 'BACKGROUND' ? { label: 'in background', cls: 'status-pending' }
                         : { label: 'offline', cls: 'status-offline' };
+                    const name = deviceName(device.model);
+                    const modelNote = device.model && name !== device.model ? ' · ' + escapeHtml(device.model) : '';
                     return '<div class="item-card">' +
-                        '<div class="item-header"><div class="item-title">' + escapeHtml(device.model || 'Android device') + '</div>' +
+                        '<div style="display:flex; gap:14px; align-items:center;">' +
+                        '<div class="device-tile"><span class="material-symbols-outlined">' + deviceSymbol(device.model) + '</span></div>' +
+                        '<div style="flex:1; min-width:0;">' +
+                        '<div class="item-title">' + escapeHtml(name) + '</div>' +
+                        '<div style="font-size:0.8rem; color:var(--md-on-surface-variant);">' + escapeHtml(device.os || 'Android') +
+                        modelNote + ' · app ' + escapeHtml(device.app_version || '--') + '</div></div>' +
                         '<div class="status-badge ' + state.cls + '">' + state.label + '</div></div>' +
                         '<div class="item-details">' +
                         '<span><span class="material-symbols-outlined">person</span>' + accounts + '</span>' +
                         '<span><span class="material-symbols-outlined">memory</span>' + ram + '</span>' +
                         '<span><span class="material-symbols-outlined">battery_full</span>' +
                         (device.battery != null ? device.battery + '%' : '--') + (device.charging ? ' charging' : '') + '</span>' +
-                        '<span><span class="material-symbols-outlined">android</span>' + escapeHtml(device.os || '--') + ' · app ' + escapeHtml(device.app_version || '--') + '</span>' +
                         '<span><span class="material-symbols-outlined">schedule</span>' + relativeTime(device.last_ping) + '</span>' +
                         '</div>' +
                         '<div style="margin-top:14px;"><button class="btn-outline-card" data-unlink="' + escapeHtml(device.app_uuid) + '">Unlink device</button></div>' +
@@ -2495,7 +2695,7 @@
             }
         }
 
-        /** the public server directory (GET /v1/servers on the api). */
+        /** the public server directory (GET /v1/servers), enriched with a live ping. */
         async function loadCommunityServers() {
             const container = document.getElementById('community-servers-container');
             container.innerHTML = '<p style="color:var(--md-on-surface-variant); grid-column:1/-1; padding:20px;">Loading…</p>';
@@ -2507,17 +2707,55 @@
                     return;
                 }
                 const colors = { ONLINE: 'status-online', OFFLINE: 'status-offline', HIBERNATED: 'status-offline' };
-                container.innerHTML = data.items.map(server => (
-                    '<div class="item-card">' +
-                    '<div class="item-header"><div class="item-title">' + escapeHtml(server.host) + '.' + escapeHtml(server.domain) + '</div>' +
-                    '<div class="status-badge ' + (colors[server.status] || 'status-offline') + '">' + escapeHtml(server.status) + '</div></div>' +
-                    (server.motd ? '<div style="color:var(--md-on-surface-variant); font-size:0.85rem; margin-top:6px;">' + escapeHtml(server.motd) + '</div>' : '') +
-                    '<div class="item-details"><span><span class="material-symbols-outlined">group</span>' +
-                    server.players_online + ' / ' + server.players_max + '</span>' +
-                    (server.version ? '<span><span class="material-symbols-outlined">tag</span>' + escapeHtml(server.version) + '</span>' : '') +
-                    (server.gamemode ? '<span><span class="material-symbols-outlined">sports_esports</span>' + escapeHtml(server.gamemode) + '</span>' : '') +
-                    '</div></div>'
-                )).join('');
+                container.innerHTML = data.items.map(server => {
+                    const owner = server.owner
+                        ? '<span><span class="material-symbols-outlined">person</span>by ' + escapeHtml(server.owner.mc_username) + '</span>'
+                        : '';
+                    return '<div class="item-card" data-server-host="' + escapeHtml(server.host) + '">' +
+                        '<div class="item-header">' +
+                        '<div class="item-title" style="display:flex; align-items:center; gap:10px; min-width:0;">' +
+                        '<span data-icon style="display:inline-grid; place-items:center; width:28px; height:28px; border-radius:8px; flex:none; background:var(--md-surface-container-highest);">' +
+                        '<span class="material-symbols-outlined" style="font-size:18px;">dns</span></span>' +
+                        '<span style="overflow:hidden; text-overflow:ellipsis;">' + escapeHtml(server.host) + '.' + escapeHtml(server.domain) + '</span></div>' +
+                        '<div class="status-badge ' + (colors[server.status] || 'status-offline') + '">' + escapeHtml(server.status) + '</div></div>' +
+                        (server.motd ? '<div data-motd style="color:var(--md-on-surface-variant); font-size:0.85rem; margin-top:6px;">' + escapeHtml(server.motd) + '</div>' : '<div data-motd style="display:none"></div>') +
+                        '<div class="item-details">' +
+                        '<span data-players><span class="material-symbols-outlined">group</span>' +
+                        server.players_online + ' / ' + server.players_max + '</span>' +
+                        (server.version ? '<span><span class="material-symbols-outlined">tag</span>' + escapeHtml(server.version) + '</span>' : '') +
+                        (server.gamemode ? '<span><span class="material-symbols-outlined">sports_esports</span>' + escapeHtml(server.gamemode) + '</span>' : '') +
+                        owner +
+                        '</div></div>';
+                }).join('');
+
+                // the pinging tool: online servers get their real icon, live players
+                // and the live motd from a minecraft status ping (through the api).
+                const online = data.items.filter(server => server.status === 'ONLINE').slice(0, 8);
+                await Promise.allSettled(online.map(async server => {
+                    const card = container.querySelector('[data-server-host="' + server.host.replace(/"/g, '') + '"]');
+                    if (!card) return;
+                    try {
+                        const detailRes = await fetch(API_BASE + '/v1/servers/' + encodeURIComponent(server.host));
+                        const detail = await detailRes.json();
+                        const live = detail.server && detail.server.live;
+                        if (!live || !live.live) return;
+                        const icon = card.querySelector('[data-icon]');
+                        if (icon && live.favicon) {
+                            icon.innerHTML = '<img src="' + live.favicon + '" alt="" style="width:28px; height:28px; border-radius:8px; object-fit:cover;">';
+                        }
+                        const players = card.querySelector('[data-players]');
+                        if (players) {
+                            players.innerHTML = '<span class="material-symbols-outlined">group</span>' +
+                                live.players_online + ' / ' + live.players_max +
+                                (live.latency_ms ? ' · ' + live.latency_ms + ' ms' : '');
+                        }
+                        const motd = card.querySelector('[data-motd]');
+                        if (motd && live.motd) {
+                            motd.textContent = live.motd.replace(/§./g, '');
+                            motd.style.display = '';
+                        }
+                    } catch (e) { /* keep the database values */ }
+                }));
             } catch (e) {
                 container.innerHTML = '<p style="color:var(--md-error); grid-column:1/-1; padding:20px;">Could not load servers: ' + escapeHtml(e.message) + '</p>';
             }
