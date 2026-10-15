@@ -1623,7 +1623,9 @@
             </div>
             <p style="color: var(--md-on-surface-variant); font-size:0.875rem; margin-bottom:16px;">
                 Every phone with the KodaHosting app signed into this account. Live values come from the app's heartbeat;
-                unlinking a device keeps its servers and settings, the app simply runs standalone again.</p>
+                unlinking a device keeps its servers and settings, the app simply runs standalone again.
+                <br><span style="font-size:0.75rem;">Device photos are from Wikimedia Commons and shown for identification;
+                all rights belong to the respective manufacturers.</span></p>
             <div class="items-grid" id="devices-container"></div>
         </div>
 
@@ -2382,6 +2384,14 @@
             return 'smartphone';
         }
 
+        /** real device photos (Wikimedia Commons, see assets/devices/CREDITS.txt). */
+        const DEVICE_PHOTOS = {
+            '2512BPNDAC': 'assets/devices/xiaomi-17-ultra.jpg',
+            'Pixel 10 Pro': 'assets/devices/pixel-10-pro.jpg',
+            'CPH2797': 'assets/devices/oppo-find-x9.jpg',
+            '2407FPN8EG': 'assets/devices/xiaomi-14t-pro.jpg'
+        };
+
         /** the account's devices with their live telemetry and the unlink action. */
         async function loadDevices() {
             const grid = document.getElementById('devices-container');
@@ -2404,22 +2414,26 @@
                         : { label: 'offline', cls: 'status-offline' };
                     const name = deviceName(device.model);
                     const modelNote = device.model && name !== device.model ? ' · ' + escapeHtml(device.model) : '';
+                    const photo = DEVICE_PHOTOS[device.model];
+                    const media = photo
+                        ? '<img src="' + photo + '" alt="" style="width:84px; height:108px; border-radius:var(--shape-md); object-fit:cover; flex:none; background:var(--md-surface-container-highest); box-shadow:var(--elev-1);">'
+                        : '<div class="device-tile" style="width:84px; height:108px;"><span class="material-symbols-outlined" style="font-size:40px;">' + deviceSymbol(device.model) + '</span></div>';
                     return '<div class="item-card">' +
-                        '<div style="display:flex; gap:14px; align-items:center;">' +
-                        '<div class="device-tile"><span class="material-symbols-outlined">' + deviceSymbol(device.model) + '</span></div>' +
-                        '<div style="flex:1; min-width:0;">' +
-                        '<div class="item-title">' + escapeHtml(name) + '</div>' +
-                        '<div style="font-size:0.8rem; color:var(--md-on-surface-variant);">' + escapeHtml(device.os || 'Android') +
-                        modelNote + ' · app ' + escapeHtml(device.app_version || '--') + '</div></div>' +
+                        '<div class="item-header">' +
+                        '<div class="item-title" style="min-width:0;">' + escapeHtml(name) + '</div>' +
                         '<div class="status-badge ' + state.cls + '">' + state.label + '</div></div>' +
-                        '<div class="item-details">' +
+                        '<div style="display:flex; gap:16px; margin-top:14px; align-items:flex-start;">' + media +
+                        '<div style="flex:1; min-width:0;">' +
+                        '<div style="font-size:0.8rem; color:var(--md-on-surface-variant); line-height:1.5;">' +
+                        escapeHtml(device.os || 'Android') + modelNote + '<br>app ' + escapeHtml(device.app_version || '--') + '</div>' +
+                        '<div class="item-details" style="flex-direction:column; align-items:flex-start; gap:8px; margin-top:12px;">' +
                         '<span><span class="material-symbols-outlined">person</span>' + accounts + '</span>' +
                         '<span><span class="material-symbols-outlined">memory</span>' + ram + '</span>' +
                         '<span><span class="material-symbols-outlined">battery_full</span>' +
                         (device.battery != null ? device.battery + '%' : '--') + (device.charging ? ' charging' : '') + '</span>' +
                         '<span><span class="material-symbols-outlined">schedule</span>' + relativeTime(device.last_ping) + '</span>' +
-                        '</div>' +
-                        '<div style="margin-top:14px;"><button class="btn-outline-card" data-unlink="' + escapeHtml(device.app_uuid) + '">Unlink device</button></div>' +
+                        '</div></div></div>' +
+                        '<div style="margin-top:16px;"><button class="btn-outline-card" data-unlink="' + escapeHtml(device.app_uuid) + '">Unlink device</button></div>' +
                         '</div>';
                 }).join('');
                 grid.querySelectorAll('[data-unlink]').forEach(button => {

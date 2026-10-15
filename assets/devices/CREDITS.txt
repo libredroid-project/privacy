@@ -1,0 +1,12 @@
+Device photos used on the account page (dashboard.html), all from Wikimedia Commons.
+They are shown for identification only; all rights belong to the respective manufacturers.
+
+xiaomi-17-ultra.jpg   File:Xiaomi 17 Ultra rear.jpg                       CC BY-SA 4.0
+                      https://commons.wikimedia.org/wiki/File:Xiaomi_17_Ultra_rear.jpg
+pixel-10-pro.jpg      File:Arrière du Google Pixel 10 Pro pierre de lune de 256 Go.jpg
+                      CC BY-SA 4.0
+                      https://commons.wikimedia.org/wiki/File:Arri%C3%A8re_du_Google_Pixel_10_Pro_pierre_de_lune_de_256_Go.jpg
+oppo-find-x9.jpg      File:Oppo Find X9 Titanium Grey.jpg                 CC BY-SA 4.0
+                      https://commons.wikimedia.org/wiki/File:Oppo_Find_X9_Titanium_Grey.jpg
+xiaomi-14t-pro.jpg    File:Xiaomi 14T Pro.jpg                              CC BY-SA 4.0
+                      https://commons.wikimedia.org/wiki/File:Xiaomi_14T_Pro.jpg
