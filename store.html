@@ -14,9 +14,9 @@
     <script src="https://accounts.google.com/gsi/client" async defer></script>
     <style>
         :root {
-            --md-primary: #2563EB;
-            --md-on-primary: #FFFFFF;
-            --md-primary-container: rgba(37, 99, 235, 0.18);
+            --md-primary: #FF6B00;
+            --md-on-primary: #1A0F00;
+            --md-primary-container: rgba(255, 107, 0, 0.16);
             --md-on-primary-container: #F4F4F6;
             --md-secondary: #9C9CA5;
             --md-on-secondary: #0B0B0D;
@@ -48,10 +48,10 @@
             --md-inverse-on-surface: #3A2D26;
             --md-scrim: rgba(0, 0, 0, 0.6);
 
-            --brand: #2563EB;
-            --brand-hover: #1D4FD8;
-            --brand-container: rgba(37, 99, 235, 0.18);
-            --brand-text: #86AFFF;
+            --brand: #FF6B00;
+            --brand-hover: #FF8524;
+            --brand-container: rgba(255, 107, 0, 0.16);
+            --brand-text: #FFA45C;
 
             --elev-1: none;
             --elev-2: none;
@@ -413,7 +413,7 @@
 
         .btn-filled {
             background: var(--brand);
-            color: #fff;
+            color: #1A0F00;
         }
         .btn-filled:hover { box-shadow: var(--elev-1); background: var(--brand-hover); }
 
@@ -492,7 +492,7 @@
             align-items: center;
             gap: 8px;
             background: var(--brand);
-            color: #fff;
+            color: #1A0F00;
             padding: 0 20px;
             height: 56px;
             border-radius: var(--shape-md);
@@ -649,7 +649,7 @@
             transition: background 0.2s var(--ease-standard, ease), color 0.2s var(--ease-standard, ease);
         }
         .lang-switch button:hover { color: var(--md-on-surface); }
-        .lang-switch button.active { background: var(--brand); color: #fff; }
+        .lang-switch button.active { background: var(--brand); color: #1A0F00; }
         .danger-rule {
             border-left: 3px solid var(--brand);
             background: var(--md-surface-container-high, #2A221C);
@@ -678,7 +678,7 @@
         .item-hint.warn .material-symbols-outlined { color: var(--brand-text); }
         .btn-outline-card.primary-action {
             background: var(--brand);
-            color: #fff;
+            color: #1A0F00;
         }
         .btn-outline-card.primary-action:hover { background: var(--brand-hover, #FF8533); }
 
@@ -733,7 +733,7 @@
         .btn-outline-card:hover { color: var(--brand-text); }
         .btn-outline-card.primary-action {
             background: var(--brand);
-            color: #fff;
+            color: #1A0F00;
         }
         .btn-outline-card.primary-action::before { background: #fff; }
         .btn-outline-card.primary-action:hover { color: #fff; }
@@ -787,7 +787,7 @@
             transition: opacity 0.2s var(--ease-standard);
         }
         .console-input button:hover::before { opacity: 0.08; }
-        .console-input button:hover { background: var(--brand); color: #fff; }
+        .console-input button:hover { background: var(--brand); color: #1A0F00; }
         .console-input button:hover::before { background: #fff; }
 
         /* Material 3 Dialog */
