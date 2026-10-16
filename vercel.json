@@ -4,6 +4,6 @@
     { "source": "/docs/", "destination": "/docs", "permanent": true }
   ],
   "rewrites": [
-    { "source": "/invite/:token", "destination": "/invite.html" }
+    { "source": "/invite/:token", "destination": "/invite" }
   ]
 }
