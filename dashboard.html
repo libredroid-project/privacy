@@ -1840,12 +1840,13 @@
                     headers: { 'Content-Type': 'application/json' },
                     body: '{}'
                 });
-                showInviteBanner('Invite accepted — the shared server is in your list below.', false);
-                switchTab('tab-servers');
-                fetchServers();
             } catch (e) {
                 showInviteBanner('The invite could not be used (' + (e.message || 'error') + ').', true);
+                return;
             }
+            showInviteBanner('Invite accepted — the shared server is in your list below.', false);
+            switchTab('servers');
+            fetchServers();
         }
 
         async function checkSession() {
