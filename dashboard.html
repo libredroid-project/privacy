@@ -743,6 +743,20 @@
         .btn-outline-card.danger::before { background: var(--md-error); }
         .btn-outline-card.danger:hover { color: var(--md-error); }
 
+        /* command buttons carry their meaning in the colour: start green, restart amber, stop red */
+        .btn-outline-card.success {
+            color: var(--md-success);
+            background: var(--md-success-container);
+        }
+        .btn-outline-card.success::before { background: var(--md-success); }
+        .btn-outline-card.success:hover { color: var(--md-success); }
+        .btn-outline-card.warning {
+            color: var(--md-warning);
+            background: var(--md-warning-container);
+        }
+        .btn-outline-card.warning::before { background: var(--md-warning); }
+        .btn-outline-card.warning:hover { color: var(--md-warning); }
+
         .console-input {
             display: flex;
             gap: 8px;
@@ -1465,6 +1479,7 @@
     <!-- Main Content -->
     <main class="main-content">
         <div id="tab-servers" class="view-section active">
+            <p id="invite-banner" style="display: none; font-size: 0.875rem; margin-bottom: 16px;"></p>
             <div class="page-header">
                 <h2 class="page-title">Minecraft Servers</h2>
             </div>
@@ -1804,6 +1819,35 @@
         let currentUser = null;
         let refreshTimer = null;
 
+        /** dashboard?invite=<token> from an invite page: accept it once a session exists. */
+        const DEEP_INVITE = (new URLSearchParams(location.search).get('invite') || '').trim().toLowerCase();
+        let inviteHandled = false;
+
+        function showInviteBanner(message, isError) {
+            const banner = document.getElementById('invite-banner');
+            if (!banner) return;
+            banner.textContent = message;
+            banner.style.display = '';
+            banner.style.color = isError ? 'var(--md-error)' : 'var(--md-success)';
+        }
+
+        async function acceptDeepInvite() {
+            if (!DEEP_INVITE || inviteHandled || !/^[a-f0-9]{18}$/.test(DEEP_INVITE)) return;
+            inviteHandled = true;
+            try {
+                await api('/v1/invite/' + encodeURIComponent(DEEP_INVITE) + '/accept', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: '{}'
+                });
+                showInviteBanner('Invite accepted — the shared server is in your list below.', false);
+                switchTab('tab-servers');
+                fetchServers();
+            } catch (e) {
+                showInviteBanner('The invite could not be used (' + (e.message || 'error') + ').', true);
+            }
+        }
+
         async function checkSession() {
             const { data: { session } } = await supabaseClient.auth.getSession();
             if (session) {
@@ -1812,6 +1856,7 @@
                 fetchServers();
                 startPolling();
                 loadLegalTexts();
+                acceptDeepInvite();
             } else {
                 document.getElementById('login-view').style.display = 'flex';
             }
@@ -1823,6 +1868,7 @@
                     fetchServers();
                     startPolling();
                     loadLegalTexts();
+                    acceptDeepInvite();
                 } else {
                     currentUser = null;
                     stopPolling();
@@ -2297,9 +2343,9 @@
                         ? `<button class="btn-outline-card primary-action" data-dash="${escapeAttr(item.id)}">Open KodaDash</button>`
                         : '';
                     controls = `<div class="controls-grid" style="grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));">
-                        <button class="btn-outline-card" data-cmd="start">Start</button>
-                        <button class="btn-outline-card" data-cmd="restart">Restart</button>
-                        <button class="btn-outline-card" data-cmd="stop">Stop</button>
+                        <button class="btn-outline-card success" data-cmd="start">Start</button>
+                        <button class="btn-outline-card warning" data-cmd="restart">Restart</button>
+                        <button class="btn-outline-card danger" data-cmd="stop">Stop</button>
                         ${dashButton}
                     </div>
                     <div class="item-hint" data-feedback style="display: none;"></div>`;

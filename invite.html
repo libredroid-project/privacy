@@ -12,7 +12,6 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Roboto+Flex:opsz,wght@8..144,300;8..144,400;8..144,500;8..144,600;8..144,700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0&display=swap">
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
         <style>
         :root {
             --md-primary: #FFB68C;
@@ -1430,32 +1429,8 @@
 
             <div id="acceptCard" style="display: none; max-width: 720px; margin-top: 20px; background: var(--md-surface-container); border-radius: var(--shape-lg); box-shadow: var(--elev-1); padding: 24px;">
                 <div style="font-size: 0.6875rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--brand); font-weight: 600; margin-bottom: 10px;">Your dashboard</div>
-                <p id="acceptLead" style="color: var(--md-on-surface-variant); font-size: 0.8125rem; line-height: 1.6; margin-bottom: 16px;">This invite carries control rights. Sign in or create an account and the server appears in your dashboard under <strong>Servers</strong> &mdash; with Start, Stop and Restart.</p>
-                <div id="acceptFields" style="display: flex; flex-direction: column; gap: 10px; max-width: 360px;">
-                    <input id="acceptEmail" type="email" placeholder="Email" autocomplete="email" style="background: var(--md-surface-container-high); border: 0; border-radius: var(--shape-md); padding: 12px 14px; color: var(--md-on-surface); font-family: inherit; font-size: 0.9375rem;">
-                    <input id="acceptPassword" type="password" placeholder="Password" autocomplete="current-password" style="background: var(--md-surface-container-high); border: 0; border-radius: var(--shape-md); padding: 12px 14px; color: var(--md-on-surface); font-family: inherit; font-size: 0.9375rem;">
-                    <div style="display: flex; gap: 10px; flex-wrap: wrap;">
-                        <button class="btn btn-filled" id="btn-accept-signin">Sign in</button>
-                        <button class="btn btn-tonal" id="btn-accept-signup">Create account</button>
-                    </div>
-                </div>
-                <div id="acceptSignedIn" style="display: none; gap: 12px; flex-wrap: wrap; align-items: center;">
-                    <button class="btn btn-filled" id="btn-accept-add">Add to my dashboard</button>
-                    <button class="btn btn-text" id="btn-accept-signout">Sign out</button>
-                </div>
-                <p id="acceptError" style="color: var(--md-error); font-size: 0.8125rem; margin-top: 12px; display: none;"></p>
-                <p id="acceptDone" style="font-size: 0.875rem; margin-top: 12px; display: none;">Added &mdash; the server is waiting in your dashboard under <a href="dashboard" style="color: var(--brand);">Servers</a>.</p>
-            </div>
-
-            <div id="controlCard" style="display: none; max-width: 720px; margin-top: 20px; background: var(--md-surface-container); border-radius: var(--shape-lg); box-shadow: var(--elev-1); padding: 24px;">
-                <div style="font-size: 0.6875rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--brand); font-weight: 600; margin-bottom: 10px;">Server control</div>
-                <p style="color: var(--md-on-surface-variant); font-size: 0.8125rem; margin-bottom: 16px; line-height: 1.6;">The owner gave this link control rights. Commands run on the hosting device within a few seconds.</p>
-                <div style="display: flex; gap: 10px; flex-wrap: wrap;">
-                    <button class="btn btn-tonal" id="btn-start"><span class="material-symbols-outlined">play_arrow</span> Start</button>
-                    <button class="btn btn-tonal" id="btn-restart"><span class="material-symbols-outlined">restart_alt</span> Restart</button>
-                    <button class="btn btn-outlined" id="btn-stop"><span class="material-symbols-outlined">stop</span> Stop</button>
-                </div>
-                <p id="controlFeedback" style="color: var(--md-on-surface-variant); font-size: 0.8125rem; margin-top: 14px; min-height: 20px;"></p>
+                <p style="color: var(--md-on-surface-variant); font-size: 0.8125rem; line-height: 1.6; margin-bottom: 18px;">This invite carries control rights: the server appears in your KodaHosting dashboard under <strong>Servers</strong> &mdash; with Start, Stop and Restart, plus KodaDash access while it runs. You will be asked to sign in first.</p>
+                <a class="btn btn-filled" id="btn-accept-link" href="dashboard">Add to my dashboard</a>
             </div>
 
             <div id="errorCard" class="info-box" style="display: none; max-width: 720px; padding: 32px;">
@@ -1503,11 +1478,6 @@
 
     <script>
         var API = 'https://api.kodanetwork.eu';
-        var SUPABASE_URL = 'https://scsezpfrrmpyuapblbxk.supabase.co';
-        var SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNjc2V6cGZycm1weXVhcGJsYnhrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY5NDE4MjYsImV4cCI6MjA5MjUxNzgyNn0.rHro6kQpXHAnxEaFxozYzsKY8IHIUlot-7-Q4LNbZT8';
-        var supabaseClient = window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY) : null;
-        var authSession = null;
-        var SERVER_HOST = '';
         var SEG = location.pathname.split('/').filter(Boolean);
         var TOKEN = (SEG[0] === 'invite' && SEG[1] ? SEG[1] : new URLSearchParams(location.search).get('t') || '').trim().toLowerCase();
 
@@ -1527,118 +1497,6 @@
                 ta.value = text; document.body.appendChild(ta); ta.select();
                 try { document.execCommand('copy'); done(); } catch (e) {}
                 ta.remove();
-            }
-        }
-
-        async function postAction(action, btn) {
-            var fb = el('controlFeedback');
-            if (!authSession || !SERVER_HOST) { fb.textContent = 'Please sign in first.'; return; }
-            btn.disabled = true;
-            fb.textContent = 'Sending ' + action + '\u2026';
-            try {
-                var res = await fetch(API + '/v1/me/servers/' + encodeURIComponent(SERVER_HOST) + '/action', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + authSession.access_token },
-                    body: JSON.stringify({ action: action })
-                });
-                if (res.ok) {
-                    fb.textContent = 'Command sent. The hosting device applies it within a few seconds.';
-                } else {
-                    var err = {};
-                    try { err = await res.json(); } catch (e2) {}
-                    fb.textContent = err.error === 'not_authorized'
-                        ? 'Your account has no control rights for this server.'
-                        : (err.error === 'not_found' ? 'The server is gone.' : 'Command failed (' + res.status + ').');
-                }
-            } catch (e) {
-                fb.textContent = 'Could not reach the network. Check your connection.';
-            }
-            btn.disabled = false;
-        }
-
-        function wireControl() {
-            el('controlBadge').style.display = '';
-            el('controlCard').style.display = '';
-            el('btn-start').onclick = function () { postAction('start', this); };
-            el('btn-stop').onclick = function () { postAction('stop', this); };
-            el('btn-restart').onclick = function () { postAction('restart', this); };
-        }
-
-        function renderAccept() {
-            var fields = el('acceptFields'), signed = el('acceptSignedIn');
-            if (!fields) return;
-            if (authSession) { fields.style.display = 'none'; signed.style.display = 'flex'; }
-            else { fields.style.display = 'flex'; signed.style.display = 'none'; }
-        }
-
-        function initAccept() {
-            if (!supabaseClient) {
-                var err = el('acceptError');
-                err.textContent = 'Sign-in is unavailable right now (script blocked). Open the dashboard directly to sign in.';
-                err.style.display = '';
-                return;
-            }
-            supabaseClient.auth.getSession().then(function (s) {
-                authSession = (s && s.data && s.data.session) || null;
-                renderAccept();
-                if (authSession) acceptIt(true);
-            });
-            supabaseClient.auth.onAuthStateChange(function (_ev, sess) {
-                authSession = sess;
-                renderAccept();
-                if (sess) acceptIt(true);
-            });
-            el('btn-accept-signin').onclick = function () { doAuth(false); };
-            el('btn-accept-signup').onclick = function () { doAuth(true); };
-            el('btn-accept-add').onclick = function () { acceptIt(false); };
-            el('btn-accept-signout').onclick = function () { supabaseClient.auth.signOut(); };
-        }
-
-        async function doAuth(signUp) {
-            var err = el('acceptError');
-            err.style.display = 'none';
-            err.style.color = '';
-            var email = el('acceptEmail').value.trim();
-            var pw = el('acceptPassword').value;
-            if (!email || !pw) { err.textContent = 'Email and password are required.'; err.style.display = ''; return; }
-            var res = signUp
-                ? await supabaseClient.auth.signUp({ email: email, password: pw })
-                : await supabaseClient.auth.signInWithPassword({ email: email, password: pw });
-            if (res.error) { err.textContent = res.error.message; err.style.display = ''; return; }
-            if (signUp && !res.data.session) {
-                err.style.color = 'var(--md-success, #6FBE7E)';
-                err.textContent = 'Account created. Check your email to confirm it, then sign in here.';
-                err.style.display = '';
-            }
-        }
-
-        var accepted = false;
-        async function acceptIt(silent) {
-            var err = el('acceptError');
-            if (!silent) { err.style.display = 'none'; }
-            if (!authSession) { if (!silent) { err.textContent = 'Please sign in first.'; err.style.display = ''; } return; }
-            if (accepted) return;
-            try {
-                var res = await fetch(API + '/v1/invite/' + encodeURIComponent(TOKEN) + '/accept', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + authSession.access_token },
-                    body: '{}'
-                });
-                var data = await res.json().catch(function () { return {}; });
-                if (!res.ok) {
-                    if (!silent) {
-                        err.textContent = data.error === 'invite_invalid'
-                            ? 'This link is expired or revoked.' : 'Could not add the server (' + res.status + ').';
-                        err.style.display = '';
-                    }
-                    return;
-                }
-                accepted = true;
-                el('acceptDone').style.display = '';
-                el('btn-accept-add').disabled = true;
-                if (data.can_control) wireControl();
-            } catch (e) {
-                if (!silent) { err.textContent = 'Could not reach the network.'; err.style.display = ''; }
             }
         }
 
@@ -1684,10 +1542,10 @@
                 else bits.push('no expiry');
                 el('inviteMeta').textContent = bits.join(' \u00b7 ');
 
-                SERVER_HOST = server.host || '';
                 if (inv.can_control) {
+                    el('controlBadge').style.display = '';
                     el('acceptCard').style.display = '';
-                    initAccept();
+                    el('btn-accept-link').href = 'dashboard?invite=' + encodeURIComponent(TOKEN);
                 }
 
                 show('inviteCard');
