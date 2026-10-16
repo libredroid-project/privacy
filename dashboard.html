@@ -1366,7 +1366,59 @@
         .overload-card h3 { font-size: 1.25rem; margin: 12px 0 8px; font-weight: 500; }
         .overload-card p { color: var(--md-on-surface-variant); font-size: 0.9rem; line-height: 1.5; }
         .overload-count { font-size: 1.6rem; font-weight: 600; margin: 18px 0; color: var(--brand); }
-    </style>
+    
+        /* ═══ Koda redesign layer (2026-10-17) ═══════════════════════════════
+           The logged-in shell in the language of the new landing: quiet rail,
+           text-first navigation, one accent, real data instead of empty panels.
+           Appended last so it wins without rewriting every old rule. */
+        .sidebar { width: 236px; background: var(--md-surface); padding: 18px 0 24px; gap: 2px; }
+        .sidebar .logo { padding: 0 20px 18px; font-size: 1rem; }
+        .sidebar .logo img { width: 28px; height: 28px; }
+        .nav-group-label { padding: 18px 20px 6px; font-size: 0.875rem; color: var(--md-on-surface-variant); }
+        .nav-item { height: 40px; margin: 0 10px; padding: 0 12px; border-radius: 8px; font-size: 0.9375rem; font-weight: 500; gap: 10px; }
+        .nav-item:hover { background: var(--md-surface-container); }
+        .nav-item.active { background: transparent; color: var(--ink, #EFE0D9); }
+        .nav-item.active::before { display: none; }
+        .nav-item.active .ic { color: var(--brand); }
+        .nav-item.active::after { content: ""; position: absolute; left: -10px; top: 10px; bottom: 10px; width: 2px; border-radius: 2px; background: var(--brand); }
+        .sidebar-status { margin: 0 14px 18px; padding: 12px 14px; background: var(--md-surface-container); border-radius: 10px; }
+        .sidebar-status .status-line { display: flex; align-items: center; justify-content: space-between; gap: 10px; font-size: 0.9375rem; color: var(--md-on-surface-variant); }
+        .sidebar-status #app-status-badge { color: var(--md-on-surface); font-size: 0.875rem; }
+        .sidebar-status #app-status-desc { font-size: 0.875rem; color: var(--md-on-surface-variant); margin-top: 4px; }
+        .sidebar-bottom { padding: 8px 10px 0; }
+
+        .main-content { padding: 40px 40px 80px; }
+        .page-header { margin-bottom: 30px; align-items: flex-end; }
+        .page-title { font-size: clamp(2rem, 1.3rem + 2.6vw, 3.25rem); font-weight: 500; letter-spacing: -0.03em; line-height: 1.02; }
+        #store-subtitle, .page-sub { font-size: 1rem; margin-top: 10px; max-width: 62ch; }
+        .page-header .btn { border-radius: 10px; }
+        .btn { border-radius: 10px; }
+        .btn-tonal { background: var(--md-surface-container-high); color: var(--md-on-surface); }
+        .btn-outlined { border: 1px solid var(--md-outline-variant); color: var(--md-on-surface); }
+
+        .info-box { background: var(--md-surface-container); padding: 28px 30px; border-radius: 12px; text-align: left; color: var(--md-on-surface-variant); }
+        .info-box .icon-large { width: 44px; height: 44px; margin: 0 0 14px; }
+        .info-box p { font-size: 1rem; max-width: 68ch; }
+
+        .status-badge { text-transform: none; letter-spacing: 0; font-size: 0.875rem; font-weight: 500; padding: 4px 12px; border-radius: 999px; }
+        .item-card { background: var(--md-surface-container); border-radius: 12px; padding: 22px 24px; gap: 14px; }
+        .items-grid { grid-template-columns: repeat(auto-fill, minmax(380px, 1fr)); gap: 14px; }
+        .item-title { font-size: 1.125rem; font-weight: 500; letter-spacing: -0.01em; }
+        .item-details { gap: 8px 22px; font-size: 1rem; color: var(--md-on-surface-variant); }
+        .item-details .ic { width: 15px; height: 15px; }
+        .item-hint { background: var(--md-surface-container-high); border-radius: 10px; padding: 12px 14px; font-size: 0.9375rem; color: var(--md-on-surface-variant); }
+        .item-hint.warn { background: var(--md-surface-container-high); color: var(--md-on-surface); }
+        .controls-grid { gap: 8px; margin-top: 6px; }
+        .btn-outline-card { padding: 11px; border-radius: 10px; font-size: 0.9375rem; font-weight: 500; }
+        .btn-outline-card.primary-action { background: var(--brand); color: #1A0F00; }
+
+        .stat-card, .device-item { background: var(--md-surface-container); border-radius: 12px; }
+        .device-item .label { font-size: 0.875rem; }
+
+        @media (max-width: 900px) {
+            .main-content { padding: 24px 20px 64px; }
+        }
+</style>
 </head>
 <body>
 
@@ -1987,6 +2039,8 @@
             const appRow = servers.find(s => s.app_state) || servers[0];
             if (appRow) updateAppStatusBadge(appRow.app_state, appRow.app_last_ping);
 
+            const helpBox = document.querySelector('#tab-servers .info-box');
+            if (helpBox) helpBox.style.display = servers.length === 0 ? '' : 'none';
             const rootServers = servers.filter(s => !isDatabase(s));
             const dbServers = servers.filter(s => isDatabase(s));
 
