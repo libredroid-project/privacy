@@ -5,393 +5,354 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>KodaHosting - a real Minecraft server on your phone</title>
 <link rel="icon" type="image/png" href="assets/logo.png">
-<meta name="description" content="KodaHosting runs a real Minecraft server on your own Android phone. Friends join with a normal address, you keep the console in a browser, and you pay for no machine you do not have.">
+<meta name="description" content="KodaHosting runs a real Minecraft server on your own Android phone. Friends join with a normal address, the console is in the browser, and you rent no machine.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Golos+Text:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Golos+Text:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
 :root {
     --bg: #0B0B0D;
-    --surface: #151517;
-    --field: #1D1D21;
-    --line: #26262B;
-    --ink: #F4F4F6;
-    --muted: #9C9CA5;
-    --quiet: #6F6F78;
+    --band: #101013;
+    --surface: #1A1A1E;
+    --field: #232329;
+    --border: #303036;
+    --text: #F5F5F7;
+    --muted: #B0B0B8;
+    --quiet: #8C8C96;
     --accent: #FF6B00;
-    --accent-ink: #1A0F00;
+    --accent-hover: #FF8024;
     --accent-text: #FFA45C;
-    --ok: #6FBE7E;
-    --rail: clamp(24px, 27vw, 30vw);
-    --step-small: 0.8125rem;
-    --step-body: clamp(1.0625rem, 1rem + 0.25vw, 1.1875rem);
-    --step-lead: clamp(1.25rem, 1.05rem + 0.7vw, 1.625rem);
-    --step-head: clamp(2rem, 1.3rem + 2.6vw, 3.25rem);
+    --accent-ink: #1A0F00;
     --r: 8px;
 }
 * { margin: 0; padding: 0; box-sizing: border-box; }
 html { scroll-behavior: smooth; }
-body {
-    background: var(--bg);
-    color: var(--ink);
-    font-family: 'Golos Text', system-ui, sans-serif;
-    font-size: var(--step-body);
-    line-height: 1.45;
-    -webkit-font-smoothing: antialiased;
-    overflow-x: hidden;
-}
+body { background: var(--bg); color: var(--text); font-family: 'Golos Text', system-ui, sans-serif; font-size: 1rem; line-height: 1.5; -webkit-font-smoothing: antialiased; }
 a { color: inherit; text-decoration: none; }
-p a, .tlink { color: var(--ink); border-bottom: 1px solid var(--line); padding-bottom: 1px; }
-p a:hover, .tlink:hover { border-color: var(--accent-text); color: var(--accent-text); }
+img { max-width: 100%; display: block; }
 ::selection { background: var(--accent); color: var(--accent-ink); }
-.mono { font-family: 'JetBrains Mono', ui-monospace, monospace; }
+.mono, pre code { font-family: 'JetBrains Mono', ui-monospace, monospace; }
 
-/* everything hangs on one alignment; the right side stays empty until the footer */
-.rail { margin-left: var(--rail); padding-right: 24px; }
-.col { max-width: 380px; }
+.container { width: 100%; max-width: 1280px; margin-inline: auto; padding-inline: 24px; }
+.ic { width: 18px; height: 18px; stroke: currentColor; fill: none; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; flex: none; }
 
-.topbar { display: flex; align-items: center; justify-content: space-between; gap: 20px; padding: 20px 32px 0 var(--rail); flex-wrap: wrap; }
-.mark { display: flex; align-items: center; gap: 10px; font-weight: 600; font-size: 0.9375rem; }
-.topnav { display: flex; align-items: center; gap: 26px; font-size: 0.9375rem; color: var(--muted); }
-.topnav a:hover { color: var(--accent-text); }
-.topnav .btn-quiet { color: var(--ink); background: var(--field); border-radius: 999px; padding: 9px 18px; font-weight: 500; font-size: 0.875rem; }
-.topnav .btn-quiet:hover { background: var(--line); color: var(--ink); }
-.mark img { width: 30px; height: 30px; border-radius: var(--r); }
-.mark span span { color: var(--accent-text); }
+/* ── header: sticky, three columns, like the reference ────────────── */
+/* taste-skill-ignore: the sticky header keeps its one edge line, standard for a site header */
+.site-header { position: sticky; top: 0; z-index: 20; background: #141417; border-bottom: 1px solid var(--border); }
+.header-inner { height: 72px; display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 16px; }
+.brand { display: flex; align-items: center; gap: 10px; font-weight: 600; font-size: 1rem; }
+.brand img { width: 30px; height: 30px; border-radius: var(--r); }
+.brand span span { color: var(--accent-text); }
+.nav { display: flex; gap: 32px; font-size: 1rem; color: var(--muted); }
+.nav a:hover { color: var(--text); }
+.header-actions { display: flex; align-items: center; justify-content: flex-end; gap: 20px; }
+.login-link { font-size: 1rem; color: var(--muted); }
+.login-link:hover { color: var(--text); }
 
-/* ── hero ─────────────────────────────────────────────────────────── */
-.hero { padding-top: 150px; }
-.hero-grid { display: grid; grid-template-columns: minmax(320px, 5fr) minmax(0, 6fr); gap: 64px; align-items: start; }
-.hero-panel { width: 100%; max-width: 620px; margin-top: 0; }
-@media (max-width: 1100px) { .hero-grid { grid-template-columns: 1fr; gap: 40px; } }
-.hero h1 {
-    font-size: clamp(1.6rem, 1.3rem + 1.3vw, 2rem);
-    font-weight: 600;
-    letter-spacing: -0.03em;
-    line-height: 1.15;
-    max-width: 420px;
-}
-.hero p { margin-top: 16px; color: var(--ink); line-height: 1.5; max-width: 390px; }
-.actions { display: flex; align-items: center; gap: 22px; margin-top: 28px; }
-.btn {
-    display: inline-block;
-    background: var(--accent);
-    color: var(--accent-ink);
-    border-radius: 999px;
-    padding: 13px 22px;
-    font-weight: 600;
-    font-size: 0.9375rem;
-    transition: transform 0.15s ease-out, background 0.15s ease-out;
-}
-.btn:hover { transform: translateY(-1px); background: #FF8524; }
+/* ── buttons: the reference's two shapes ──────────────────────────── */
+.button { display: inline-flex; align-items: center; justify-content: center; gap: 8px; padding: 12px 24px; min-height: 50px;
+    background: var(--accent); color: var(--accent-ink); border: 1px solid transparent; border-radius: var(--r);
+    font-size: 1rem; font-weight: 600; font-family: inherit; cursor: pointer; transition: background 0.15s ease-out; }
+.button:hover { background: var(--accent-hover); }
+.button-secondary { background: #2A2A30; color: var(--text); font-weight: 500; }
+.button-secondary:hover { background: #35353D; }
+.button-small { min-height: 42px; padding: 8px 18px; font-size: 1rem; }
 
-/* the first true fragment peeks in at the fold */
-.peek { margin-top: 0; padding-top: 6px; }
-.peek .frag { margin-top: 0; }
+/* ── hero: copy left, product right ───────────────────────────────── */
+.hero { padding: 88px 0 96px; }
+.hero-inner { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.25fr); gap: 56px; align-items: center; }
+.hero h1 { font-size: 2.5rem; font-weight: 700; line-height: 1.15; letter-spacing: -0.025em; }
+@media (min-width: 1000px) { .hero h1 { font-size: 3.75rem; } }
+.hero h1 span { color: var(--accent-text); }
+.hero-copy p { color: var(--muted); font-size: 1.25rem; line-height: 1.6; max-width: 512px; margin-top: 18px; }
+.hero-actions { display: flex; gap: 12px; margin-top: 32px; flex-wrap: wrap; }
 
-/* ── fragments: cropped, working pieces of the product ────────────── */
-.frag {
-    background: var(--surface);
-    border-radius: var(--r);
-    padding: 18px 20px;
-    margin-top: 34px;
-    width: min(100%, 560px);
-    font-size: var(--step-small);
-}
-.frag .row { display: flex; align-items: center; justify-content: space-between; gap: 14px; padding: 9px 0; border-top: 1px solid var(--line); }
-.frag .row:first-child { border-top: 0; }
-.frag .k { color: var(--muted); }
-.frag .v { color: var(--ink); }
-
-.dot { display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: var(--ok); margin-right: 7px; vertical-align: 1px; }
+/* ── the product collage: three panels like the reference ─────────── */
+.collage { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; background: var(--band); border-radius: 12px; padding: 12px; align-items: start; }
+.panel { background: var(--surface); border-radius: 10px; overflow: hidden; font-size: 0.75rem; min-width: 0; }
+.panel-head { padding: 10px 12px; border-bottom: 1px solid var(--border); color: var(--text); font-weight: 500; }
+.panel-head .ic { width: 14px; height: 14px; color: var(--accent-text); }
+.panel-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 8px 12px; border-bottom: 1px solid #26262B; color: var(--muted); white-space: nowrap; overflow: hidden; }
+.panel-row:last-child { border-bottom: 0; }
+.panel-row b { color: var(--text); font-weight: 500; }
+.panel-row .caret { color: var(--muted); }
+.dot { display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: #4ADE80; margin-right: 6px; vertical-align: 1px; }
 .dot.off { background: var(--quiet); }
-.frag .addr { font-size: 0.9375rem; font-weight: 500; color: var(--accent-text); }
-.frag .field { background: var(--field); border-radius: var(--r); padding: 11px 14px; margin: 8px 0; }
-.frag .field .k { display: block; font-size: 0.6875rem; letter-spacing: 0.06em; text-transform: uppercase; margin-bottom: 4px; }
-.frag pre { margin: 0; overflow-x: auto; }
-.frag pre code { font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: var(--step-small); line-height: 1.7; color: #CDBCB1; }
-.frag pre code b { color: var(--ink); font-weight: 500; }
-.frag pre code .sent { color: var(--accent-text); }
-.frag .bar { height: 6px; border-radius: 3px; background: var(--field); overflow: hidden; margin-top: 10px; }
-.frag .bar i { display: block; height: 100%; background: var(--ok); }
-.frag h4 { font-size: 0.9375rem; font-weight: 600; margin-bottom: 14px; }
+.panel pre { margin: 0; padding: 10px 12px; overflow-x: auto; }
+.panel pre code { font-size: 0.6875rem; line-height: 1.65; color: #C9C9D2; }
+.panel pre code b { color: var(--text); font-weight: 500; }
+.panel pre code .sent { color: var(--accent-text); }
 
-/* ── sections: one column, statement beside its fragment ──────────── */
-main { padding-top: 120px; }
-.band.band-narrow { grid-template-columns: 1fr; }
-.band.band-narrow > .say, .band.band-narrow > .then, .band.band-narrow > .faq-list { grid-column: 1; }
-.band.band-narrow > .then { padding-top: 0; max-width: 60ch; }
-.band { margin-bottom: 76px; display: grid; grid-template-columns: minmax(260px, 6fr) minmax(0, 6fr); gap: 52px; align-items: start; }
-.band > .say, .band > .then { grid-column: 1; }
-.band > .frag, .band > .phones, .band > .credits { grid-column: 2; }
-.band > .then { margin-top: 0; padding-top: 14px; max-width: none; }
-.band > .frag { margin-top: 0; width: 100%; max-width: 620px; }
-.band .say {
-    font-size: var(--step-head);
-    font-weight: 600;
-    letter-spacing: -0.035em;
-    line-height: 1.02;
-    max-width: 20ch;
-}
-.band .then { color: var(--ink); max-width: 46ch; }
+/* ── sections: centered heading + content bands ───────────────────── */
+.band { background: var(--band); padding: 96px 0; }
+.section { padding: 96px 0; }
+.section-heading { text-align: center; max-width: 62ch; margin: 0 auto 56px; }
+.section-heading h2 { font-size: 2rem; font-weight: 700; line-height: 1.1; letter-spacing: -0.02em; }
+@media (min-width: 1000px) { .section-heading h2 { font-size: 3rem; } }
+.section-heading p { color: var(--muted); font-size: 1.125rem; margin-top: 14px; }
 
-/* the pinned one: the console stays while the notes move past */
-.pin { grid-template-columns: minmax(0, 620px) minmax(240px, 6fr); gap: 52px; }
-.pin > .frag { grid-column: 1; margin-top: 0; position: sticky; top: 10vh; }
-.pin > .notes { grid-column: 2; }
-.pin .notes { padding-top: 6vh; }
-.pin .notes p { margin-bottom: 18vh; color: var(--ink); max-width: 320px; }
-.pin .notes p:last-child { margin-bottom: 0; }
-.pin .notes b { color: var(--ink); font-weight: 600; display: block; margin-bottom: 6px; font-size: var(--step-lead); letter-spacing: -0.01em; }
+.feature-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 24px; }
+.feature { padding: 30px; border-radius: 12px; background: var(--surface); }
+.feature .ic { width: 30px; height: 30px; color: var(--accent-text); margin-bottom: 20px; }
+.feature h3 { font-size: 1.5rem; font-weight: 600; line-height: 1.3; }
+.feature p { color: var(--muted); margin-top: 10px; line-height: 1.6; }
+.feature-bar { height: 6px; border-radius: 3px; background: #2C2C33; overflow: hidden; margin-top: 16px; }
+.feature-bar i { display: block; height: 100%; width: 82%; background: #4ADE80; }
+.feature-note { font-size: 0.875rem; }
+.feature-code { margin-top: 16px; background: #141417; border-radius: 8px; padding: 10px 12px; overflow-x: auto; }
+.feature-code code { font-size: 0.75rem; line-height: 1.7; color: #C9C9D2; }
+.feature-code code b { color: var(--text); font-weight: 500; }
+.feature-code code .sent { color: var(--accent-text); }
 
-/* the phones that host it: real photographs, greyscale, credited */
-.band .phones { display: flex; gap: 18px; margin-top: 0; flex-wrap: wrap; }
-.band .phones figure { width: 168px; }
-.band .phones img { width: 100%; aspect-ratio: 3 / 4; object-fit: cover; border-radius: var(--r); filter: grayscale(1) contrast(1.05); }
-@keyframes slow-drift { from { transform: scale(1) translateY(0); } to { transform: scale(1.06) translateY(-6px); } }
-.band .phones img { animation: slow-drift 14s ease-in-out infinite alternate; }
-.band .phones figure:nth-child(2) img { animation-delay: -3s; }
-.band .phones figure:nth-child(3) img { animation-delay: -6s; }
-.band .phones figure:nth-child(4) img { animation-delay: -9s; }
-.band .phones figcaption { font-size: var(--step-small); color: var(--muted); margin-top: 10px; }
-.band > .credits { grid-column: 2; }
-.credits { font-size: var(--step-small); color: var(--muted); margin-top: 0; padding-top: 14px; max-width: 560px; line-height: 1.6; }
+.split { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 56px; align-items: center; }
+.split h2 { font-size: 1.75rem; font-weight: 700; line-height: 1.15; letter-spacing: -0.02em; }
+@media (min-width: 1000px) { .split h2 { font-size: 2.5rem; } }
+.split p { color: var(--muted); font-size: 1.125rem; margin-top: 14px; max-width: 54ch; }
+.split-rev .split-visual { order: -1; }
+.visual { background: var(--surface); border-radius: 12px; padding: 6px 4px; }
 
-/* FAQ: plain list, no cards */
-.faq-list { max-width: 780px; }
-.faq-list details { padding-top: 6px; }
-.faq-list summary {
-    cursor: pointer; list-style: none; padding: 22px 0 10px;
-    font-size: var(--step-lead); font-weight: 500; letter-spacing: -0.01em;
-    display: flex; justify-content: space-between; gap: 24px; align-items: baseline;
-}
-.faq-list summary::-webkit-details-marker { display: none; }
-.faq-list summary::after { content: "+"; color: var(--accent-text); font-weight: 400; flex: none; }
-.faq-list details[open] summary::after { content: "\2212"; }
-.faq-list details p { padding: 0 0 22px; color: var(--ink); line-height: 1.55; max-width: 72ch; }
+/* rows inside a visual: label left, value right */
+.krow { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 12px 14px; border-bottom: 1px solid #26262B; font-size: 1rem; }
+.krow:last-child { border-bottom: 0; }
+.krow .k { color: var(--muted); }
+.krow .v { color: var(--text); }
+.addr { color: var(--accent-text); font-weight: 500; }
 
-/* ── footer: the only full-width part ─────────────────────────────── */
-footer { background: var(--surface); padding: 72px var(--rail) 32px 32px; margin-top: 20px; }
+/* phones */
+.phones { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; }
+.phones figure { border-radius: 12px; background: var(--surface); padding: 12px; }
+.phones img { width: 100%; aspect-ratio: 3 / 4; object-fit: cover; border-radius: var(--r); filter: grayscale(1) contrast(1.05); }
+.phones figcaption { font-size: 0.875rem; color: var(--muted); margin-top: 10px; }
+.credits { font-size: 0.875rem; color: var(--muted); margin-top: 18px; max-width: 64ch; }
+
+/* faq */
+.faq { max-width: 820px; margin: 0 auto; }
+.faq details { padding: 4px 0; }
+.faq summary { cursor: pointer; list-style: none; padding: 20px 0; font-size: 1.25rem; font-weight: 500; display: flex; justify-content: space-between; gap: 24px; align-items: baseline; }
+.faq summary::-webkit-details-marker { display: none; }
+.faq summary::after { content: "+"; color: var(--accent-text); flex: none; }
+.faq details[open] summary::after { content: "\2212"; }
+.faq details p { padding: 0 0 22px; color: var(--muted); line-height: 1.6; max-width: 66ch; }
+
+/* footer */
+footer { background: var(--band); padding: 72px 0 32px; }
 .foot-grid { display: grid; grid-template-columns: minmax(0, 1.4fr) repeat(3, minmax(0, 1fr)); gap: 36px 44px; align-items: start; }
-@media (max-width: 1100px) { .foot-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
-@media (max-width: 700px) { .foot-grid { grid-template-columns: 1fr; gap: 28px; } }
-.foot-brand p { color: var(--muted); font-size: var(--step-small); line-height: 1.65; margin-top: 16px; max-width: 34ch; }
-.foot-col h4 { font-size: var(--step-small); font-weight: 500; color: var(--muted); margin-bottom: 14px; }
-.foot-col a { display: block; font-size: 0.9375rem; padding: 5px 0; }
+.foot-brand p { color: var(--muted); font-size: 1rem; line-height: 1.65; margin-top: 16px; max-width: 34ch; }
+.foot-col h4 { font-size: 1rem; font-weight: 500; color: var(--text); margin-bottom: 14px; }
+.foot-col a { display: block; font-size: 1rem; padding: 5px 0; color: var(--muted); }
 .foot-col a:hover { color: var(--accent-text); }
-.foot-bottom { display: flex; justify-content: space-between; gap: 12px 40px; flex-wrap: wrap; margin-top: 56px; color: var(--muted); font-size: var(--step-small); line-height: 1.6; }
+.foot-bottom { display: flex; justify-content: space-between; gap: 12px 40px; flex-wrap: wrap; margin-top: 56px; color: var(--quiet); font-size: 0.875rem; line-height: 1.6; }
+.foot-cta { display: flex; align-items: center; justify-content: space-between; gap: 24px; flex-wrap: wrap; padding-bottom: 56px; }
+.foot-cta h2 { font-size: 1.75rem; font-weight: 700; letter-spacing: -0.02em; }
+@media (min-width: 1000px) { .foot-cta h2 { font-size: 3rem; } }
 
-@media (max-width: 900px) {
-    :root { --rail: 24px; }
-    .mark { top: 32px; }
-    .signin { top: 36px; right: 24px; }
-    .hero { padding-top: 30vh; }
-    .hero h1 { font-size: 1.5rem; }
-    main { padding-top: 110px; }
-    .band { margin-bottom: 76px; grid-template-columns: 1fr; gap: 26px; }
-    .band > .say, .band > .then, .band > .frag, .band > .phones, .band > .credits, .band > .faq-list { grid-column: 1; }
-    .band > .then { padding-top: 0; }
-    .band .say { font-size: clamp(1.75rem, 9vw, 2.5rem); }
-    .frag { width: 100%; }
-    .pin { grid-template-columns: 1fr; gap: 34px; }
-    .pin .frag { position: static; }
-    .pin .notes p { margin-bottom: 28px; }
-    .peek { margin-top: 64px; }
-    footer { padding-top: 64px; }
+/* motion */
+html.js .rev { opacity: 0; transform: translateY(14px); transition: opacity 0.6s ease-out, transform 0.6s ease-out; }
+html.js .rev.in { opacity: 1; transform: none; }
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } html.js .rev { opacity: 1; transform: none; transition: none; } }
+
+@media (max-width: 1000px) {
+    .hero-inner, .split { grid-template-columns: 1fr; gap: 40px; }
+    .split-rev .split-visual { order: 0; }
+    .feature-grid, .collage { grid-template-columns: 1fr; }
+    .phones { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .foot-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .nav { display: none; }
+    .header-inner { grid-template-columns: 1fr auto; }
+    .hero { padding: 56px 0 64px; }
+    .band, .section { padding: 64px 0; }
 }
 </style>
 </head>
 <body>
 
-<header class="topbar">
-    <a class="mark" href="index.html"><img src="assets/logo.png" alt="KodaHosting"><span>Koda<span>Hosting</span></span></a>
-    <nav class="topnav">
-        <a href="docs">Docs</a>
-        <a href="store">Store</a>
-        <a href="dashboard.html">Dashboard</a>
-        <a class="btn-quiet" href="dashboard.html">Sign in</a>
-    </nav>
-</header>
-
-<header class="hero rail hero-grid">
-    <div class="col">
-        <h1>A real Minecraft server on the phone in your pocket.</h1>
-        <p>Not a remote control for somebody else's machine and not a rented box: the world runs on your own device, on your desk or in your bag. Your friends join the way they always have, with an address.</p>
-        <div class="actions">
-            <a class="btn" href="https://play.google.com/store/apps/details?id=eu.kodanetwork.mchost">Get it on Google Play</a>
-            <a class="tlink" href="#how">How it works &rarr;</a>
-        </div>
-    </div>
-
-    <div class="peek">
-        <div class="frag hero-panel" data-ui>
-            <h4>Servers <span class="k" style="font-weight:400">- this device</span></h4>
-            <div class="row">
-                <span class="v"><span class="dot"></span>koda-world</span>
-                <span class="k">3 / 20 players</span>
-            </div>
-            <div class="row">
-                <span class="k">Paper 1.21.11</span>
-                <span class="k">RAM 1.4 of 4 GB</span>
-            </div>
-            <div class="row">
-                <span class="k">koda-world.kodanetwork.eu</span>
-                <span class="v">STOP</span>
-            </div>
+<header class="site-header">
+    <div class="container header-inner">
+        <a class="brand" href="index.html"><img src="assets/logo.png" alt="KodaHosting"><span>Koda<span>Hosting</span></span></a>
+        <nav class="nav">
+            <a href="#how">Overview</a>
+            <a href="store">Store</a>
+            <a href="docs">Docs</a>
+        </nav>
+        <div class="header-actions">
+            <a class="login-link" href="dashboard.html">Sign in</a>
+            <a class="button button-small" href="https://play.google.com/store/apps/details?id=eu.kodanetwork.mchost">Get the app</a>
         </div>
     </div>
 </header>
 
-<main class="rail">
-
-    <section class="band">
-        <p class="say">The address is the product.</p>
-        <p class="then">Create a server, pick a name, and it answers under a normal subdomain in the vanilla server list. No port to remember, no mod on the client, no account needed to join.</p>
-        <div class="frag" data-ui>
-            <div class="field">
-                <span class="k">Join address</span>
-                <span class="addr">koda-world.kodanetwork.eu</span>
-            </div>
-            <div class="row"><span class="k">Server Name</span><span class="v">Koda World</span></div>
-            <div class="row"><span class="k">Server Address</span><span class="v">koda-world.kodanetwork.eu</span></div>
-            <p class="k" style="margin-top:12px">Minecraft &rarr; Multiplayer &rarr; Add Server &rarr; Done</p>
-        </div>
-    </section>
-
-    <section class="band" id="how">
-        <p class="say">Install, open, invite.</p>
-        <p class="then">The first start downloads the server software and a matching Java runtime on the device. After that it is a button, the same as any app on the phone.</p>
-        <div class="frag" data-ui>
-            <div class="row"><span class="v">Get KodaHosting</span><span class="k">Google Play, free</span></div>
-            <div class="row"><span class="v">New server</span><span class="k">Paper, Fabric, Forge, NeoForge, Vanilla, Pumpkin</span></div>
-            <div class="row"><span class="v">Invite</span><span class="k">an invite link, or just the address</span></div>
-            <div class="row"><span class="v">Play</span><span class="k">the console and the files stay in the app</span></div>
-        </div>
-    </section>
-
-    <section class="band">
-        <p class="say">It sleeps when nobody plays.</p>
-        <p class="then">Servers hibernate instead of running the battery empty: the world is put away, the address stays yours, and the app wakes it when the next player knocks. Scheduled restarts and rotating backups run in the same place.</p>
-        <div class="frag" data-ui>
-            <div class="row"><span class="v"><span class="dot off"></span>koda-world</span><span class="k">HIBERNATED</span></div>
-            <div class="row"><span class="k">Wakes on join</span><span class="v">about 20 seconds</span></div>
-            <div class="row"><span class="k">Backups</span><span class="v">daily, 7 kept</span></div>
-            <div class="row"><span class="k">Next restart</span><span class="v">04:00</span></div>
-            <div class="row" style="display:block">
-                <span class="k">Battery</span>
-                <span class="v" style="float:right">82% - plugged in</span>
-                <div class="bar"><i style="width:82%"></i></div>
+<section class="hero">
+    <div class="container hero-inner">
+        <div class="hero-copy">
+            <h1>Host Minecraft<br><span>from your phone</span>.</h1>
+            <p>Not a remote control for somebody else's machine and not a rented box: the world runs on the device in your pocket. Friends join the way they always have, with an address.</p>
+            <div class="hero-actions">
+                <a class="button" href="https://play.google.com/store/apps/details?id=eu.kodanetwork.mchost">Get it on Google Play</a>
+                <a class="button button-secondary" href="#how">How it works</a>
             </div>
         </div>
-    </section>
 
-    <section class="band">
-        <p class="say">Six engines, one installer.</p>
-        <p class="then">Paper or Purpur for a smooth survival world, Fabric, Forge and NeoForge for mod packs, plain Vanilla, and Pumpkin, the Rust server that boots in milliseconds. The app downloads the right build and keeps the Java version in line.</p>
-        <div class="frag" data-ui>
-            <div class="row"><span class="v">Paper</span><span class="k">plugins, most players</span></div>
-            <div class="row"><span class="v">Fabric</span><span class="k">light mods, fast updates</span></div>
-            <div class="row"><span class="v">NeoForge</span><span class="k">kitchen-sink mod packs</span></div>
-            <div class="row"><span class="v">Forge</span><span class="k">older packs that still need it</span></div>
-            <div class="row"><span class="v">Vanilla</span><span class="k">exactly what Mojang ships</span></div>
-            <div class="row"><span class="v">Pumpkin</span><span class="k">native Rust, a third of the RAM</span></div>
+        <div class="collage" data-ui>
+            <div class="panel">
+                <div class="panel-head">Servers</div>
+                <div class="panel-row"><span><span class="dot"></span><b>koda-world</b></span><span>3 / 20</span></div>
+                <div class="panel-row"><span>Paper 1.21.11</span><span>1.4 of 4 GB</span></div>
+                <div class="panel-row"><span class="addr">koda-world.kodanetwork.eu</span><span class="caret">STOP</span></div>
+            </div>
+            <div class="panel">
+                <div class="panel-head">Console</div>
+                <pre><code><b>[12:04:14]</b> Done (2.317s)
+<span class="sent">&gt; say back in five</span>
+<b>[12:07:02]</b> Melli joined</code></pre>
+                <div class="panel-row"><span>Players</span><span>1 / 20</span></div>
+            </div>
+            <div class="panel">
+                <div class="panel-head">This device</div>
+                <div class="panel-row"><span>Battery</span><span>82%, charging</span></div>
+                <div class="panel-row"><span>Hibernates</span><span>when empty</span></div>
+                <div class="panel-row"><span>Backups</span><span>daily, 7 kept</span></div>
+            </div>
         </div>
-    </section>
+    </div>
+</section>
 
-    <section class="band pin">
-        <div class="frag" data-ui>
-            <h4>KodaDash - koda-world <span class="k" style="font-weight:400">in the browser</span></h4>
-            <pre><code><b>[12:04:11]</b> Starting minecraft server version 1.21.11
+<section class="band" id="how">
+    <div class="container">
+        <div class="section-heading">
+            <h2>Built the way you actually play</h2>
+            <p>Install it, open a world, send the address. Everything else happens on the phone.</p>
+        </div>
+        <div class="feature-grid">
+            <div class="feature">
+                <h3>Six engines, one installer</h3>
+                <p>Paper, Fabric, Forge, NeoForge, vanilla and Pumpkin. The app fetches the build and the matching Java runtime, on the device, without a PC.</p>
+            </div>
+            <div class="feature">
+                <h3>It sleeps when nobody plays</h3>
+                <p>Servers hibernate instead of running the battery empty. The address stays, the world is put away, and the next player wakes it in about twenty seconds.</p>
+                <div class="feature-bar"><i></i></div>
+                <p class="feature-note">82% battery, charging, one world asleep</p>
+            </div>
+            <div class="feature">
+                <h3>The console is included</h3>
+                <p>KodaDash opens the live log, players, files and settings in a browser. It ships with the app; no plan to buy and no feature held back.</p>
+                <pre class="feature-code"><code><span class="sent">&gt; say back in five</span>
+<b>[12:04:30]</b> [Server] back in five</code></pre>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="section">
+    <div class="container split">
+        <div>
+            <h2>The address is the product.</h2>
+            <p>Create a server, pick a name, and it answers under a normal subdomain in the vanilla server list. No port to remember, no mod on the client, no account needed to join.</p>
+        </div>
+        <div class="split-visual visual" data-ui>
+            <div class="krow"><span class="k">Join address</span><span class="addr">koda-world.kodanetwork.eu</span></div>
+            <div class="krow"><span class="k">Server name</span><span>Koda World</span></div>
+            <div class="krow"><span class="k">Server address</span><span class="addr">koda-world.kodanetwork.eu</span></div>
+            <div class="krow"><span class="k">Bedrock</span><span class="addr">41230</span></div>
+        </div>
+    </div>
+</section>
+
+<section class="band">
+    <div class="container split split-rev">
+        <div>
+            <h2>Read it, or take it over</h2>
+            <p>Restart it, send a command, kick a player or pull a backup. Guests can be handed the same controls with an expiring invite that asks them to sign in first.</p>
+        </div>
+        <div class="split-visual visual" data-ui>
+            <div class="panel" style="border-radius:10px;border:1px solid var(--border);background:var(--surface);">
+                <pre><code><b>[12:04:11]</b> Starting minecraft server version 1.21.11
 <b>[12:04:12]</b> Preparing level "world"
 <b>[12:04:14]</b> Done (2.317s)! For help, type "help"
-<span class="sent">&gt; say Back in five minutes</span>
-<b>[12:04:30]</b> [Server] Back in five minutes
-<b>[12:07:02]</b> Player Melli joined the game</code></pre>
+<span class="sent">&gt; op Melli</span>
+<b>[12:04:31]</b> Melli is now an operator
+<b>[12:07:02]</b> Melli joined the game</code></pre>
+            </div>
         </div>
-        <div class="notes">
-            <p><b>A console in the browser.</b>The live log, typed commands, players kicked or op'd, from any computer that has the link.</p>
-            <p><b>Files, plugins, settings.</b>The same place edits server.properties, installs a plugin or pulls a backup, without the phone in hand.</p>
-            <p><b>Included, not an upgrade.</b>KodaDash ships with the app. There is no plan to buy and no feature held back.</p>
-        </div>
-    </section>
+    </div>
+</section>
 
-    <section class="band">
-        <p class="say">Bedrock and voice.</p>
-        <p class="then">The app installs Geyser and Floodgate so phones, consoles and Windows players reach the same world, and sets up Simple Voice Chat with the ports already open. Both show up as their own two fields in the app, because Bedrock clients want an address and a port, not one line.</p>
-        <div class="frag" data-ui>
-            <div class="field"><span class="k">Bedrock address</span><span class="addr">koda-world.kodanetwork.eu</span></div>
-            <div class="field"><span class="k">Bedrock port</span><span class="addr">41230</span></div>
-            <div class="row"><span class="k">Voice chat</span><span class="v">Simple Voice Chat, proximity</span></div>
+<section class="section">
+    <div class="container">
+        <div class="section-heading">
+            <h2>What this is, plainly</h2>
+            <p>One developer, in school, building this around a phone instead of around a server room. Parts of the site were drafted with an AI language model and reviewed by hand; the app, the networking and everything that executes are not.</p>
         </div>
-    </section>
-
-    <section class="band">
-        <p class="say">What this is, plainly.</p>
-        <p class="then">One developer, in school, building this around a phone instead of around a server room. The lobby, the dashboard, the extension store and this website are part of the same project. Parts of the site were drafted with an AI language model and reviewed by hand; the app, the networking and everything that executes are not. The database, the tunnel server and the law texts are real and hosted in Germany.</p>
         <div class="phones">
             <figure><img src="assets/devices/xiaomi-17-ultra.jpg" alt="Xiaomi 17 Ultra"><figcaption>Xiaomi 17 Ultra - the phone the network runs on</figcaption></figure>
             <figure><img src="assets/devices/pixel-10-pro.jpg" alt="Pixel 10 Pro"><figcaption>Pixel 10 Pro</figcaption></figure>
             <figure><img src="assets/devices/oppo-find-x9.jpg" alt="OPPO Find X9"><figcaption>OPPO Find X9</figcaption></figure>
             <figure><img src="assets/devices/xiaomi-14t-pro.jpg" alt="Xiaomi 14T Pro"><figcaption>Xiaomi 14T Pro</figcaption></figure>
         </div>
-        <div class="frag" data-ui>
-            <div class="row"><span class="v"><span class="dot"></span>lobby.kodanetwork.eu</span><span class="k">the shared lobby, always on</span></div>
-            <div class="row"><span class="v">Extension store</span><span class="k">language packs, themes, tools</span></div>
-            <div class="row"><span class="v">KodaCluster</span><span class="k">two phones, one address</span></div>
-        </div>
-        <p class="credits">Device photographs from Wikimedia Commons, shown for identification only; all rights belong to the respective manufacturers. Full credits in assets/devices/CREDITS.txt.</p>
-    </section>
+        <p class="credits">Device photographs from Wikimedia Commons, shown for identification only; all rights belong to the respective manufacturers. The database, the tunnel server and the law texts sit in Germany.</p>
+    </div>
+</section>
 
-    <section class="band faq band-narrow">
-        <p class="say">Common questions.</p>
-        <p class="then">Short answers to what people ask before they install. Everything else is in the documentation.</p>
-        <div class="faq-list">
-        <details><summary>How many servers can I host at the same time?</summary><p>Each account can host a maximum of six (6) servers simultaneously. This limit applies across all server types (Minecraft servers and databases combined) and is in place to ensure fair use of the shared VPS proxy infrastructure. Creating multiple accounts to bypass this limit is not allowed and may result in a permanent ban.</p></details>
-        <details><summary>Does my phone need to be on 24/7?</summary><p>Your server runs only while the KodaHosting app is active on your device. When the app is in the foreground, players can join freely. In the background, the server stays alive with reduced priority. When you close the app, the server stops. You can also hibernate servers to free up resources without deleting them.</p></details>
-        <details><summary>Can players join when my phone is asleep?</summary><p>When your phone&#x27;s screen is off, Android may put the app into a deep sleep state depending on your battery settings. To keep the server accessible, disable battery optimization for KodaHosting in your Android settings, or keep the device plugged in. Players connecting through our VPS proxy will automatically reconnect once your device wakes up.</p></details>
-        <details><summary>How much RAM do I need?</summary><p>For a small survival server with 5–10 players, 1–2 GB of RAM is sufficient. For larger communities or heavy mod packs, allocate 3–4 GB. The app automatically caps your RAM allocation based on your device&#x27;s available memory to prevent system instability. You can adjust the allocation at any time from the server management panel.</p></details>
-        <details><summary>Is my home IP really hidden?</summary><p>Yes. All player connections are routed through our central VPS infrastructure using secure reverse proxy tunnels (Bore / FRP). Players only ever see the IP address of our proxy server, never your home IP. This means your network remains completely private and protected from DDoS attacks or targeted harassment.</p></details>
-        <details><summary>What happens if my internet disconnects?</summary><p>If your internet connection drops, players will be disconnected from the server. The server itself continues running on your device, and once your connection is restored, the proxy tunnel reconnects automatically and players can rejoin. World data is always saved locally on your device, so no progress is lost during disconnects.</p></details>
-        <details><summary>Can I manage my server from a computer?</summary><p>Yes. The web dashboard at host.kodanetwork.eu lets you manage all your servers from any browser. The Server Manager gives you access to the live console (where you can execute commands and see server output in real-time) and the file management view (where you can upload worlds, install maps, and edit configuration files). Start, stop, restart, and other server lifecycle actions happen in the app directly. The dashboard communicates with your device through Supabase realtime updates.</p></details>
-        <details><summary>Will hosting damage my phone?</summary><p>Running a Minecraft server is computationally intensive and will generate heat and consume battery. We recommend keeping your device plugged in while hosting, placing it on a cool surface, and avoiding prolonged use in direct sunlight. The app includes a live performance monitor so you can track CPU and RAM usage. We are not liable for hardware damage, overheating, or battery degradation resulting from intensive use, as outlined in our Terms of Service.</p></details>
-        <details><summary>Do I need to pay anything?</summary><p>No. KodaHosting is completely free — no purchase, no subscription, no premium features. The entire app, all engines, the VPS proxy infrastructure and the web dashboard are available to everyone at no cost. If you want to support development, there is an optional Ko-fi link in the app, but it is entirely voluntary and unlocks nothing.</p></details>
-        <details><summary>How is this sustainable without charging users?</summary><p>KodaHosting is a hobby project by a single developer. Server infrastructure costs are kept low through efficient use of resources, and voluntary Ko-fi donations from supporters help cover ongoing hosting costs. There is no business model that requires charging users.</p></details>
+<section class="band">
+    <div class="container">
+        <div class="section-heading">
+            <h2>Common questions</h2>
+            <p>Short answers to what people ask before they install. Everything else is in the documentation.</p>
         </div>
-    </section>
-
-</main>
-
-<footer>
-    <div class="foot-grid">
-        <div class="foot-brand">
-            <a class="mark" href="index.html"><img src="assets/logo.png" alt="KodaHosting"><span>Koda<span>Hosting</span></span></a>
-            <p>A real Minecraft server, hosted on the Android phone in your pocket. No machine to rent, no monthly fee for the console.</p>
-        </div>
-        <div class="foot-col">
-            <h4>Product</h4>
-            <a href="dashboard.html">Dashboard</a>
-            <a href="store">Extension store</a>
-            <a href="#how">How it works</a>
-            <a href="https://play.google.com/store/apps/details?id=eu.kodanetwork.mchost">Google Play</a>
-        </div>
-        <div class="foot-col">
-            <h4>Developers</h4>
-            <a href="docs">Documentation</a>
-            <a href="https://github.com/libredroid-project/KodaNetwork">Source on GitHub</a>
-            <a href="https://github.com/libredroid-project/KodaNetwork/tree/main/extensions">Extension docs</a>
-            <a href="https://ko-fi.com/kodahosting">Support development</a>
-        </div>
-        <div class="foot-col">
-            <h4>Legal</h4>
-            <a href="privacy.html">Privacy Policy</a>
-            <a href="tos.html">Terms of Service</a>
-            <a href="licenses.html">Licenses</a>
-            <a href="impressum.html">Impressum</a>
+        <div class="faq">
+            <details><summary>How many servers can I host at the same time?</summary><p>Each account can host a maximum of six (6) servers simultaneously. This limit applies across all server types (Minecraft servers and databases combined) and is in place to ensure fair use of the shared VPS proxy infrastructure. Creating multiple accounts to bypass this limit is not allowed and may result in a permanent ban.</p></details>
+            <details><summary>Does my phone need to be on 24/7?</summary><p>Your server runs only while the KodaHosting app is active on your device. When the app is in the foreground, players can join freely. In the background, the server stays alive with reduced priority. When you close the app, the server stops. You can also hibernate servers to free up resources without deleting them.</p></details>
+            <details><summary>Can players join when my phone is asleep?</summary><p>When your phone&#x27;s screen is off, Android may put the app into a deep sleep state depending on your battery settings. To keep the server accessible, disable battery optimization for KodaHosting in your Android settings, or keep the device plugged in. Players connecting through our VPS proxy will automatically reconnect once your device wakes up.</p></details>
+            <details><summary>How much RAM do I need?</summary><p>For a small survival server with 5–10 players, 1–2 GB of RAM is sufficient. For larger communities or heavy mod packs, allocate 3–4 GB. The app automatically caps your RAM allocation based on your device&#x27;s available memory to prevent system instability. You can adjust the allocation at any time from the server management panel.</p></details>
+            <details><summary>Is my home IP really hidden?</summary><p>Yes. All player connections are routed through our central VPS infrastructure using secure reverse proxy tunnels (Bore / FRP). Players only ever see the IP address of our proxy server, never your home IP. This means your network remains completely private and protected from DDoS attacks or targeted harassment.</p></details>
+            <details><summary>What happens if my internet disconnects?</summary><p>If your internet connection drops, players will be disconnected from the server. The server itself continues running on your device, and once your connection is restored, the proxy tunnel reconnects automatically and players can rejoin. World data is always saved locally on your device, so no progress is lost during disconnects.</p></details>
+            <details><summary>Can I manage my server from a computer?</summary><p>Yes. The web dashboard at host.kodanetwork.eu lets you manage all your servers from any browser. The Server Manager gives you access to the live console (where you can execute commands and see server output in real-time) and the file management view (where you can upload worlds, install maps, and edit configuration files). Start, stop, restart, and other server lifecycle actions happen in the app directly. The dashboard communicates with your device through Supabase realtime updates.</p></details>
+            <details><summary>Will hosting damage my phone?</summary><p>Running a Minecraft server is computationally intensive and will generate heat and consume battery. We recommend keeping your device plugged in while hosting, placing it on a cool surface, and avoiding prolonged use in direct sunlight. The app includes a live performance monitor so you can track CPU and RAM usage. We are not liable for hardware damage, overheating, or battery degradation resulting from intensive use, as outlined in our Terms of Service.</p></details>
+            <details><summary>Do I need to pay anything?</summary><p>No. KodaHosting is completely free — no purchase, no subscription, no premium features. The entire app, all engines, the VPS proxy infrastructure and the web dashboard are available to everyone at no cost. If you want to support development, there is an optional Ko-fi link in the app, but it is entirely voluntary and unlocks nothing.</p></details>
+            <details><summary>How is this sustainable without charging users?</summary><p>KodaHosting is a hobby project by a single developer. Server infrastructure costs are kept low through efficient use of resources, and voluntary Ko-fi donations from supporters help cover ongoing hosting costs. There is no business model that requires charging users.</p></details>
         </div>
     </div>
-    <div class="foot-bottom">
-        <span>&copy; 2026 KodaHosting. All rights reserved.</span>
-        <span>KodaHosting is not an official Minecraft product, is not approved by or associated with Mojang or Microsoft.</span>
+</section>
+
+<footer>
+    <div class="container">
+        <div class="foot-cta">
+            <h2>Have a phone? You have a server.</h2>
+            <div class="hero-actions" style="margin-top: 0;">
+                <a class="button" href="https://play.google.com/store/apps/details?id=eu.kodanetwork.mchost">Get it on Google Play</a>
+                <a class="button button-secondary" href="dashboard.html">Open the dashboard</a>
+            </div>
+        </div>
+        <div class="foot-grid" style="margin-top: 56px;">
+            <div class="foot-brand">
+                <a class="brand" href="index.html"><img src="assets/logo.png" alt="KodaHosting"><span>Koda<span>Hosting</span></span></a>
+                <p>A real Minecraft server, hosted on the Android phone in your pocket. No machine to rent, no monthly fee for the console.</p>
+            </div>
+            <div class="foot-col">
+                <h4>Product</h4>
+                <a href="dashboard.html">Dashboard</a>
+                <a href="store">Extension store</a>
+                <a href="#how">How it works</a>
+                <a href="https://ko-fi.com/kodahosting">Support development</a>
+            </div>
+            <div class="foot-col">
+                <h4>Developers</h4>
+                <a href="docs">Documentation</a>
+                <a href="https://github.com/libredroid-project/KodaNetwork">Source on GitHub</a>
+                <a href="https://github.com/libredroid-project/KodaNetwork/tree/main/extensions">Extension docs</a>
+            </div>
+            <div class="foot-col">
+                <h4>Legal</h4>
+                <a href="privacy.html">Privacy Policy</a>
+                <a href="tos.html">Terms of Service</a>
+                <a href="licenses.html">Licenses</a>
+                <a href="impressum.html">Impressum</a>
+            </div>
+        </div>
+        <div class="foot-bottom">
+            <span>&copy; 2026 KodaHosting. All rights reserved.</span>
+            <span>KodaHosting is not an official Minecraft product, is not approved by or associated with Mojang or Microsoft.</span>
+        </div>
     </div>
 </footer>
 
@@ -399,23 +360,12 @@ footer { background: var(--surface); padding: 72px var(--rail) 32px 32px; margin
 (function () {
     document.documentElement.classList.add('js');
     if (!('IntersectionObserver' in window) || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-    var targets = [];
-    document.querySelectorAll('.band').forEach(function (band) {
-        var parts = band.querySelectorAll(':scope > .say, :scope > .then, :scope > .frag, :scope > .pin, :scope > .phones, :scope > .credits, :scope > details');
-        var list = parts.length ? parts : [band];
-        list.forEach(function (el, i) {
-            el.classList.add('rev');
-            el.style.transitionDelay = Math.min(i * 70, 280) + 'ms';
-            targets.push(el);
-        });
-    });
-    document.querySelectorAll('.peek').forEach(function (el) { el.classList.add('rev'); targets.push(el); });
+    var els = document.querySelectorAll('.feature, .split, .section-heading, .phones figure, .faq details, .collage');
+    els.forEach(function (el, i) { el.classList.add('rev'); el.style.transitionDelay = Math.min(i * 40, 300) + 'ms'; });
     var io = new IntersectionObserver(function (entries) {
-        entries.forEach(function (e) {
-            if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); }
-        });
-    }, { rootMargin: '0px 0px -12% 0px' });
-    targets.forEach(function (el) { io.observe(el); });
+        entries.forEach(function (e) { if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); } });
+    }, { rootMargin: '0px 0px -10% 0px' });
+    els.forEach(function (el) { io.observe(el); });
 })();
 </script>
 </body>
