@@ -2241,6 +2241,29 @@
             return { label: 'Offline', class: 'status-offline' };
         }
 
+        /** Start/Stop/Restart from the dashboard: the api writes the command, the hosting device runs it. */
+        async function sendCommand(item, action, card) {
+            const fb = card.querySelector('[data-feedback]');
+            const buttons = card.querySelectorAll('[data-cmd]');
+            buttons.forEach(b => { b.disabled = true; });
+            if (fb) {
+                fb.style.display = '';
+                fb.innerHTML = '<span class="material-symbols-outlined">hourglass_top</span>Sending ' + escapeHtml(action) + ' …';
+            }
+            try {
+                await api('/v1/me/servers/' + encodeURIComponent(item.host) + '/action', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ action: action })
+                });
+                if (fb) fb.innerHTML = '<span class="material-symbols-outlined">check_circle</span>Command sent. The hosting device applies it within a few seconds.';
+                setTimeout(() => { fetchServers(); }, 3000);
+            } catch (e) {
+                if (fb) fb.innerHTML = '<span class="material-symbols-outlined">error</span>' + escapeHtml(e.message || 'Command failed.');
+            }
+            buttons.forEach(b => { b.disabled = false; });
+        }
+
         function renderItems(items, containerId) {
             const container = document.getElementById(containerId);
             container.innerHTML = '';
@@ -2257,27 +2280,36 @@
 
                 const online = !database && isOnline(item.server_version);
                 const hasDash = !database && item.kodadash_port && item.kodadash_port > 0;
+                const isGuest = item.is_guest === true;
 
                 let controls = '';
                 let dashHint = '';
                 if (database) {
                     dashHint = '<div class="item-hint"><span class="material-symbols-outlined">info</span>Databases are managed in the KodaHosting app.</div>';
-                } else if (!hasDash) {
-                    dashHint = '<div class="item-hint warn"><span class="material-symbols-outlined">warning</span>KodaDash is not enabled for this server. Turn it on in the app under Server &rarr; KodaDash to control it from the browser.</div>';
-                } else if (!online) {
-                    // The tunnel only exists while the server runs, so the button would lead nowhere.
-                    dashHint = '<div class="item-hint"><span class="material-symbols-outlined">power_settings_new</span>Server is offline. Start it in the app and KodaDash becomes available here.</div>';
                 } else {
-                    controls = `<div class="controls-grid" style="grid-template-columns: 1fr;">
-                        <button class="btn-outline-card primary-action" data-dash="${escapeAttr(item.id)}">Open KodaDash</button>
-                    </div>`;
+                    if (!hasDash) {
+                        dashHint = '<div class="item-hint warn"><span class="material-symbols-outlined">warning</span>KodaDash is not enabled for this server. Turn it on in the app under Server &rarr; KodaDash to control it from the browser.</div>';
+                    } else if (!online) {
+                        // The tunnel only exists while the server runs, so the button would lead nowhere.
+                        dashHint = '<div class="item-hint"><span class="material-symbols-outlined">power_settings_new</span>Server is offline. Start it below (or in the app) and KodaDash becomes available here.</div>';
+                    }
+                    const dashButton = (hasDash && online)
+                        ? `<button class="btn-outline-card primary-action" data-dash="${escapeAttr(item.id)}">Open KodaDash</button>`
+                        : '';
+                    controls = `<div class="controls-grid" style="grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));">
+                        <button class="btn-outline-card" data-cmd="start">Start</button>
+                        <button class="btn-outline-card" data-cmd="restart">Restart</button>
+                        <button class="btn-outline-card" data-cmd="stop">Stop</button>
+                        ${dashButton}
+                    </div>
+                    <div class="item-hint" data-feedback style="display: none;"></div>`;
                 }
 
                 const card = document.createElement('div');
                 card.className = 'item-card';
                 card.innerHTML = `
                     <div class="item-header">
-                        <div class="item-title">${escapeHtml(item.host)}</div>
+                        <div class="item-title">${escapeHtml(item.host)}${isGuest ? '<span class="status-badge status-pending" style="margin-left: 10px;">Shared</span>' : ''}</div>
                         <div class="status-badge ${status.class}">${status.label}</div>
                     </div>
                     <div class="item-details">
@@ -2291,6 +2323,9 @@
                 if (hasDash && online) {
                     card.querySelector('[data-dash]').addEventListener('click', () => openKodaDash(item));
                 }
+                card.querySelectorAll('[data-cmd]').forEach(btn => {
+                    btn.addEventListener('click', () => sendCommand(item, btn.dataset.cmd, card));
+                });
                 container.appendChild(card);
             });
         }
