@@ -1430,7 +1430,7 @@
             <div id="acceptCard" style="display: none; max-width: 720px; margin-top: 20px; background: var(--md-surface-container); border-radius: var(--shape-lg); box-shadow: var(--elev-1); padding: 24px;">
                 <div style="font-size: 0.6875rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--brand); font-weight: 600; margin-bottom: 10px;">Your dashboard</div>
                 <p style="color: var(--md-on-surface-variant); font-size: 0.8125rem; line-height: 1.6; margin-bottom: 18px;">This invite carries control rights: the server appears in your KodaHosting dashboard under <strong>Servers</strong> &mdash; with Start, Stop and Restart, plus KodaDash access while it runs. You will be asked to sign in first.</p>
-                <a class="btn btn-filled" id="btn-accept-link" href="dashboard">Add to my dashboard</a>
+                <a class="btn btn-filled" id="btn-accept-link" href="/dashboard">Add to my dashboard</a>
             </div>
 
             <div id="errorCard" class="info-box" style="display: none; max-width: 720px; padding: 32px;">
@@ -1545,7 +1545,7 @@
                 if (inv.can_control) {
                     el('controlBadge').style.display = '';
                     el('acceptCard').style.display = '';
-                    el('btn-accept-link').href = 'dashboard?invite=' + encodeURIComponent(TOKEN);
+                    el('btn-accept-link').href = '/dashboard?invite=' + encodeURIComponent(TOKEN);
                 }
 
                 show('inviteCard');
