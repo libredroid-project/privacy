@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <link rel="icon" type="image/png" href="assets/logo.png">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KodaHosting | Server Invite</title>
+    <meta name="robots" content="noindex,nofollow">
+    <meta name="description" content="A private invite to a Minecraft server hosted on KodaHosting. Join address and live status.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto+Flex:opsz,wght@8..144,300;8..144,400;8..144,500;8..144,600;8..144,700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --md-surface: #1B1613;
+            --md-surface-2: #241C18;
+            --md-surface-3: #2E241E;
+            --md-on-surface: #EFE0D9;
+            --md-on-surface-variant: #A9978C;
+            --md-primary: #FF6B00;
+            --md-on-primary: #1A0F00;
+            --md-success: #6FBE7E;
+            --md-error: #FFB4AB;
+            --md-outline: #4A3D34;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        html, body { background: var(--md-surface); color: var(--md-on-surface);
+            font-family: 'Roboto Flex', system-ui, sans-serif; min-height: 100%; }
+        body { display: flex; align-items: center; justify-content: center; padding: 24px; }
+        .wrap { width: 100%; max-width: 460px; }
+        .brand { display: flex; align-items: center; gap: 10px; margin-bottom: 18px; }
+        .brand .k { width: 34px; height: 34px; border-radius: 10px; background: var(--md-primary);
+            color: var(--md-on-primary); font-weight: 700; display: flex; align-items: center;
+            justify-content: center; font-size: 18px; }
+        .brand span { font-size: 15px; font-weight: 600; letter-spacing: .02em; }
+        .card { background: var(--md-surface-2); border: 1px solid var(--md-outline);
+            border-radius: 18px; padding: 22px; }
+        .eyebrow { color: var(--md-primary); font-size: 11px; letter-spacing: .14em;
+            font-weight: 600; text-transform: uppercase; margin-bottom: 10px; }
+        h1 { font-size: 22px; font-weight: 700; line-height: 1.25; word-break: break-word; }
+        .sub { color: var(--md-on-surface-variant); font-size: 13px; margin-top: 6px; }
+        .row { display: flex; align-items: center; gap: 10px; margin-top: 16px; }
+        .pill { display: inline-flex; align-items: center; gap: 7px; padding: 5px 11px;
+            border-radius: 999px; font-size: 12px; font-weight: 600;
+            background: var(--md-surface-3); border: 1px solid var(--md-outline); }
+        .dot { width: 8px; height: 8px; border-radius: 50%; background: #6b6b6b; }
+        .dot.online { background: var(--md-success); }
+        .dot.offline { background: #6b6b6b; }
+        .label { color: var(--md-on-surface-variant); font-size: 11px; letter-spacing: .1em;
+            text-transform: uppercase; margin: 18px 0 6px; }
+        .addr { display: flex; align-items: center; gap: 10px; background: var(--md-surface-3);
+            border: 1px solid var(--md-outline); border-radius: 12px; padding: 12px 14px; }
+        .addr code { font-family: 'JetBrains Mono', monospace; font-size: 14px;
+            color: var(--md-primary); overflow-wrap: anywhere; flex: 1; }
+        button.copy { background: var(--md-primary); color: var(--md-on-primary); border: 0;
+            border-radius: 10px; padding: 9px 13px; font-weight: 600; font-size: 13px;
+            cursor: pointer; font-family: inherit; }
+        button.copy:active { transform: scale(.97); }
+        .meta { color: var(--md-on-surface-variant); font-size: 12px; margin-top: 16px; line-height: 1.6; }
+        .error { color: var(--md-error); font-size: 14px; line-height: 1.6; }
+        .hint { color: var(--md-on-surface-variant); font-size: 12px; margin-top: 14px; line-height: 1.55; }
+        .foot { text-align: center; color: var(--md-on-surface-variant); font-size: 12px; margin-top: 18px; }
+        .foot a { color: var(--md-on-surface-variant); }
+        .hidden { display: none; }
+    </style>
+</head>
+<body>
+<div class="wrap">
+    <div class="brand"><div class="k">K</div><span>KodaHosting</span></div>
+    <div class="card">
+        <div id="loading">
+            <div class="eyebrow">Invite</div>
+            <h1>Loading invite…</h1>
+        </div>
+        <div id="error" class="hidden">
+            <div class="eyebrow">Invite</div>
+            <h1>This invite is not valid</h1>
+            <p class="error" id="errorText" style="margin-top:10px">The link is expired, revoked or already used up. Ask the server owner for a new one.</p>
+        </div>
+        <div id="content" class="hidden">
+            <div class="eyebrow">You are invited</div>
+            <h1 id="serverName">Server</h1>
+            <p class="sub" id="serverSub"></p>
+            <div class="row">
+                <span class="pill"><span class="dot" id="statusDot"></span><span id="statusText">—</span></span>
+                <span class="pill" id="playersPill">0 / 0 players</span>
+            </div>
+            <div class="label">Java address</div>
+            <div class="addr"><code id="javaAddr">—</code><button class="copy" id="copyJava">Copy</button></div>
+            <div id="bedrockBlock" class="hidden">
+                <div class="label">Bedrock address</div>
+                <div class="addr"><code id="bedrockAddr">—</code><button class="copy" id="copyBedrock">Copy</button></div>
+            </div>
+            <div class="meta" id="inviteMeta"></div>
+            <div class="hint">In Minecraft: <b>Play → Multiplayer → Add Server</b>, paste the address and join. Bedrock players use the address and port above in the <b>Servers</b> tab.</div>
+        </div>
+    </div>
+    <div class="foot">Powered by <a href="https://host.kodanetwork.eu">KodaHosting</a></div>
+</div>
+<script>
+    const API = 'https://api.kodanetwork.eu';
+    const seg = location.pathname.split('/').filter(Boolean);
+    const TOKEN = (seg[0] === 'invite' && seg[1] ? seg[1] : new URLSearchParams(location.search).get('t') || '').trim().toLowerCase();
+
+    function show(id) {
+        ['loading', 'error', 'content'].forEach((x) => document.getElementById(x).classList.toggle('hidden', x !== id));
+    }
+    function copy(btn, text) {
+        const done = () => { const old = btn.textContent; btn.textContent = 'Copied'; setTimeout(() => btn.textContent = old, 1400); };
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(text).then(done, () => fallback());
+        } else fallback();
+        function fallback() {
+            const ta = document.createElement('textarea');
+            ta.value = text; document.body.appendChild(ta); ta.select();
+            try { document.execCommand('copy'); done(); } catch (e) {}
+            ta.remove();
+        }
+    }
+
+    async function load() {
+        if (!/^[a-f0-9]{18}$/.test(TOKEN)) return show('error');
+        show('loading');
+        try {
+            const res = await fetch(API + '/v1/invite/' + encodeURIComponent(TOKEN));
+            if (!res.ok) return show('error');
+            const data = await res.json();
+            if (!data || !data.ok) return show('error');
+
+            const server = data.server || {};
+            const join = data.join || {};
+            const inv = data.invite || {};
+            const live = data.live || null;
+
+            document.getElementById('serverName').textContent = (server.motd && server.motd.trim()) ? server.motd : server.host;
+            document.getElementById('serverSub').textContent = server.host + ' · hosted on a phone with KodaHosting';
+
+            const online = server.status === 'ONLINE';
+            document.getElementById('statusDot').className = 'dot ' + (online ? 'online' : 'offline');
+            document.getElementById('statusText').textContent = online
+                ? ('Online' + (server.version ? ' · ' + server.version : ''))
+                : (server.status === 'HIBERNATED' ? 'Hibernated' : 'Offline');
+            const players = live && typeof live.players === 'number' ? live.players : (server.players_online || 0);
+            const max = live && typeof live.max === 'number' ? live.max : (server.players_max || 0);
+            document.getElementById('playersPill').textContent = players + ' / ' + max + ' players';
+
+            document.getElementById('javaAddr').textContent = join.java || '—';
+            document.getElementById('copyJava').onclick = (e) => copy(e.target, join.java || '');
+            if (join.bedrock && join.bedrock.port) {
+                document.getElementById('bedrockBlock').classList.remove('hidden');
+                document.getElementById('bedrockAddr').textContent = join.bedrock.address + ' : ' + join.bedrock.port;
+                document.getElementById('copyBedrock').onclick = (e) => copy(e.target, join.bedrock.address);
+            }
+
+            const bits = [];
+            if (inv.note) bits.push('"' + inv.note + '"');
+            bits.push('opened ' + (inv.uses || 1) + (inv.max_uses ? ' of ' + inv.max_uses : '') + ' times');
+            if (inv.expires_at) {
+                const d = new Date(inv.expires_at);
+                bits.push('valid until ' + d.toLocaleDateString());
+            } else {
+                bits.push('no expiry');
+            }
+            document.getElementById('inviteMeta').textContent = bits.join(' · ');
+
+            show('content');
+        } catch (e) {
+            show('error');
+            document.getElementById('errorText').textContent = 'Could not reach the network. Check your connection and reload.';
+        }
+    }
+
+    load();
+</script>
+</body>
+</html>
