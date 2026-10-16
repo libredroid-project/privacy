@@ -7,23 +7,24 @@
     <title>Privacy Policy | KodaHosting</title>
     <link rel="canonical" href="https://host.kodanetwork.eu/privacy">
     <meta name="description" content="Privacy Policy for the KodaHosting mobile application and Web Dashboard.">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Golos+Text:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         html { -webkit-text-size-adjust: 100%; }
         body {
-            font-family: 'Inter', -apple-system, sans-serif;
-            background: #0E0E11;
-            color: #E5E5E7;
+            font-family: 'Golos Text', system-ui, sans-serif;
+            background: #0B0B0D;
+            color: #F5F5F7;
             line-height: 1.7;
             -webkit-font-smoothing: antialiased;
             min-height: 100vh;
         }
-        a { color: #FF6B00; text-decoration: underline; text-underline-offset: 2px; }
-        a:hover { color: #FF8533; }
+        a { color: #FFA45C; text-decoration: underline; text-underline-offset: 2px; }
+        a:hover { color: #FFB87D; }
 
         .header {
-            border-bottom: 1px solid #1F1F24;
+            background: #16161B;
+            border-bottom: 1px solid #3C3C47;
             padding: 20px 32px;
             display: flex;
             align-items: center;
@@ -34,8 +35,8 @@
             align-items: center;
             gap: 10px;
             font-weight: 600;
-            font-size: 0.95rem;
-            color: #E5E5E7;
+            font-size: 1rem;
+            color: #F5F5F7;
             text-decoration: none;
         }
         .logo img {
@@ -44,27 +45,29 @@
             border-radius: 6px;
             object-fit: cover;
         }
-        .logo span { color: #FF6B00; }
+        .logo span { color: #FFA45C; }
         .back {
-            color: #888;
-            font-size: 0.85rem;
+            color: #9696A2;
+            font-size: 0.9rem;
             text-decoration: none;
             font-weight: 500;
         }
-        .back:hover { color: #E5E5E7; }
+        .back:hover { color: #F5F5F7; }
 
+        .content p, .content li, .license-head { max-width: 72ch; }
         .content {
             max-width: 720px;
             margin: 0 auto;
             padding: 64px 32px 96px;
         }
         .updated {
-            color: #888;
-            font-size: 0.85rem;
-            margin-bottom: 12px;
+            color: #9696A2;
+            font-size: 1rem;
+            margin-top: 10px;
+            margin-bottom: 32px;
         }
         h1 {
-            font-size: 2rem;
+            font-size: clamp(2.25rem, 1.2rem + 4.6vw, 4.25rem);
             font-weight: 700;
             letter-spacing: -0.02em;
             margin-bottom: 32px;
@@ -79,57 +82,63 @@
         }
         p {
             margin-bottom: 14px;
-            color: #B5B5B8;
-            font-size: 0.95rem;
+            color: #C8C8D2;
+            font-size: 1rem;
         }
-        strong { color: #E5E5E7; font-weight: 600; }
+        strong { color: #F5F5F7; font-weight: 600; }
         ul {
             margin: 12px 0 16px;
             padding-left: 20px;
         }
         li {
             margin-bottom: 10px;
-            color: #B5B5B8;
-            font-size: 0.95rem;
+            color: #C8C8D2;
+            font-size: 1rem;
         }
 
         @media (max-width: 768px) {
             .header { padding: 16px 20px; }
-            .content { padding: 40px 20px 64px; }
-            h1 { font-size: 1.6rem; }
+            .content p, .content li, .license-head { max-width: 72ch; }
+        .content { padding: 40px 20px 64px; }
+            h1 { font-size: clamp(1.9rem, 1.4rem + 3vw, 2.5rem); }
         }
+
+        /* entrance: the document fades in, JS-gated so the text is never hidden without it */
+        html.js .rev { opacity: 0; transform: translateY(12px); transition: opacity 0.5s ease-out, transform 0.5s ease-out; }
+        html.js .rev.in { opacity: 1; transform: none; }
+        @media (prefers-reduced-motion: reduce) { html.js .rev { opacity: 1; transform: none; transition: none; } }
+
         /* koda-legal-start */
         .lang-switch {
             display: inline-flex;
             gap: 4px;
             padding: 4px;
             margin-bottom: 28px;
-            background: #17171B;
-            border: 1px solid #1F1F24;
+            background: #202028;
             border-radius: 999px;
         }
         .lang-switch button {
             font: inherit;
-            font-size: 0.85rem;
+            font-size: 0.9rem;
             font-weight: 500;
-            color: #B5B5B8;
+            color: #C8C8D2;
             background: transparent;
             border: 0;
             border-radius: 999px;
             padding: 8px 18px;
             cursor: pointer;
         }
-        .lang-switch button.active { background: #FF6B00; color: #fff; }
+        .lang-switch button.active { background: #FF6B00; color: #1A0F00; }
         .doc { display: none; }
         .doc.active { display: block; }
         .danger-rule {
-            border-left: 3px solid #FF6B00;
-            background: #1A1210;
+            border-left: 3px solid #FFA45C;
+            background: #241812;
             border-radius: 8px;
             padding: 16px 20px 4px;
             margin: 20px 0;
         }
-        .danger-title { margin-top: 0; color: #FF6B00; }
+        .danger-title { margin-top: 0; color: #FFA45C; }
         /* koda-legal-end */
     </style>
 </head>
@@ -150,8 +159,9 @@
         </div>
 
         <article class="doc active" id="doc-en">
-<p class="updated">Last Updated: September 2026</p>
 <h1>Privacy Policy</h1>
+<p class="updated">Last Updated: September 2026</p>
+
 <h2>1. Introduction & Data Controller</h2>
 <p>Welcome to KodaHosting. We respect your privacy and are committed to protecting any information that may be processed while you use our mobile application and the accompanying Web Dashboard. This Privacy Policy explains what information we collect, how we use it, and your rights regarding your data.</p>
 <p>The Data Controller responsible for your personal information is:</p>
@@ -238,8 +248,9 @@
         </article>
 
         <article class="doc" id="doc-de">
-<p class="updated">Letzte Aktualisierung: September 2026</p>
 <h1>Datenschutzerklärung</h1>
+<p class="updated">Letzte Aktualisierung: September 2026</p>
+
 <h2>1. Einleitung und Verantwortlicher</h2>
 <p>Willkommen bei KodaHosting. Wir respektieren deine Privatsphäre und verpflichten uns, alle Informationen zu schützen, die bei der Nutzung unserer mobilen App und des zugehörigen Web-Dashboards verarbeitet werden. Diese Datenschutzerklärung erklärt, welche Informationen wir erheben, wie wir sie verwenden und welche Rechte du bezüglich deiner Daten hast.</p>
 <p>Der für deine personenbezogenen Daten verantwortliche Anbieter ist:</p>
@@ -347,6 +358,28 @@
             var wanted = params.get('lang');
             if (!wanted) { try { wanted = localStorage.getItem('kodaLegalLang'); } catch (e) {} }
             if (wanted === 'de') show('de');
+
+            // entrance for the active document (JS-gated: without JS everything stays visible)
+            document.documentElement.classList.add('js');
+            var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+            function reveal() {
+                var nodes = document.querySelectorAll('.content > .lang-switch, .doc.active > *');
+                if (reduce || !('IntersectionObserver' in window)) {
+                    nodes.forEach(function (n) { n.classList.add('rev', 'in'); });
+                    return;
+                }
+                var io = new IntersectionObserver(function (entries) {
+                    entries.forEach(function (e) { if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); } });
+                }, { rootMargin: '0px 0px -6% 0px' });
+                nodes.forEach(function (n, i) {
+                    if (n.classList.contains('rev') && n.classList.contains('in')) return;
+                    n.classList.add('rev');
+                    if (!n.style.transitionDelay) n.style.transitionDelay = Math.min(i * 45, 300) + 'ms';
+                    io.observe(n);
+                });
+            }
+            reveal();
+            buttons.forEach(function (b) { b.addEventListener('click', function () { setTimeout(reveal, 20); }); });
         })();
     </script>
     <!-- koda-legal-script-end -->
