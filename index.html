@@ -49,14 +49,17 @@ p a:hover, .tlink:hover { border-color: var(--accent); color: var(--accent); }
 .rail { margin-left: var(--rail); padding-right: 24px; }
 .col { max-width: 380px; }
 
-.mark { position: absolute; top: 56px; left: var(--rail); display: flex; align-items: center; gap: 10px; font-weight: 600; font-size: 0.9375rem; }
+.topbar { display: flex; align-items: center; justify-content: space-between; gap: 20px; padding: 20px 32px 0 var(--rail); flex-wrap: wrap; }
+.mark { display: flex; align-items: center; gap: 10px; font-weight: 600; font-size: 0.9375rem; }
+.topnav { display: flex; align-items: center; gap: 26px; font-size: 0.9375rem; color: var(--muted); }
+.topnav a:hover { color: var(--accent); }
+.topnav .btn-quiet { color: var(--ink); background: var(--field); border-radius: var(--r); padding: 9px 16px; font-weight: 600; font-size: 0.875rem; }
+.topnav .btn-quiet:hover { background: var(--surface-2, #2D2620); color: var(--ink); }
 .mark img { width: 30px; height: 30px; border-radius: var(--r); }
 .mark span span { color: var(--accent); }
-.signin { position: absolute; top: 62px; right: 32px; font-size: 0.875rem; color: var(--muted); }
-.signin:hover { color: var(--ink); }
 
 /* ── hero ─────────────────────────────────────────────────────────── */
-.hero { padding-top: 200px; }
+.hero { padding-top: 170px; }
 .hero h1 {
     font-size: clamp(1.5rem, 1.25rem + 1.1vw, 1.75rem);
     font-weight: 500;
@@ -111,9 +114,12 @@ p a:hover, .tlink:hover { border-color: var(--accent); color: var(--accent); }
 
 /* ── sections: one column, statement beside its fragment ──────────── */
 main { padding-top: 120px; }
-.band { margin-bottom: 84px; display: grid; grid-template-columns: minmax(260px, 6fr) minmax(0, 6fr); gap: 52px; align-items: start; }
+.band.band-narrow { grid-template-columns: 1fr; }
+.band.band-narrow > .say, .band.band-narrow > .then, .band.band-narrow > .faq-list { grid-column: 1; }
+.band.band-narrow > .then { padding-top: 0; max-width: 60ch; }
+.band { margin-bottom: 76px; display: grid; grid-template-columns: minmax(260px, 6fr) minmax(0, 6fr); gap: 52px; align-items: start; }
 .band > .say, .band > .then { grid-column: 1; }
-.band > .frag, .band > .phones, .band > .credits, .band > .faq-list { grid-column: 2; }
+.band > .frag, .band > .phones, .band > .credits { grid-column: 2; }
 .band > .then { margin-top: 0; padding-top: 14px; max-width: none; }
 .band > .frag { margin-top: 0; width: 100%; max-width: 620px; }
 .band .say {
@@ -130,7 +136,7 @@ main { padding-top: 120px; }
 .pin > .frag { grid-column: 1; margin-top: 0; position: sticky; top: 10vh; }
 .pin > .notes { grid-column: 2; }
 .pin .notes { padding-top: 6vh; }
-.pin .notes p { margin-bottom: 24vh; color: var(--ink); max-width: 320px; }
+.pin .notes p { margin-bottom: 18vh; color: var(--ink); max-width: 320px; }
 .pin .notes p:last-child { margin-bottom: 0; }
 .pin .notes b { color: var(--ink); font-weight: 600; display: block; margin-bottom: 6px; font-size: var(--step-lead); letter-spacing: -0.01em; }
 
@@ -148,39 +154,28 @@ main { padding-top: 120px; }
 .credits { font-size: var(--step-small); color: var(--muted); margin-top: 0; padding-top: 14px; max-width: 560px; line-height: 1.6; }
 
 /* FAQ: plain list, no cards */
-.faq { max-width: 620px; }
-.faq details { padding-top: 6px; }
-.faq summary {
+.faq-list { max-width: 780px; }
+.faq-list details { padding-top: 6px; }
+.faq-list summary {
     cursor: pointer; list-style: none; padding: 22px 0 10px;
     font-size: var(--step-lead); font-weight: 500; letter-spacing: -0.01em;
-    display: flex; justify-content: space-between; gap: 20px; align-items: baseline;
+    display: flex; justify-content: space-between; gap: 24px; align-items: baseline;
 }
-.faq summary::-webkit-details-marker { display: none; }
-.faq summary::after { content: "+"; color: var(--accent); font-weight: 400; }
-.faq details[open] summary::after { content: "\2212"; }
-.faq details p { padding: 0 0 22px; color: var(--ink); line-height: 1.55; max-width: 56ch; }
+.faq-list summary::-webkit-details-marker { display: none; }
+.faq-list summary::after { content: "+"; color: var(--accent); font-weight: 400; flex: none; }
+.faq-list details[open] summary::after { content: "\2212"; }
+.faq-list details p { padding: 0 0 22px; color: var(--ink); line-height: 1.55; max-width: 72ch; }
 
 /* ── footer: the only full-width part ─────────────────────────────── */
-footer { background: var(--surface); padding: 80px 0 0; margin-top: 20px; }
-.foot-inner { margin-left: var(--rail); padding-right: 24px; }
-footer .say { font-size: var(--step-head); font-weight: 500; letter-spacing: -0.03em; line-height: 1.02; max-width: 16ch; }
-.foot-links { display: flex; flex-wrap: wrap; gap: 28px; margin-top: 40px; font-size: 0.9375rem; }
-.foot-links.two { margin-top: 18px; color: var(--muted); font-size: 0.875rem; }
-.foot-links a:hover { color: var(--accent); }
-.foot-note { margin-top: 60px; padding: 0 0 40px; color: var(--muted); font-size: var(--step-small); line-height: 1.65; max-width: 92ch; display: flex; flex-wrap: wrap; gap: 8px 60px; justify-content: space-between; }
-
-/* ── motion: one entrance, behind html.js so nothing depends on it ── */
-html.js .rev { opacity: 0; transform: translateY(16px); transition: opacity 0.7s ease-out, transform 0.7s ease-out; }
-html.js .rev.in { opacity: 1; transform: none; }
-.frag { transition: border-color 0.2s ease-out, transform 0.2s ease-out; border: 1px solid transparent; }
-.frag:hover { border-color: var(--line); }
-.faq summary:hover { color: var(--accent); }
-@media (prefers-reduced-motion: reduce) {
-    html { scroll-behavior: auto; }
-    html.js .rev { opacity: 1; transform: none; transition: none; }
-    .frag, .btn { transition: none; }
-    .band .phones img { animation: none; }
-}
+footer { background: var(--surface); padding: 72px var(--rail) 32px 32px; margin-top: 20px; }
+.foot-grid { display: grid; grid-template-columns: minmax(0, 1.4fr) repeat(3, minmax(0, 1fr)); gap: 36px 44px; align-items: start; }
+@media (max-width: 1100px) { .foot-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 700px) { .foot-grid { grid-template-columns: 1fr; gap: 28px; } }
+.foot-brand p { color: var(--muted); font-size: var(--step-small); line-height: 1.65; margin-top: 16px; max-width: 34ch; }
+.foot-col h4 { font-size: var(--step-small); font-weight: 500; color: var(--muted); margin-bottom: 14px; }
+.foot-col a { display: block; font-size: 0.9375rem; padding: 5px 0; }
+.foot-col a:hover { color: var(--accent); }
+.foot-bottom { display: flex; justify-content: space-between; gap: 12px 40px; flex-wrap: wrap; margin-top: 56px; color: var(--muted); font-size: var(--step-small); line-height: 1.6; }
 
 @media (max-width: 900px) {
     :root { --rail: 24px; }
@@ -189,7 +184,7 @@ html.js .rev.in { opacity: 1; transform: none; }
     .hero { padding-top: 30vh; }
     .hero h1 { font-size: 1.5rem; }
     main { padding-top: 110px; }
-    .band { margin-bottom: 84px; grid-template-columns: 1fr; gap: 26px; }
+    .band { margin-bottom: 76px; grid-template-columns: 1fr; gap: 26px; }
     .band > .say, .band > .then, .band > .frag, .band > .phones, .band > .credits, .band > .faq-list { grid-column: 1; }
     .band > .then { padding-top: 0; }
     .band .say { font-size: clamp(1.75rem, 9vw, 2.5rem); }
@@ -204,8 +199,15 @@ html.js .rev.in { opacity: 1; transform: none; }
 </head>
 <body>
 
-<a class="mark" href="index.html"><img src="assets/logo.png" alt="KodaHosting"><span>Koda<span>Hosting</span></span></a>
-<a class="signin" href="dashboard.html">Dashboard</a>
+<header class="topbar">
+    <a class="mark" href="index.html"><img src="assets/logo.png" alt="KodaHosting"><span>Koda<span>Hosting</span></span></a>
+    <nav class="topnav">
+        <a href="docs">Docs</a>
+        <a href="store">Store</a>
+        <a href="dashboard.html">Dashboard</a>
+        <a class="btn-quiet" href="dashboard.html">Sign in</a>
+    </nav>
+</header>
 
 <header class="hero rail">
     <div class="col">
@@ -336,7 +338,7 @@ html.js .rev.in { opacity: 1; transform: none; }
         <p class="credits">Device photographs from Wikimedia Commons, shown for identification only; all rights belong to the respective manufacturers. Full credits in assets/devices/CREDITS.txt.</p>
     </section>
 
-    <section class="band faq">
+    <section class="band faq band-narrow">
         <p class="say">Common questions.</p>
         <p class="then">Short answers to what people ask before they install. Everything else is in the documentation.</p>
         <div class="faq-list">
@@ -356,28 +358,36 @@ html.js .rev.in { opacity: 1; transform: none; }
 </main>
 
 <footer>
-    <div class="foot-inner">
-        <p class="say">Have a phone? You have a server.</p>
-        <div class="foot-links">
-            <a class="btn" href="https://play.google.com/store/apps/details?id=eu.kodanetwork.mchost">Get it on Google Play</a>
-            <a class="tlink" href="dashboard.html">Open the dashboard &rarr;</a>
+    <div class="foot-grid">
+        <div class="foot-brand">
+            <a class="mark" href="index.html"><img src="assets/logo.png" alt="KodaHosting"><span>Koda<span>Hosting</span></span></a>
+            <p>A real Minecraft server, hosted on the Android phone in your pocket. No machine to rent, no monthly fee for the console.</p>
         </div>
-        <div class="foot-links two">
-            <a href="docs">Documentation</a>
+        <div class="foot-col">
+            <h4>Product</h4>
+            <a href="dashboard.html">Dashboard</a>
             <a href="store">Extension store</a>
+            <a href="#how">How it works</a>
+            <a href="https://play.google.com/store/apps/details?id=eu.kodanetwork.mchost">Google Play</a>
+        </div>
+        <div class="foot-col">
+            <h4>Developers</h4>
+            <a href="docs">Documentation</a>
             <a href="https://github.com/libredroid-project/KodaNetwork">Source on GitHub</a>
+            <a href="https://github.com/libredroid-project/KodaNetwork/tree/main/extensions">Extension docs</a>
             <a href="https://ko-fi.com/kodahosting">Support development</a>
         </div>
-        <div class="foot-links two">
-            <a href="impressum.html">Impressum</a>
-            <a href="privacy.html">Privacy</a>
-            <a href="tos.html">Terms</a>
+        <div class="foot-col">
+            <h4>Legal</h4>
+            <a href="privacy.html">Privacy Policy</a>
+            <a href="tos.html">Terms of Service</a>
             <a href="licenses.html">Licenses</a>
+            <a href="impressum.html">Impressum</a>
         </div>
-        <div class="foot-note">
-            <span>KodaHosting is not an official Minecraft product, is not approved by or associated with Mojang or Microsoft, and is an independent project.</span>
-            <span>&copy; 2026 KodaHosting</span>
-        </div>
+    </div>
+    <div class="foot-bottom">
+        <span>&copy; 2026 KodaHosting. All rights reserved.</span>
+        <span>KodaHosting is not an official Minecraft product, is not approved by or associated with Mojang or Microsoft.</span>
     </div>
 </footer>
 
