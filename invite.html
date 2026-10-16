@@ -1394,8 +1394,9 @@
                     <h2 class="page-title" id="pageTitle">Server invite</h2>
                     <p id="pageSubtitle" style="color: var(--md-on-surface-variant); margin-top: 6px; max-width: 720px; line-height: 1.5;">Loading the invite&hellip;</p>
                 </div>
-                <div id="statusWrap" style="display: none;">
+                <div id="statusWrap" style="display: none; display: flex; gap: 10px; flex-wrap: wrap;">
                     <span class="status-badge status-pending" id="statusBadge">&mdash;</span>
+                    <span class="status-badge status-pending" id="controlBadge" style="display: none;">Control</span>
                 </div>
             </div>
 
@@ -1424,6 +1425,17 @@
 
                 <p id="inviteMeta" style="color: var(--md-on-surface-variant); font-size: 0.8125rem; margin-top: 20px;"></p>
                 <p style="color: var(--md-on-surface-variant); font-size: 0.8125rem; margin-top: 12px; line-height: 1.6;">In Minecraft: <strong>Play &rarr; Multiplayer &rarr; Add Server</strong>, paste the address and join. Bedrock players use the address and port in the <strong>Servers</strong> tab.</p>
+            </div>
+
+            <div id="controlCard" style="display: none; max-width: 720px; margin-top: 20px; background: var(--md-surface-container); border-radius: var(--shape-lg); box-shadow: var(--elev-1); padding: 24px;">
+                <div style="font-size: 0.6875rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--brand); font-weight: 600; margin-bottom: 10px;">Server control</div>
+                <p style="color: var(--md-on-surface-variant); font-size: 0.8125rem; margin-bottom: 16px; line-height: 1.6;">The owner gave this link control rights. Commands run on the hosting device within a few seconds.</p>
+                <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                    <button class="btn btn-tonal" id="btn-start"><span class="material-symbols-outlined">play_arrow</span> Start</button>
+                    <button class="btn btn-tonal" id="btn-restart"><span class="material-symbols-outlined">restart_alt</span> Restart</button>
+                    <button class="btn btn-outlined" id="btn-stop"><span class="material-symbols-outlined">stop</span> Stop</button>
+                </div>
+                <p id="controlFeedback" style="color: var(--md-on-surface-variant); font-size: 0.8125rem; margin-top: 14px; min-height: 20px;"></p>
             </div>
 
             <div id="errorCard" class="info-box" style="display: none; max-width: 720px; padding: 32px;">
@@ -1493,6 +1505,33 @@
             }
         }
 
+        async function postAction(action, btn) {
+            var fb = el('controlFeedback');
+            btn.disabled = true;
+            fb.textContent = 'Sending ' + action + '\u2026';
+            try {
+                var res = await fetch(API + '/v1/invite/' + encodeURIComponent(TOKEN) + '/action', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ action: action })
+                });
+                if (res.ok) {
+                    fb.textContent = 'Command sent. The hosting device applies it within a few seconds.';
+                } else {
+                    var err = {};
+                    try { err = await res.json(); } catch (e2) {}
+                    fb.textContent = err.error === 'control_not_granted'
+                        ? 'This link is not allowed to control the server.'
+                        : (err.error === 'invite_invalid'
+                            ? 'This link is expired or revoked.'
+                            : 'Command failed (' + res.status + ').');
+                }
+            } catch (e) {
+                fb.textContent = 'Could not reach the network. Check your connection.';
+            }
+            btn.disabled = false;
+        }
+
         async function load() {
             if (!/^[a-f0-9]{18}$/.test(TOKEN)) { el('pageTitle').textContent = 'Server invite'; show('errorCard'); return; }
             try {
@@ -1534,6 +1573,14 @@
                 if (inv.expires_at) bits.push('valid until ' + new Date(inv.expires_at).toLocaleDateString());
                 else bits.push('no expiry');
                 el('inviteMeta').textContent = bits.join(' \u00b7 ');
+
+                if (inv.can_control) {
+                    el('controlBadge').style.display = '';
+                    el('controlCard').style.display = '';
+                    el('btn-start').onclick = function () { postAction('start', this); };
+                    el('btn-stop').onclick = function () { postAction('stop', this); };
+                    el('btn-restart').onclick = function () { postAction('restart', this); };
+                }
 
                 show('inviteCard');
             } catch (e) {
