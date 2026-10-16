@@ -479,11 +479,10 @@
             flex-wrap: wrap;
         }
         .page-title {
-                        letter-spacing: -0.03em;
-            line-height: 1.05;
-            font-size: 1.75rem;
+            font-size: clamp(2rem, 1.2rem + 3.4vw, 4.5rem);
             font-weight: 500;
-            letter-spacing: -0.02em;
+            letter-spacing: -0.03em;
+            line-height: 1.05;
         }
 
         /* FAB (Floating Action Button) - Material 3 Extended FAB */
@@ -1262,11 +1261,10 @@
             body.store .main-content { padding-top: 80px; }
         }
         .store-frags { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 16px; margin: 8px 0 26px; }
-        .store-install { max-width: none; margin: 0; margin: 8px 0 26px; background: var(--md-surface-container, #231D18); border-radius: var(--shape-md, 12px); padding: 6px 16px; }
-        .store-install-row { display: flex; justify-content: space-between; gap: 18px; padding: 11px 0; font-size: 1rem; border-top: 1px solid var(--md-outline-variant, #534339); }
-        .store-install-row:first-child { border-top: 0; }
-        .store-install-row span:first-child { color: var(--md-on-surface, #EFE0D9); }
-        .store-install-row span:last-child { color: var(--md-on-surface-variant, #A9978C); text-align: right; }
+        .pkg-facts-row { display: flex; justify-content: space-between; gap: 18px; padding: 10px 0; font-size: 0.9375rem; border-top: 1px solid var(--md-outline-variant, #534339); }
+        .pkg-facts-row:first-child { border-top: 0; }
+        .pkg-facts-row span:first-child { color: var(--md-on-surface-variant, #A9978C); }
+        .pkg-facts-row span:last-child { color: var(--md-on-surface, #EFE0D9); text-align: right; }
         .store-tools { display: flex; gap: 12px; flex-wrap: wrap; align-items: center; margin-bottom: 16px; }
         .store-search {
             flex: 1; min-width: 240px; display: flex; align-items: center; gap: 10px;
@@ -1424,38 +1422,6 @@
             </div>
 
             <div class="info-box" id="maintenance-notice" style="display: none; padding: 16px 20px; text-align: left; margin-bottom: 20px;"></div>
-
-            <div class="store-install" data-ui>
-                <div class="store-install-row"><span>Discover</span><span>the store lives in the app, signed in with your account</span></div>
-                <div class="store-install-row"><span>Permissions</span><span>every package lists what it may touch, before it installs</span></div>
-                <div class="store-install-row"><span>Installed</span><span>updates show up in the app, data stays when it updates</span></div>
-                <div class="store-install-row"><span>Updates</span><span>the store tells the app when a reviewed version is out</span></div>
-                <div class="store-install-row"><span>Removed</span><span>if an extension ends, its reason shows up in my extensions</span></div>
-            </div>
-
-            <div class="store-frags">
-                <div class="store-install" data-ui>
-                    <div class="store-install-row"><span>Language pack: Deutsch</span><span>v1.2.0 · reviewed · 1.4 MB</span></div>
-                    <div class="store-install-row"><span>Permissions</span><span>read settings, write translations</span></div>
-                    <div class="store-install-row"><span>License</span><span>GPL-3.0-only</span></div>
-                    <div class="store-install-row"><span>SHA-256</span><span>checked on download</span></div>
-                    <div class="store-install-row"><span>Installed</span><span>up to date</span></div>
-                </div>
-                <div class="store-install" data-ui>
-                    <div class="store-install-row"><span>Discover</span><span>search the catalog from inside the app</span></div>
-                    <div class="store-install-row"><span>Install</span><span>one tap, checksum checked, no restart of the world</span></div>
-                    <div class="store-install-row"><span>Updates</span><span>a badge appears when a reviewed version is out</span></div>
-                    <div class="store-install-row"><span>Permissions</span><span>listed before install, never hidden</span></div>
-                    <div class="store-install-row"><span>Uninstall</span><span>keeps its data unless you clear it</span></div>
-                </div>
-                <div class="store-install" data-ui>
-                    <div class="store-install-row"><span>Publisher</span><span>packages carry the account that submitted them</span></div>
-                    <div class="store-install-row"><span>Review</span><span>nothing goes live before a manual check</span></div>
-                    <div class="store-install-row"><span>Ended</span><span>withdrawn or removed packages say why</span></div>
-                    <div class="store-install-row"><span>Downloads</span><span>counted per version, not per click</span></div>
-                    <div class="store-install-row"><span>Updates</span><span>a new version shows as a badge in the app</span></div>
-                </div>
-            </div>
 
             <div class="store-tools">
                 <div class="store-search">
@@ -1824,7 +1790,7 @@
                 document.getElementById('detail-title').textContent = ext.name;
                 const icon = ext.icon_url
                     ? '<img class="store-icon" src="' + escapeHtml(ext.icon_url) + '" alt="" style="width: 56px; height: 56px;">'
-                    : '<div class="store-icon" style="width: 56px; height: 56px;">' + escapeHtml((item.name || '?').trim().charAt(0).toUpperCase()) + '</div>';
+                    : '<div class="store-icon" style="width: 56px; height: 56px;">' + escapeHtml((ext.name || '?').trim().charAt(0).toUpperCase()) + '</div>';
                 const author = ext.author
                     ? '<a class="publisher-link" href="' + publisherUrl(ext.author) + '">' + escapeHtml(ext.author) + '</a>'
                     : 'unknown author';
@@ -1852,6 +1818,22 @@
                     '<div class="store-meta" style="margin-top: 6px;"><span><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v12"/><path d="M8 12l4 4 4-4"/><path d="M5 20h14"/></svg>' +
                     (ext.downloads || 0) + ' downloads</span><span><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h8l4 4v14H6z"/><path d="M14 3v4h4"/><path d="M9 12h6M9 16h6"/></svg>' +
                     escapeHtml(ext.license || '-') + '</span></div></div></div>' +
+                    '<div class="pkg-facts">' +
+                    (function () {
+                        const latest = (ext.versions || [])[0] || {};
+                        const rows = [];
+                        if (latest.version) rows.push(['Version', 'v' + latest.version]);
+                        if (latest.file_size) rows.push(['Size', Math.max(1, Math.round(latest.file_size / 1024)) + ' KB']);
+                        if (ext.license) rows.push(['License', ext.license]);
+                        if (latest.sha256) rows.push(['SHA-256', String(latest.sha256).slice(0, 16) + '\u2026']);
+                        if (latest.min_app_version) rows.push(['Needs app', 'v' + latest.min_app_version]);
+                        rows.push(['Downloads', String(ext.downloads || 0)]);
+                        rows.push(['Review', 'checked by hand before publishing']);
+                        return rows.map(function (r) {
+                            return '<div class="pkg-facts-row"><span>' + escapeHtml(r[0]) + '</span><span>' + escapeHtml(r[1]) + '</span></div>';
+                        }).join('');
+                    })() +
+                    '</div>' +
                     '<div style="display: flex; flex-direction: column; gap: 16px; margin-top: 8px;">' +
                     '<div style="line-height: 1.55; white-space: pre-wrap;">' + escapeHtml(ext.description || ext.summary || '') + '</div>' +
                     shots +
@@ -2152,7 +2134,7 @@
 (function () {
     document.documentElement.classList.add('js');
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-    var cards = document.querySelectorAll('.item-card, .store-publisher, .store-tools, .store-install, .page-header, .page-title, #store-subtitle, .chips-row, .store-search, .dash-footer-col, .mine-section');
+    var cards = document.querySelectorAll('.item-card, .store-publisher, .store-tools, .page-header, .page-title, #store-subtitle, .chips-row, .store-search, .dash-footer-col, .mine-section');
     cards.forEach(function (el, i) { el.classList.add('rev'); el.style.transitionDelay = Math.min(i * 35, 300) + 'ms'; });
     if (!('IntersectionObserver' in window)) { cards.forEach(function (el) { el.classList.add('in'); }); return; }
     var io = new IntersectionObserver(function (es) {
