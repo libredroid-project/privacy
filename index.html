@@ -11,15 +11,16 @@
 <link href="https://fonts.googleapis.com/css2?family=Golos+Text:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
 :root {
-    --bg: #1B1613;
-    --surface: #241C18;
-    --field: #2D2620;
-    --line: #3A2F27;
-    --ink: #EFE0D9;
-    --muted: #A9978C;
-    --quiet: #7E6F66;
-    --accent: #FF6B00;
-    --accent-ink: #1A0F00;
+    --bg: #0B0B0D;
+    --surface: #151517;
+    --field: #1D1D21;
+    --line: #26262B;
+    --ink: #F4F4F6;
+    --muted: #9C9CA5;
+    --quiet: #6F6F78;
+    --accent: #2563EB;
+    --accent-ink: #FFFFFF;
+    --accent-text: #86AFFF;
     --ok: #6FBE7E;
     --rail: clamp(24px, 27vw, 30vw);
     --step-small: 0.8125rem;
@@ -41,7 +42,7 @@ body {
 }
 a { color: inherit; text-decoration: none; }
 p a, .tlink { color: var(--ink); border-bottom: 1px solid var(--line); padding-bottom: 1px; }
-p a:hover, .tlink:hover { border-color: var(--accent); color: var(--accent); }
+p a:hover, .tlink:hover { border-color: var(--accent-text); color: var(--accent-text); }
 ::selection { background: var(--accent); color: var(--accent-ink); }
 .mono { font-family: 'JetBrains Mono', ui-monospace, monospace; }
 
@@ -52,20 +53,23 @@ p a:hover, .tlink:hover { border-color: var(--accent); color: var(--accent); }
 .topbar { display: flex; align-items: center; justify-content: space-between; gap: 20px; padding: 20px 32px 0 var(--rail); flex-wrap: wrap; }
 .mark { display: flex; align-items: center; gap: 10px; font-weight: 600; font-size: 0.9375rem; }
 .topnav { display: flex; align-items: center; gap: 26px; font-size: 0.9375rem; color: var(--muted); }
-.topnav a:hover { color: var(--accent); }
-.topnav .btn-quiet { color: var(--ink); background: var(--field); border-radius: var(--r); padding: 9px 16px; font-weight: 600; font-size: 0.875rem; }
-.topnav .btn-quiet:hover { background: var(--surface-2, #2D2620); color: var(--ink); }
+.topnav a:hover { color: var(--accent-text); }
+.topnav .btn-quiet { color: var(--ink); background: var(--field); border-radius: 999px; padding: 9px 18px; font-weight: 500; font-size: 0.875rem; }
+.topnav .btn-quiet:hover { background: var(--line); color: var(--ink); }
 .mark img { width: 30px; height: 30px; border-radius: var(--r); }
-.mark span span { color: var(--accent); }
+.mark span span { color: var(--accent-text); }
 
 /* ── hero ─────────────────────────────────────────────────────────── */
-.hero { padding-top: 170px; }
+.hero { padding-top: 150px; }
+.hero-grid { display: grid; grid-template-columns: minmax(320px, 5fr) minmax(0, 6fr); gap: 64px; align-items: start; }
+.hero-panel { width: 100%; max-width: 620px; margin-top: 0; }
+@media (max-width: 1100px) { .hero-grid { grid-template-columns: 1fr; gap: 40px; } }
 .hero h1 {
-    font-size: clamp(1.5rem, 1.25rem + 1.1vw, 1.75rem);
-    font-weight: 500;
-    letter-spacing: -0.02em;
-    line-height: 1.25;
-    max-width: 360px;
+    font-size: clamp(1.6rem, 1.3rem + 1.3vw, 2rem);
+    font-weight: 600;
+    letter-spacing: -0.03em;
+    line-height: 1.15;
+    max-width: 420px;
 }
 .hero p { margin-top: 16px; color: var(--ink); line-height: 1.5; max-width: 390px; }
 .actions { display: flex; align-items: center; gap: 22px; margin-top: 28px; }
@@ -73,16 +77,16 @@ p a:hover, .tlink:hover { border-color: var(--accent); color: var(--accent); }
     display: inline-block;
     background: var(--accent);
     color: var(--accent-ink);
-    border-radius: var(--r);
-    padding: 13px 20px;
+    border-radius: 999px;
+    padding: 13px 22px;
     font-weight: 600;
     font-size: 0.9375rem;
-    transition: transform 0.15s ease-out;
+    transition: transform 0.15s ease-out, background 0.15s ease-out;
 }
-.btn:hover { transform: translateY(-1px); }
+.btn:hover { transform: translateY(-1px); background: #1D4FD8; }
 
 /* the first true fragment peeks in at the fold */
-.peek { margin-top: 84px; }
+.peek { margin-top: 0; padding-top: 6px; }
 .peek .frag { margin-top: 0; }
 
 /* ── fragments: cropped, working pieces of the product ────────────── */
@@ -101,13 +105,13 @@ p a:hover, .tlink:hover { border-color: var(--accent); color: var(--accent); }
 
 .dot { display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: var(--ok); margin-right: 7px; vertical-align: 1px; }
 .dot.off { background: var(--quiet); }
-.frag .addr { font-size: 0.9375rem; font-weight: 500; color: var(--accent); }
+.frag .addr { font-size: 0.9375rem; font-weight: 500; color: var(--accent-text); }
 .frag .field { background: var(--field); border-radius: var(--r); padding: 11px 14px; margin: 8px 0; }
 .frag .field .k { display: block; font-size: 0.6875rem; letter-spacing: 0.06em; text-transform: uppercase; margin-bottom: 4px; }
 .frag pre { margin: 0; overflow-x: auto; }
 .frag pre code { font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: var(--step-small); line-height: 1.7; color: #CDBCB1; }
 .frag pre code b { color: var(--ink); font-weight: 500; }
-.frag pre code .sent { color: var(--accent); }
+.frag pre code .sent { color: var(--accent-text); }
 .frag .bar { height: 6px; border-radius: 3px; background: var(--field); overflow: hidden; margin-top: 10px; }
 .frag .bar i { display: block; height: 100%; background: var(--ok); }
 .frag h4 { font-size: 0.9375rem; font-weight: 600; margin-bottom: 14px; }
@@ -124,8 +128,8 @@ main { padding-top: 120px; }
 .band > .frag { margin-top: 0; width: 100%; max-width: 620px; }
 .band .say {
     font-size: var(--step-head);
-    font-weight: 500;
-    letter-spacing: -0.03em;
+    font-weight: 600;
+    letter-spacing: -0.035em;
     line-height: 1.02;
     max-width: 20ch;
 }
@@ -162,7 +166,7 @@ main { padding-top: 120px; }
     display: flex; justify-content: space-between; gap: 24px; align-items: baseline;
 }
 .faq-list summary::-webkit-details-marker { display: none; }
-.faq-list summary::after { content: "+"; color: var(--accent); font-weight: 400; flex: none; }
+.faq-list summary::after { content: "+"; color: var(--accent-text); font-weight: 400; flex: none; }
 .faq-list details[open] summary::after { content: "\2212"; }
 .faq-list details p { padding: 0 0 22px; color: var(--ink); line-height: 1.55; max-width: 72ch; }
 
@@ -174,7 +178,7 @@ footer { background: var(--surface); padding: 72px var(--rail) 32px 32px; margin
 .foot-brand p { color: var(--muted); font-size: var(--step-small); line-height: 1.65; margin-top: 16px; max-width: 34ch; }
 .foot-col h4 { font-size: var(--step-small); font-weight: 500; color: var(--muted); margin-bottom: 14px; }
 .foot-col a { display: block; font-size: 0.9375rem; padding: 5px 0; }
-.foot-col a:hover { color: var(--accent); }
+.foot-col a:hover { color: var(--accent-text); }
 .foot-bottom { display: flex; justify-content: space-between; gap: 12px 40px; flex-wrap: wrap; margin-top: 56px; color: var(--muted); font-size: var(--step-small); line-height: 1.6; }
 
 @media (max-width: 900px) {
@@ -209,7 +213,7 @@ footer { background: var(--surface); padding: 72px var(--rail) 32px 32px; margin
     </nav>
 </header>
 
-<header class="hero rail">
+<header class="hero rail hero-grid">
     <div class="col">
         <h1>A real Minecraft server on the phone in your pocket.</h1>
         <p>Not a remote control for somebody else's machine and not a rented box: the world runs on your own device, on your desk or in your bag. Your friends join the way they always have, with an address.</p>
@@ -220,7 +224,7 @@ footer { background: var(--surface); padding: 72px var(--rail) 32px 32px; margin
     </div>
 
     <div class="peek">
-        <div class="frag" data-ui>
+        <div class="frag hero-panel" data-ui>
             <h4>Servers <span class="k" style="font-weight:400">- this device</span></h4>
             <div class="row">
                 <span class="v"><span class="dot"></span>koda-world</span>
