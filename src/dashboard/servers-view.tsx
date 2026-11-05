@@ -1,12 +1,18 @@
-import type { ReactNode } from "react";
-import { Database, ExternalLink, Play, RotateCw, Server, Square } from "lucide-react";
+import { useState, type ReactNode } from "react";
+import {
+  ArrowUpRight,
+  Check,
+  Copy,
+  Database,
+  Play,
+  RotateCw,
+  Server,
+  Square,
+} from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
-import { Progress } from "@/components/ui/progress";
 import { Reveal } from "@/components/reveal";
-import { relativeTime } from "@/lib/format";
+import { copyText, relativeTime } from "@/lib/format";
 import type { AppStateDetails, ServerRow, StatusDetails } from "@/lib/server-status";
 import { getStatusDetails, isDatabase, versionLabel } from "@/lib/server-status";
 import { cn } from "@/lib/utils";
@@ -14,18 +20,67 @@ import { cn } from "@/lib/utils";
 type Feedback = { tone: "ok" | "err"; text: string };
 type Command = "start" | "restart" | "stop";
 
-const TONE_CLASS: Record<string, string> = {
-  online: "tone-online",
-  pending: "tone-pending",
-  offline: "border-border bg-muted text-muted-foreground",
+const STATUS_STYLE: Record<StatusDetails["tone"], { dot: string; text: string; pill: string }> = {
+  online: { dot: "bg-emerald-400", text: "text-emerald-300", pill: "bg-emerald-400/10" },
+  pending: { dot: "bg-amber-400", text: "text-amber-300", pill: "bg-amber-400/10" },
+  offline: { dot: "bg-zinc-500", text: "text-zinc-400", pill: "bg-white/[0.04]" },
 };
 
-function StatusBadge({ status }: { status: StatusDetails }) {
+function StatusPill({ status }: { status: StatusDetails }) {
+  const style = STATUS_STYLE[status.tone];
   return (
-    <Badge variant="outline" className={cn("gap-1.5 font-normal", TONE_CLASS[status.tone])}>
-      <span className="size-1.5 rounded-full bg-current" />
+    <span
+      className={cn(
+        "inline-flex shrink-0 items-center gap-1.5 rounded-full px-2 py-1 text-[11px] font-medium",
+        style.pill,
+        style.text,
+      )}
+    >
+      <span className={cn("size-1.5 rounded-full", style.dot)} />
       {status.label}
-    </Badge>
+    </span>
+  );
+}
+
+function CopyAddress({ value }: { value: string }) {
+  const [copied, setCopied] = useState(false);
+
+  async function copy() {
+    if (!(await copyText(value))) return;
+    setCopied(true);
+    window.setTimeout(() => setCopied(false), 1400);
+  }
+
+  return (
+    <button
+      type="button"
+      onClick={copy}
+      aria-label={`Copy ${value}`}
+      title="Copy address"
+      className="shrink-0 rounded p-0.5 text-zinc-600 transition-colors hover:text-zinc-300 focus-visible:text-zinc-300 focus-visible:outline-none"
+    >
+      {copied ? <Check className="size-3 text-emerald-400" /> : <Copy className="size-3" />}
+    </button>
+  );
+}
+
+function memoryLabel(mb?: number): string {
+  if (!mb) return "--";
+  if (mb >= 1024) {
+    const gb = mb / 1024;
+    return `${Number.isInteger(gb) ? gb : gb.toFixed(1)} GB`;
+  }
+  return `${mb} MB`;
+}
+
+function Metric({ label, children }: { label: string; children: ReactNode }) {
+  return (
+    <div className="min-w-0">
+      <div className="text-xs text-zinc-500">{label}</div>
+      <div className="mt-1 flex h-6 items-center truncate text-[15px] font-medium tabular-nums text-zinc-200">
+        {children}
+      </div>
+    </div>
   );
 }
 
@@ -65,151 +120,138 @@ function ServerCard({
   const hasDash = Number(row.kodadash_port) > 0;
   const online = status.tone === "online";
   const address = row.base_domain ? `${row.host}.${row.base_domain}` : row.host;
-  const ramPct =
-    row.total_ram_mb && row.ram_mb
-      ? Math.min(100, Math.round((row.ram_mb / row.total_ram_mb) * 100))
-      : 0;
 
   return (
-    <Card className="relative h-full gap-0 overflow-hidden bg-[#1a1310] p-0">
-      <span className="absolute inset-y-5 left-0 w-1 rounded-r-full bg-brand" />
-      <div className="p-5 pl-6">
-        <div className="flex items-start gap-3">
-          <div
-            className={cn(
-              "flex size-11 shrink-0 items-center justify-center rounded-xl",
-              database ? "bg-[#2a1a12] text-brand-ink" : "bg-brand text-[#1a0f00]",
-            )}
-          >
-            {database ? <Database className="size-5" /> : <Server className="size-5" />}
-          </div>
-          <div className="min-w-0 flex-1">
-            <div className="truncate text-base font-medium">{row.host}</div>
-            {address !== row.host ? (
-              <div className="truncate text-sm text-brand-ink">{address}</div>
-            ) : null}
-            <div className="mt-1.5 flex flex-wrap gap-2">
-              <StatusBadge status={status} />
-              {row.is_guest === true ? (
-                <Badge variant="outline" className="font-normal">
-                  Shared
-                </Badge>
-              ) : null}
+    <div className="flex h-full flex-col overflow-hidden rounded-2xl border border-white/[0.06] bg-[#0b0b0d] transition-colors hover:border-white/[0.12] hover:bg-[#0e0e11]">
+      <div className="flex-1 p-4 sm:p-5">
+        <div className="flex items-start justify-between gap-3">
+          <div className="flex min-w-0 items-center gap-3">
+            <div
+              className={cn(
+                "flex size-9 shrink-0 items-center justify-center rounded-lg border",
+                database
+                  ? "border-white/[0.06] bg-white/[0.03] text-zinc-500"
+                  : "border-brand/15 bg-brand/[0.08] text-brand-ink",
+              )}
+            >
+              {database ? (
+                <Database className="size-4" strokeWidth={1.75} />
+              ) : (
+                <Server className="size-4" strokeWidth={1.75} />
+              )}
+            </div>
+            <div className="min-w-0">
+              <div className="flex items-center gap-2">
+                <h3 className="truncate text-[15px] font-semibold tracking-[-0.01em] text-zinc-100">
+                  {row.host}
+                </h3>
+                {row.is_guest === true ? (
+                  <span className="shrink-0 rounded bg-white/[0.06] px-1.5 py-0.5 text-[10px] font-medium text-zinc-400">
+                    Shared
+                  </span>
+                ) : null}
+              </div>
+              <div className="mt-0.5 flex min-w-0 items-center gap-1 text-[13px] text-zinc-500">
+                <span className="truncate">{address}</span>
+                <CopyAddress value={address} />
+              </div>
             </div>
           </div>
+          <StatusPill status={status} />
         </div>
 
-        {database ? (
-          <div className="mt-5 grid grid-cols-2 gap-2">
-            <Stat label="RAM">
-              {row.ram_mb ? (
-                <>
-                  {row.ram_mb} <span className="text-sm text-muted-foreground">MB</span>
-                </>
-              ) : (
-                "--"
-              )}
-            </Stat>
-            <Stat label="Version">{versionLabel(row.server_version)}</Stat>
-          </div>
-        ) : (
-          <>
-            <div className="mt-5 flex items-end justify-between gap-4">
-              <div>
-                <div className="text-[13px] text-brand-ink">Players</div>
-                <div className="mt-1 text-4xl font-medium tracking-[-0.04em]">
-                  {row.online_players || 0}
-                  <span className="text-xl text-muted-foreground"> / {row.max_players || 0}</span>
-                </div>
-              </div>
-              <div className="text-right">
-                <div className="text-[13px] text-brand-ink">RAM</div>
-                <div className="mt-1 text-base font-medium">
-                  {row.ram_mb ? `${row.ram_mb} MB` : "--"}
-                </div>
-                <div className="mt-1 text-[13px] text-muted-foreground">
-                  {versionLabel(row.server_version)}
-                </div>
-              </div>
-            </div>
-            {ramPct > 0 ? (
-              <div className="mt-4 h-1.5 overflow-hidden rounded-full bg-[#2a1a12]">
-                <div className="h-full rounded-full bg-brand" style={{ width: `${ramPct}%` }} />
-              </div>
-            ) : null}
-          </>
-        )}
-
-        {database ? (
-          <p className="mt-4 text-sm leading-6 text-muted-foreground">
-            Databases are managed in the KodaHosting app.
-          </p>
-        ) : (
-          <>
-            {!hasDash ? (
-              <p className="mt-4 text-sm leading-6 text-warn">
-                KodaDash is not enabled for this server.
-              </p>
-            ) : !online ? (
-              <p className="mt-4 text-sm leading-6 text-muted-foreground">
-                The tunnel only exists while the server is running.
-              </p>
-            ) : null}
-
-            <div className="mt-4 flex flex-wrap gap-2">
-              <Button
-                size="sm"
-                className="rounded-lg bg-brand text-[#1a0f00] hover:bg-brand/90"
-                disabled={busy}
-                onClick={() => onCommand(row, "start")}
-              >
-                <Play className="size-3.5" /> Start
-              </Button>
-              <Button
-                size="sm"
-                className="rounded-lg bg-amber-500 text-[#1a0f00] hover:bg-amber-500/90"
-                disabled={busy}
-                onClick={() => onCommand(row, "restart")}
-              >
-                <RotateCw className="size-3.5" /> Restart
-              </Button>
-              <Button
-                size="sm"
-                className="rounded-lg bg-red-600 text-white hover:bg-red-600/90"
-                disabled={busy}
-                onClick={() => onCommand(row, "stop")}
-              >
-                <Square className="size-3.5" /> Stop
-              </Button>
-              {hasDash && online ? (
-                <Button
-                  size="sm"
-                  className="rounded-lg bg-white text-black hover:bg-white/90"
-                  disabled={busy}
-                  onClick={() => onOpenDash(row)}
-                >
-                  <ExternalLink className="size-3.5" /> Open KodaDash
-                </Button>
-              ) : null}
-            </div>
-          </>
-        )}
+        <div className={cn("mt-5 grid gap-4", database ? "grid-cols-2" : "grid-cols-3")}>
+          {database ? null : (
+            <Metric label="Players">
+              <span className="text-zinc-100">{row.online_players ?? 0}</span>
+              <span className="text-zinc-500"> / {row.max_players || 0}</span>
+            </Metric>
+          )}
+          <Metric label="Memory">{memoryLabel(row.ram_mb)}</Metric>
+          <Metric label="Version">
+            <span className="truncate">{versionLabel(row.server_version)}</span>
+          </Metric>
+        </div>
 
         {feedback ? (
-          <p className={cn("mt-3 text-sm", feedback.tone === "ok" ? "text-ok" : "text-destructive")}>
+          <p
+            className={cn(
+              "mt-3.5 text-xs",
+              feedback.tone === "ok" ? "text-emerald-400" : "text-red-400",
+            )}
+          >
             {feedback.text}
           </p>
         ) : null}
       </div>
-    </Card>
-  );
-}
 
-function Stat({ label, children }: { label: string; children: ReactNode }) {
-  return (
-    <div className="rounded-xl bg-[#241a15] px-4 py-3">
-      <div className="text-[13px] text-brand-ink">{label}</div>
-      <div className="mt-1 text-lg font-medium tracking-tight">{children}</div>
+      <div className="flex flex-wrap items-center justify-between gap-2 border-t border-white/[0.05] bg-black/20 px-3 py-2 sm:px-4">
+        {database ? (
+          <span className="px-1 text-[11px] text-zinc-500">Managed in the KodaHosting app</span>
+        ) : (
+          <div className="flex flex-wrap items-center gap-1">
+            <Button
+              type="button"
+              size="sm"
+              variant="ghost"
+              disabled={busy}
+              onClick={() => onCommand(row, "start")}
+              className={cn(
+                "h-7 gap-1.5 rounded-lg px-2 text-[12px]",
+                !online
+                  ? "bg-zinc-100 text-zinc-950 hover:bg-white"
+                  : "text-zinc-500 hover:bg-white/[0.06] hover:text-zinc-200",
+              )}
+            >
+              <Play className="size-3.5" /> Start
+            </Button>
+            <Button
+              type="button"
+              size="sm"
+              variant="ghost"
+              disabled={busy}
+              onClick={() => onCommand(row, "restart")}
+              className="h-7 gap-1.5 rounded-lg px-2 text-[12px] text-zinc-500 hover:bg-white/[0.06] hover:text-zinc-200"
+            >
+              <RotateCw className="size-3.5" /> Restart
+            </Button>
+            <Button
+              type="button"
+              size="sm"
+              variant="ghost"
+              disabled={busy}
+              onClick={() => onCommand(row, "stop")}
+              className="h-7 gap-1.5 rounded-lg px-2 text-[12px] text-red-400/80 hover:bg-red-500/10 hover:text-red-300"
+            >
+              <Square className="size-3.5" /> Stop
+            </Button>
+          </div>
+        )}
+
+        {database ? null : hasDash && online ? (
+          <Button
+            type="button"
+            size="sm"
+            variant="ghost"
+            disabled={busy}
+            onClick={() => onOpenDash(row)}
+            className="h-7 gap-1 rounded-lg px-2 text-[12px] text-brand-ink hover:bg-brand/10 hover:text-brand"
+          >
+            KodaDash <ArrowUpRight className="size-3.5" />
+          </Button>
+        ) : (
+          <span
+            className="px-1 text-[11px] text-zinc-600"
+            title={
+              hasDash
+                ? "KodaDash is reachable while the server is running"
+                : "Enable KodaDash in the KodaHosting app"
+            }
+          >
+            {hasDash ? "KodaDash offline" : "KodaDash not set up"}
+          </span>
+        )}
+      </div>
     </div>
   );
 }
@@ -226,7 +268,7 @@ export function DeviceCard({ rows }: { rows: ServerRow[] }) {
     : Infinity;
 
   return (
-    <Card className="gap-0 p-6 shadow-none">
+    <div className="rounded-2xl border border-white/[0.06] bg-[#0b0b0d] p-4 sm:p-5">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <div>
           <h3 className="text-sm font-semibold">This device</h3>
@@ -243,7 +285,9 @@ export function DeviceCard({ rows }: { rows: ServerRow[] }) {
         <div>
           <div className="text-xs text-muted-foreground">Memory</div>
           <div className="mt-1 text-lg font-semibold">{total ? `${usedPct}%` : "--"}</div>
-          <Progress value={usedPct} className="mt-2 h-1" />
+          <div className="mt-2 h-1 overflow-hidden rounded-full bg-white/[0.06]">
+            <div className="h-full rounded-full bg-zinc-500" style={{ width: `${usedPct}%` }} />
+          </div>
           <div className="mt-1.5 text-[11px] text-muted-foreground">
             {total ? `${total - free} MB of ${total} MB` : "not reported"}
           </div>
@@ -287,7 +331,7 @@ export function DeviceCard({ rows }: { rows: ServerRow[] }) {
           <div className="mt-1 text-sm font-semibold">{relativeTime(row.app_last_ping)}</div>
         </div>
       </div>
-    </Card>
+    </div>
   );
 }
 
@@ -316,11 +360,18 @@ export function ServersView({
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-semibold tracking-tight">Minecraft Servers</h1>
-        <p className="mt-1 max-w-2xl text-sm text-muted-foreground">
-          Starting, stopping and the console happen here. Everything else lives in the KodaHosting app.
-        </p>
+      <div className="flex flex-wrap items-end justify-between gap-2">
+        <div>
+          <h1 className="text-2xl font-semibold tracking-tight">Minecraft Servers</h1>
+          <p className="mt-1 max-w-2xl text-sm text-muted-foreground">
+            Starting, stopping and the console happen here. Everything else lives in the KodaHosting app.
+          </p>
+        </div>
+        {!error && servers.length > 0 ? (
+          <span className="pb-1 text-xs tabular-nums text-zinc-500">
+            {servers.length} {servers.length === 1 ? "server" : "servers"}
+          </span>
+        ) : null}
       </div>
 
       {inviteBanner ? (
@@ -356,16 +407,16 @@ export function ServersView({
           </p>
         </div>
       ) : (
-        <div className="grid gap-4 lg:grid-cols-2">
+        <div className="grid gap-3 lg:grid-cols-2">
           {servers.map((row, index) => (
             <Reveal key={row.id || row.host} delay={Math.min(index * 60, 240)} className="h-full">
-            <ServerCard
-              row={row}
-              busy={busyHost === row.host}
-              feedback={feedback[row.host]}
-              onCommand={onCommand}
-              onOpenDash={onOpenDash}
-            />
+              <ServerCard
+                row={row}
+                busy={busyHost === row.host}
+                feedback={feedback[row.host]}
+                onCommand={onCommand}
+                onOpenDash={onOpenDash}
+              />
             </Reveal>
           ))}
         </div>
@@ -381,11 +432,18 @@ export function DatabasesView({ rows }: { rows: ServerRow[] }) {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-semibold tracking-tight">MariaDB Databases</h1>
-        <p className="mt-1 max-w-2xl text-sm text-muted-foreground">
-          Databases run next to your Minecraft servers and are created in the app.
-        </p>
+      <div className="flex flex-wrap items-end justify-between gap-2">
+        <div>
+          <h1 className="text-2xl font-semibold tracking-tight">MariaDB Databases</h1>
+          <p className="mt-1 max-w-2xl text-sm text-muted-foreground">
+            Databases run next to your Minecraft servers and are created in the app.
+          </p>
+        </div>
+        {databases.length > 0 ? (
+          <span className="pb-1 text-xs tabular-nums text-zinc-500">
+            {databases.length} {databases.length === 1 ? "database" : "databases"}
+          </span>
+        ) : null}
       </div>
 
       {databases.length === 0 ? (
@@ -393,15 +451,15 @@ export function DatabasesView({ rows }: { rows: ServerRow[] }) {
           No databases yet. Create one in the KodaHosting app.
         </div>
       ) : (
-        <div className="grid gap-4 lg:grid-cols-2">
+        <div className="grid gap-3 lg:grid-cols-2">
           {databases.map((row, index) => (
             <Reveal key={row.id || row.host} delay={Math.min(index * 60, 240)} className="h-full">
-            <ServerCard
-              row={row}
-              busy={false}
-              onCommand={() => {}}
-              onOpenDash={() => {}}
-            />
+              <ServerCard
+                row={row}
+                busy={false}
+                onCommand={() => {}}
+                onOpenDash={() => {}}
+              />
             </Reveal>
           ))}
         </div>
