@@ -1,0 +1,14 @@
+{
+  "name": "privacy",
+  "version": "1.0.0",
+  "description": "KodaHosting - Static website with Vercel Analytics",
+  "private": true,
+  "scripts": {
+    "dev": "npx serve .",
+    "build": "echo 'Static site - no build required'",
+    "lint": "echo 'No linting configured'"
+  },
+  "dependencies": {
+    "@vercel/analytics": "^1.1.1"
+  }
+}
