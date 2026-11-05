@@ -20,6 +20,11 @@
     "type": "txt"
   },
   {
+    "file": "chat_background.txt",
+    "title": "Chat Background",
+    "type": "txt"
+  },
+  {
     "file": "commons_compress.txt",
     "title": "Apache Commons Compress",
     "type": "txt"

@@ -1,0 +1,11 @@
+Engine logos are used for identification of each server software.
+
+PaperMC            https://papermc.io/                        logo: https://papermc.io/_astro/logo-marker-dark.DF_F0BKE.svg (official site)
+Fabric             https://fabricmc.net/                     logo: https://fabricmc.net/assets/logo.png (official site)
+Minecraft Forge    https://minecraftforge.net/               logo: https://forums.minecraftforge.net/uploads/set_resources_1/6d538d11ecfced46f459ee300b5e80ec_logo_63b5f8.svg (official site)
+NeoForge           https://neoforged.net/                    logo: https://neoforged.net/favicon.ico (official site)
+Vanilla Minecraft  https://www.minecraft.net/                image: "Minecraft Grass Block" by Render at Night, CC BY 4.0, via Sketchfab (https://sketchfab.com/3d-models/84938a8f3f8d4a0aa64aaa9c4e4d27d3)
+Pumpkin            https://pumpkinmc.org/                    logo: https://pumpkinmc.org/assets/icon.svg (official site)
+
+Trademarks belong to their respective owners. The logos are shown to identify the
+software the app can install, not to suggest an endorsement.

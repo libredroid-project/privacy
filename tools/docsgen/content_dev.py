@@ -53,6 +53,40 @@ GROUPS = [
 <div class="callout">Server side plugins have their own credentials. The KodaDash token lives in the server folder, not in the app, and a stolen token cannot delete backups by design.</div>
 """),
     ]),
+    ("API", [
+        ("api-reference", "API reference", """
+<p>The API lives at <code>https://api.kodanetwork.eu</code> and answers JSON. The reads used by this site need no key. Anything under <code>/v1/me</code> expects the Supabase access token in an <code>Authorization: Bearer ...</code> header.</p>
+<table>
+  <tr><th>Method and path</th><th>What it returns</th></tr>
+  <tr><td><code>GET /v1/status</code></td><td>API version, server and player totals, tunnel load, latest release and maintenance state</td></tr>
+  <tr><td><code>GET /v1/servers?limit=12</code></td><td>public servers with host, status, MOTD and player counts</td></tr>
+  <tr><td><code>GET /v1/servers/{host}</code></td><td>one public server, including the live ping when it answers</td></tr>
+  <tr><td><code>GET /v1/extensions</code></td><td>the published extension catalog</td></tr>
+  <tr><td><code>GET /v1/extensions/{ext_id}</code></td><td>one extension with its description, screenshots and versions</td></tr>
+  <tr><td><code>GET /v1/extensions/{ext_id}/download?version={code}</code></td><td>redirects to a short-lived download of the package</td></tr>
+  <tr><td><code>GET /v1/invite/{token}</code></td><td>the server behind an invite, its join addresses and the invite limits</td></tr>
+</table>
+<h4>Signed in</h4>
+<table>
+  <tr><th>Method and path</th><th>What it does</th></tr>
+  <tr><td><code>POST /v1/invite/{token}/accept</code></td><td>adds the shared server to the account</td></tr>
+  <tr><td><code>GET /v1/me</code></td><td>account profile, linked Minecraft account, counts and 2FA state</td></tr>
+  <tr><td><code>PATCH /v1/me</code></td><td>nickname or avatar URL</td></tr>
+  <tr><td><code>GET /v1/me/devices</code></td><td>devices, their telemetry and linked Minecraft accounts</td></tr>
+  <tr><td><code>POST /v1/me/devices/{app_uuid}/unlink</code></td><td>removes a device from the account</td></tr>
+  <tr><td><code>GET /v1/me/tickets</code></td><td>support tickets and their last message</td></tr>
+  <tr><td><code>GET /v1/me/tickets/{id}</code></td><td>one ticket with the full conversation</td></tr>
+  <tr><td><code>POST /v1/me/tickets/{id}/messages</code></td><td>sends a reply</td></tr>
+  <tr><td><code>GET /v1/me/extensions</code></td><td>the account's extension submissions</td></tr>
+  <tr><td><code>POST /v1/extensions</code>, <code>/versions</code>, <code>/finalize</code>, <code>/withdraw</code></td><td>the submission pipeline used by the store</td></tr>
+  <tr><td><code>POST /v1/assets</code></td><td>a signed upload target for an icon or screenshot</td></tr>
+  <tr><td><code>POST /v1/me/servers/{host}/action</code></td><td>start, restart or stop a server</td></tr>
+</table>
+<h4>Errors</h4>
+<p>A failed call answers with <code>{ "error": "name" }</code> and an HTTP status. <code>401</code> means the session is gone and the client should sign in again. <code>429</code> adds a <code>retry_after</code> value in seconds; the website blocks the page until that time has passed instead of showing an error.</p>
+<p>The extension pipeline is the only write path with its own rules: the version code must increase, one version can be in review at a time, and the package hash is checked after the upload. The status page links here so the live values and their source sit next to each other.</p>
+"""),
+    ]),
     ("Development", [
         ("workflow", "Working on the code", """
 <p>The project uses two repositories: a private development repository and a public mirror. The mirror is produced by a script that copies tracked files, excludes the local tooling, the IDE state and database backups, and scans the result for instance data before it pushes. A pattern that has never been public before aborts the push, which is the only reason a project this size can be published safely.</p>
