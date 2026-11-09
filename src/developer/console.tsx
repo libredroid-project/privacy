@@ -54,6 +54,7 @@ import { ListingEditor } from "@/developer/listing-editor";
 import { VersionsPanel } from "@/developer/versions";
 import { DeveloperSupport } from "@/developer/support";
 import { DeveloperAnalytics } from "@/developer/analytics";
+import { ReleaseScreen } from "@/developer/release-screen";
 import { SubmitDialog } from "@/store/submit-dialog";
 import type { MyExtension } from "@/store/types";
 import { cn } from "@/lib/utils";
@@ -271,6 +272,7 @@ function Workspace({
   onChanged: () => void;
 }) {
   const latest = latestVersion(ext);
+  const [releaseOpen, setReleaseOpen] = useState(false);
   const tabs: { id: WorkspaceTab; label: string }[] = [
     { id: "listing", label: "Store listing" },
     { id: "releases", label: "Releases" },
@@ -342,39 +344,61 @@ function Workspace({
         </div>
       ) : null}
 
-      <div className="flex gap-1 overflow-x-auto overflow-y-hidden border-b [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-        {tabs.map((item) => (
-          <button
-            key={item.id}
-            type="button"
-            onClick={() => onTab(item.id)}
-            className={cn(
-              "-mb-px shrink-0 border-b-2 px-3 py-2.5 text-sm transition-colors",
-              tab === item.id
-                ? "border-foreground text-foreground"
-                : "border-transparent text-muted-foreground hover:text-foreground",
-            )}
-          >
-            {item.label}
-          </button>
-        ))}
-      </div>
+      {releaseOpen ? (
+        <ReleaseScreen
+          ext={ext}
+          onBack={() => {
+            setReleaseOpen(false);
+            onTab("releases");
+          }}
+          onPublished={onChanged}
+          onEditListing={() => {
+            setReleaseOpen(false);
+            onTab("listing");
+          }}
+        />
+      ) : (
+        <>
+          <div className="flex gap-1 overflow-x-auto overflow-y-hidden border-b [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+            {tabs.map((item) => (
+              <button
+                key={item.id}
+                type="button"
+                onClick={() => onTab(item.id)}
+                className={cn(
+                  "-mb-px shrink-0 border-b-2 px-3 py-2.5 text-sm transition-colors",
+                  tab === item.id
+                    ? "border-foreground text-foreground"
+                    : "border-transparent text-muted-foreground hover:text-foreground",
+                )}
+              >
+                {item.label}
+              </button>
+            ))}
+          </div>
 
-      {tab === "listing" ? <ListingEditor ext={ext} onSaved={onChanged} /> : null}
-      {tab === "releases" ? (
-        <VersionsPanel ext={ext} onChanged={onChanged} onEditCode={() => onTab("code")} />
-      ) : null}
-      {tab === "code" ? (
-        <Suspense
-          fallback={
-            <Card className="flex items-center justify-center gap-2 p-16 text-sm text-muted-foreground shadow-none">
-              <Loader2 className="size-4 animate-spin" /> Loading the editor…
-            </Card>
-          }
-        >
-          <CodeEditor ext={ext} onPublished={onChanged} />
-        </Suspense>
-      ) : null}
+          {tab === "listing" ? <ListingEditor ext={ext} onSaved={onChanged} /> : null}
+          {tab === "releases" ? (
+            <VersionsPanel
+              ext={ext}
+              onChanged={onChanged}
+              onEditCode={() => onTab("code")}
+              onNewRelease={() => setReleaseOpen(true)}
+            />
+          ) : null}
+          {tab === "code" ? (
+            <Suspense
+              fallback={
+                <Card className="flex items-center justify-center gap-2 p-16 text-sm text-muted-foreground shadow-none">
+                  <Loader2 className="size-4 animate-spin" /> Loading the editor…
+                </Card>
+              }
+            >
+              <CodeEditor ext={ext} onPublished={onChanged} />
+            </Suspense>
+          ) : null}
+        </>
+      )}
     </div>
   );
 }

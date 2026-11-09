@@ -16,7 +16,6 @@ import { Card } from "@/components/ui/card";
 import { api } from "@/lib/api";
 import type { DevExtension, DevVersion } from "@/developer/types";
 import { formatBytes, formatDateTime, latestVersion, pendingVersion, statusTone } from "@/developer/types";
-import { ReleaseDialog } from "@/developer/release-dialog";
 
 function CopyButton({ value }: { value: string }) {
   const [copied, setCopied] = useState(false);
@@ -126,12 +125,13 @@ export function VersionsPanel({
   ext,
   onChanged,
   onEditCode,
+  onNewRelease,
 }: {
   ext: DevExtension;
   onChanged: () => void;
   onEditCode: () => void;
+  onNewRelease: () => void;
 }) {
-  const [releaseOpen, setReleaseOpen] = useState(false);
   const [withdrawOpen, setWithdrawOpen] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
@@ -197,7 +197,7 @@ export function VersionsPanel({
             </Button>
             <Button
               size="sm"
-              onClick={() => setReleaseOpen(true)}
+              onClick={onNewRelease}
               disabled={Boolean(pending)}
               title={pending ? "A version is already in review" : undefined}
             >
@@ -258,13 +258,6 @@ export function VersionsPanel({
           </Button>
         </div>
       </Card>
-
-      <ReleaseDialog
-        open={releaseOpen}
-        onOpenChange={setReleaseOpen}
-        ext={ext}
-        onPublished={onChanged}
-      />
 
       <AlertDialog open={withdrawOpen} onOpenChange={(open) => (busy ? null : setWithdrawOpen(open))}>
         <AlertDialogContent>
