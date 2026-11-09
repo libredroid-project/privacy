@@ -32,11 +32,36 @@ interface VersionRow {
   last_at: string;
 }
 
+interface DeviceRow {
+  device_model: string;
+  downloads: number;
+  extensions: number;
+}
+
+interface OsRow {
+  os_version: string;
+  downloads: number;
+}
+
+interface AppVersionRow {
+  app_version: number;
+  downloads: number;
+}
+
+interface SourceRow {
+  source: string;
+  downloads: number;
+}
+
 interface AnalyticsData {
   days: number;
   tracking_since?: string | null;
   daily: DailyRow[];
   versions: VersionRow[];
+  devices: DeviceRow[];
+  os_versions: OsRow[];
+  app_versions: AppVersionRow[];
+  sources: SourceRow[];
 }
 
 const RANGES = [7, 30, 90, 365] as const;
@@ -340,7 +365,7 @@ export function DeveloperAnalytics({ extensions }: { extensions: DevExtension[] 
                   : "tracking starts with the next download"}
               </p>
             </div>
-            <Download className="size-4 text-muted-foreground" />
+            <Download className="size-4 text-sky-500" />
           </div>
         </Card>
         <Card className="gap-0 p-5 shadow-none">
@@ -354,7 +379,7 @@ export function DeveloperAnalytics({ extensions }: { extensions: DevExtension[] 
               </p>
               <p className="mt-1 text-xs text-muted-foreground">all time counter</p>
             </div>
-            <TrendingUp className="size-4 text-muted-foreground" />
+            <TrendingUp className="size-4 text-violet-500" />
           </div>
         </Card>
         <Card className="gap-0 p-5 shadow-none">
@@ -370,7 +395,7 @@ export function DeveloperAnalytics({ extensions }: { extensions: DevExtension[] 
                 {approved} approved · {rejected} rejected · {pending} pending
               </p>
             </div>
-            <ShieldCheck className="size-4 text-muted-foreground" />
+            <ShieldCheck className="size-4 text-emerald-500" />
           </div>
         </Card>
         <Card className="gap-0 p-5 shadow-none">
@@ -388,7 +413,7 @@ export function DeveloperAnalytics({ extensions }: { extensions: DevExtension[] 
               </p>
               <p className="mt-1 text-xs text-muted-foreground">{allVersions.length} releases total</p>
             </div>
-            <Star className="size-4 text-muted-foreground" />
+            <Star className="size-4 text-amber-500" />
           </div>
         </Card>
       </div>
@@ -481,6 +506,100 @@ export function DeveloperAnalytics({ extensions }: { extensions: DevExtension[] 
                 })}
             </ul>
           )}
+        </Card>
+      </div>
+
+      <div className="grid gap-6 lg:grid-cols-2">
+        <Card className="gap-0 p-5 shadow-none">
+          <h2 className="text-sm font-semibold">Devices · {days}d</h2>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Which phones and tablets install your extensions. Sent by the app with the download,
+            never linked to an account.
+          </p>
+          {!data?.devices?.length ? (
+            <p className="mt-3 rounded-lg border border-dashed p-6 text-center text-sm text-muted-foreground">
+              No device data in this range yet.
+            </p>
+          ) : (
+            <ul className="mt-4 space-y-3">
+              {data.devices.slice(0, 8).map((device, index) => {
+                const maxDevice = Math.max(1, ...data.devices.map((entry) => entry.downloads));
+                const share = rangeDownloads > 0 ? Math.round((device.downloads / rangeDownloads) * 100) : 0;
+                const colors = ["bg-sky-500", "bg-violet-500", "bg-emerald-500", "bg-amber-500", "bg-rose-500", "bg-cyan-500", "bg-indigo-500", "bg-orange-500"];
+                return (
+                  <li key={device.device_model}>
+                    <div className="flex items-baseline justify-between gap-3 text-sm">
+                      <span className="min-w-0 truncate">{device.device_model}</span>
+                      <span className="shrink-0 font-mono text-xs text-muted-foreground">
+                        {device.downloads.toLocaleString()} · {share}%
+                      </span>
+                    </div>
+                    <div className="mt-1.5 h-1.5 overflow-hidden rounded-full bg-muted">
+                      <div
+                        className={`h-full rounded-full ${colors[index % colors.length]}`}
+                        style={{ width: `${Math.max(4, Math.round((device.downloads / maxDevice) * 100))}%` }}
+                      />
+                    </div>
+                  </li>
+                );
+              })}
+            </ul>
+          )}
+        </Card>
+
+        <Card className="gap-0 p-5 shadow-none">
+          <h2 className="text-sm font-semibold">Platforms and app builds</h2>
+          <p className="mt-1 text-sm text-muted-foreground">
+            App store downloads versus the website, plus the Android and app versions in use.
+          </p>
+
+          <div className="mt-4 flex flex-wrap gap-2">
+            {(data?.sources || []).map((source) => (
+              <Badge key={source.source} variant="outline" className="font-normal">
+                {source.source === "app" ? "In-app store" : "Website"} · {source.downloads}
+              </Badge>
+            ))}
+            {!data?.sources?.length ? (
+              <span className="text-xs text-muted-foreground">No downloads yet.</span>
+            ) : null}
+          </div>
+
+          <div className="mt-5 grid gap-5 sm:grid-cols-2">
+            <div>
+              <p className="text-[11px] font-medium tracking-wide text-muted-foreground uppercase">
+                Android
+              </p>
+              {data?.os_versions?.length ? (
+                <ul className="mt-2 space-y-1.5">
+                  {data.os_versions.slice(0, 6).map((row) => (
+                    <li key={row.os_version} className="flex items-center justify-between gap-2 text-xs">
+                      <span className="truncate">{row.os_version}</span>
+                      <span className="shrink-0 font-mono text-muted-foreground">{row.downloads}</span>
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <p className="mt-2 text-xs text-muted-foreground">—</p>
+              )}
+            </div>
+            <div>
+              <p className="text-[11px] font-medium tracking-wide text-muted-foreground uppercase">
+                App builds
+              </p>
+              {data?.app_versions?.length ? (
+                <ul className="mt-2 space-y-1.5">
+                  {data.app_versions.slice(0, 6).map((row) => (
+                    <li key={row.app_version} className="flex items-center justify-between gap-2 text-xs">
+                      <span className="truncate">Build {row.app_version}</span>
+                      <span className="shrink-0 font-mono text-muted-foreground">{row.downloads}</span>
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <p className="mt-2 text-xs text-muted-foreground">—</p>
+              )}
+            </div>
+          </div>
         </Card>
       </div>
 

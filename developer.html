@@ -6,6 +6,15 @@
     <title>KodaHosting | Developer console</title>
     <link rel="icon" type="image/png" href="/assets/logo.png" />
     <meta name="robots" content="noindex" />
+    <script>
+      try {
+        if (localStorage.getItem("koda_console_theme") === "light") {
+          document.documentElement.classList.remove("dark");
+        }
+      } catch (error) {
+        // storage blocked, stay dark
+      }
+    </script>
     <meta
       name="description"
       content="Developer console for KodaHosting extensions: store listings, releases, review notes and a package editor in the browser."

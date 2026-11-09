@@ -1,4 +1,4 @@
-import { lazy, Suspense, useMemo, useState } from "react";
+import { lazy, Suspense, useEffect, useMemo, useState } from "react";
 import {
   ArrowLeft,
   BarChart3,
@@ -10,11 +10,13 @@ import {
   LifeBuoy,
   Loader2,
   LogOut,
+  Moon,
   PackageOpen,
   Plus,
   Puzzle,
   Rocket,
   Search,
+  Sun,
 } from "lucide-react";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
@@ -617,6 +619,22 @@ export function DeveloperConsole({
   const [activeExtId, setActiveExtId] = useState<string | null>(null);
   const [tab, setTab] = useState<WorkspaceTab>("listing");
   const [submitOpen, setSubmitOpen] = useState(false);
+  const [light, setLight] = useState(() => {
+    try {
+      return localStorage.getItem("koda_console_theme") === "light";
+    } catch {
+      return false;
+    }
+  });
+
+  useEffect(() => {
+    document.documentElement.classList.toggle("dark", !light);
+    try {
+      localStorage.setItem("koda_console_theme", light ? "light" : "dark");
+    } catch {
+      // private mode, the toggle still works for this visit
+    }
+  }, [light]);
 
   const active = extensions.find((ext) => ext.ext_id === activeExtId) || null;
 
@@ -671,6 +689,11 @@ export function DeveloperConsole({
                       <SidebarMenuButton
                         isActive={view === item.id}
                         onClick={() => switchView(item.id)}
+                        className={
+                          view === item.id
+                            ? "!bg-brand/10 font-medium !text-brand-ink dark:!text-brand"
+                            : undefined
+                        }
                       >
                         <item.icon />
                         <span>{item.label}</span>
@@ -727,12 +750,22 @@ export function DeveloperConsole({
             <SidebarTrigger />
             <span className="text-sm font-medium">Developer console</span>
             <div className="flex-1" />
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setLight((value) => !value)}
+              aria-label={light ? "Switch to dark mode" : "Switch to light mode"}
+            >
+              {light ? <Moon className="size-4" /> : <Sun className="size-4" />}
+              {light ? "Dark" : "Light"}
+            </Button>
             <Button asChild variant="ghost" size="sm">
               <a href="/dashboard">
                 Dashboard <ExternalLink className="size-4" />
               </a>
             </Button>
           </header>
+          <div className="h-px w-full bg-gradient-to-r from-brand/70 via-violet-500/50 to-sky-500/50" />
 
           <div className="p-4 md:p-8">
             <div className="mx-auto w-full max-w-5xl">

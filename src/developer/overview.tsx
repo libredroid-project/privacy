@@ -19,11 +19,13 @@ function Stat({
   value,
   hint,
   icon: Icon,
+  tone = "text-muted-foreground",
 }: {
   label: string;
   value: string | number;
   hint?: string;
   icon: typeof Puzzle;
+  tone?: string;
 }) {
   return (
     <Card className="gap-0 p-5 shadow-none">
@@ -34,7 +36,7 @@ function Stat({
           {hint ? <p className="mt-1 text-xs text-muted-foreground">{hint}</p> : null}
         </div>
         <div className="flex size-9 items-center justify-center rounded-lg bg-muted">
-          <Icon className="size-4 text-muted-foreground" />
+          <Icon className={`size-4 ${tone}`} />
         </div>
       </div>
     </Card>
@@ -107,15 +109,16 @@ export function DeveloperOverview({
       {me && !me.email_verified ? <VerifyEmail me={me} onVerified={onVerified} /> : null}
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <Stat label="Extensions" value={extensions.length} icon={Puzzle} />
-        <Stat label="Live" value={live.length} hint="visible in the store" icon={CheckCircle2} />
+        <Stat label="Extensions" value={extensions.length} icon={Puzzle} tone="text-brand" />
+        <Stat label="Live" value={live.length} hint="visible in the store" icon={CheckCircle2} tone="text-emerald-500" />
         <Stat
           label="In review"
           value={reviewIds.size}
           hint="versions waiting for a decision"
           icon={Clock3}
+          tone="text-amber-500"
         />
-        <Stat label="Downloads" value={downloads.toLocaleString()} icon={Download} />
+        <Stat label="Downloads" value={downloads.toLocaleString()} icon={Download} tone="text-sky-500" />
       </div>
 
       <div className="grid gap-6 lg:grid-cols-[1.35fr_1fr]">
