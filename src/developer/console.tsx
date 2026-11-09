@@ -4,6 +4,7 @@ import {
   BarChart3,
   BookOpen,
   ChevronRight,
+  Copy,
   ExternalLink,
   LayoutDashboard,
   LifeBuoy,
@@ -15,6 +16,7 @@ import {
   Rocket,
   Search,
 } from "lucide-react";
+import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -50,11 +52,13 @@ import { DeveloperOverview } from "@/developer/overview";
 import { VerifyEmail } from "@/developer/verify-email";
 import { ListingEditor } from "@/developer/listing-editor";
 import { VersionsPanel } from "@/developer/versions";
+import { DeveloperSupport } from "@/developer/support";
+import { DeveloperAnalytics } from "@/developer/analytics";
 import { SubmitDialog } from "@/store/submit-dialog";
 import type { MyExtension } from "@/store/types";
 import { cn } from "@/lib/utils";
 
-type View = "overview" | "extensions" | "releases" | "analytics" | "account";
+type View = "overview" | "extensions" | "releases" | "analytics" | "support" | "account";
 type WorkspaceTab = "listing" | "releases" | "code";
 
 // CodeMirror + fflate are only needed when the editor tab is open
@@ -67,6 +71,7 @@ const NAV: { id: View; label: string; icon: typeof Puzzle }[] = [
   { id: "extensions", label: "Extensions", icon: Puzzle },
   { id: "releases", label: "Releases", icon: Rocket },
   { id: "analytics", label: "Analytics", icon: BarChart3 },
+  { id: "support", label: "Support", icon: LifeBuoy },
 ];
 
 function StatusFilters({
@@ -305,13 +310,26 @@ function Workspace({
               </p>
             </div>
           </div>
-          {ext.status === "APPROVED" ? (
-            <Button asChild variant="outline" size="sm">
-              <a href={`/store?ext=${encodeURIComponent(ext.ext_id)}`}>
-                View in store <ExternalLink className="size-4" />
-              </a>
+          <div className="flex flex-wrap items-center gap-2">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => {
+                const link = `${window.location.origin}/store?ext=${encodeURIComponent(ext.ext_id)}`;
+                void navigator.clipboard?.writeText(link);
+                toast.success("Store link copied.");
+              }}
+            >
+              <Copy className="size-4" /> Copy link
             </Button>
-          ) : null}
+            {ext.status === "APPROVED" ? (
+              <Button asChild variant="outline" size="sm">
+                <a href={`/store?ext=${encodeURIComponent(ext.ext_id)}`}>
+                  View in store <ExternalLink className="size-4" />
+                </a>
+              </Button>
+            ) : null}
+          </div>
         </div>
       </div>
 
@@ -462,65 +480,6 @@ function ReleasesView({
           </div>
         </Card>
       )}
-    </div>
-  );
-}
-
-function AnalyticsView({ extensions }: { extensions: DevExtension[] }) {
-  const total = extensions.reduce((sum, ext) => sum + (ext.downloads || 0), 0);
-  const max = Math.max(1, ...extensions.map((ext) => ext.downloads || 0));
-  const sorted = [...extensions].sort((a, b) => b.downloads - a.downloads);
-  const releases = extensions.reduce((sum, ext) => sum + ext.versions.length, 0);
-
-  return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-semibold tracking-tight">Analytics</h1>
-        <p className="mt-1 text-sm text-muted-foreground">
-          Store downloads counted by the API. App updates inside KodaHosting are not downloads.
-        </p>
-      </div>
-
-      <div className="grid gap-4 sm:grid-cols-3">
-        <Card className="gap-0 p-5 shadow-none">
-          <p className="text-xs font-medium tracking-wide text-muted-foreground uppercase">Downloads</p>
-          <p className="mt-2 text-2xl font-semibold tracking-tight">{total.toLocaleString()}</p>
-        </Card>
-        <Card className="gap-0 p-5 shadow-none">
-          <p className="text-xs font-medium tracking-wide text-muted-foreground uppercase">Extensions</p>
-          <p className="mt-2 text-2xl font-semibold tracking-tight">{extensions.length}</p>
-        </Card>
-        <Card className="gap-0 p-5 shadow-none">
-          <p className="text-xs font-medium tracking-wide text-muted-foreground uppercase">Releases</p>
-          <p className="mt-2 text-2xl font-semibold tracking-tight">{releases}</p>
-        </Card>
-      </div>
-
-      <Card className="gap-0 p-5 shadow-none">
-        <h2 className="text-sm font-semibold">Downloads per extension</h2>
-        {sorted.length === 0 ? (
-          <p className="mt-3 text-sm text-muted-foreground">No data yet.</p>
-        ) : (
-          <ul className="mt-5 space-y-4">
-            {sorted.map((ext) => (
-              <li key={ext.ext_id}>
-                <div className="flex items-baseline justify-between gap-3 text-sm">
-                  <span className="truncate font-medium">{ext.name}</span>
-                  <span className="shrink-0 font-mono text-xs text-muted-foreground">
-                    {(ext.downloads || 0).toLocaleString()}
-                  </span>
-                </div>
-                <div className="mt-1.5 h-1.5 overflow-hidden rounded-full bg-muted">
-                  <div
-                    className="h-full rounded-full bg-brand"
-                    style={{ width: `${Math.round(((ext.downloads || 0) / max) * 100)}%` }}
-                  />
-                </div>
-              </li>
-            ))}
-          </ul>
-        )}
-      </Card>
     </div>
   );
 }
@@ -717,7 +676,7 @@ export function DeveloperConsole({
                   <SidebarMenuItem>
                     <SidebarMenuButton onClick={() => (window.location.href = "mailto:contact@kodaserv.eu")}>
                       <LifeBuoy />
-                      <span>Developer support</span>
+                      <span>Email support</span>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
                 </SidebarMenu>
@@ -793,7 +752,9 @@ export function DeveloperConsole({
               ) : view === "releases" ? (
                 <ReleasesView extensions={extensions} onOpen={openExtension} />
               ) : view === "analytics" ? (
-                <AnalyticsView extensions={extensions} />
+                <DeveloperAnalytics extensions={extensions} />
+              ) : view === "support" ? (
+                <DeveloperSupport extensions={extensions} />
               ) : (
                 <AccountView
                   me={me}

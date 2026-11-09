@@ -16,6 +16,7 @@ export interface DevVersion {
 }
 
 export interface DevExtension {
+  id?: string;
   ext_id: string;
   name: string;
   summary?: string | null;

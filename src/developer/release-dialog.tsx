@@ -14,10 +14,12 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { strFromU8, unzipSync } from "fflate";
+import { unzipSync } from "fflate";
 import type { DevExtension, DevVersion } from "@/developer/types";
 import { latestVersion, PERMISSIONS } from "@/developer/types";
 import { publishErrorText, publishVersion } from "@/developer/publish";
+import { runPreflight } from "@/developer/preflight";
+import { PreflightPanel } from "@/developer/preflight-panel";
 
 interface Manifest {
   id?: string;
@@ -27,6 +29,11 @@ interface Manifest {
   license?: string;
   permissions?: string[];
   minAppVersion?: number;
+}
+
+interface Unpacked {
+  files: Record<string, Uint8Array>;
+  manifest: Manifest;
 }
 
 function nextVersionCode(ext: DevExtension): number {
@@ -40,16 +47,18 @@ function bumpPatch(version?: string): string {
   return parts.join(".");
 }
 
-function readManifest(bytes: Uint8Array): Manifest | null {
+function unpackPackage(bytes: Uint8Array): Unpacked | null {
   try {
-    const files = unzipSync(bytes, {
-      filter: (file) => file.name === "manifest.json" || /^[^/]+\/manifest\.json$/.test(file.name),
-    });
+    const raw = unzipSync(bytes);
+    const files = Object.fromEntries(
+      Object.entries(raw).filter(([path]) => !path.endsWith("/")),
+    );
     const key =
       Object.keys(files).find((name) => name === "manifest.json") ??
       Object.keys(files).find((name) => name.endsWith("/manifest.json"));
     if (!key) return null;
-    return JSON.parse(strFromU8(files[key])) as Manifest;
+    const manifest = JSON.parse(new TextDecoder().decode(files[key])) as Manifest;
+    return { files, manifest };
   } catch {
     return null;
   }
@@ -70,6 +79,7 @@ export function ReleaseDialog({
   const input = useRef<HTMLInputElement>(null);
   const [file, setFile] = useState<File | null>(null);
   const [bytes, setBytes] = useState<Uint8Array | null>(null);
+  const [files, setFiles] = useState<Record<string, Uint8Array> | null>(null);
   const [manifest, setManifest] = useState<Manifest | null>(null);
   const [version, setVersion] = useState("");
   const [versionCode, setVersionCode] = useState("");
@@ -87,6 +97,7 @@ export function ReleaseDialog({
     if (!open) return;
     setFile(null);
     setBytes(null);
+    setFiles(null);
     setManifest(null);
     setVersion("");
     setVersionCode(String(suggestedCode));
@@ -107,11 +118,12 @@ export function ReleaseDialog({
       return;
     }
     const data = new Uint8Array(await next.arrayBuffer());
-    const parsed = readManifest(data);
-    if (!parsed) {
+    const unpacked = unpackPackage(data);
+    if (!unpacked) {
       setError("No manifest.json in this zip. A .kodaext package needs one in the root.");
       return;
     }
+    const parsed = unpacked.manifest;
     if (parsed.id && parsed.id !== ext.ext_id) {
       setError(`This package is for ${parsed.id}, not ${ext.ext_id}.`);
       return;
@@ -119,12 +131,24 @@ export function ReleaseDialog({
     const manifestCode = Number(parsed.versionCode || 0);
     setFile(next);
     setBytes(data);
+    setFiles(unpacked.files);
     setManifest(parsed);
     setVersion(parsed.version || bumpPatch(latest?.version));
     setVersionCode(String(Math.max(suggestedCode, manifestCode || suggestedCode)));
     setPermissions(Array.isArray(parsed.permissions) ? parsed.permissions.filter((p) => PERMISSIONS.includes(p as (typeof PERMISSIONS)[number])) : []);
     setMinAppVersion(String(Number(parsed.minAppVersion || 0)));
   }
+
+  const report = useMemo(() => {
+    if (!files) return null;
+    return runPreflight(ext, files, {
+      version: version.trim(),
+      versionCode: parseInt(versionCode, 10) || 0,
+      changelog,
+      permissions,
+      minAppVersion: Math.max(0, parseInt(minAppVersion, 10) || 0),
+    });
+  }, [files, ext, version, versionCode, changelog, permissions, minAppVersion]);
 
   async function submit() {
     if (!bytes || !file) {
@@ -144,6 +168,10 @@ export function ReleaseDialog({
       setError(
         `manifest.json says versionCode ${manifest.versionCode}, the form says ${code}. They must match - the editor rewrites it for you.`,
       );
+      return;
+    }
+    if (report && !report.ok) {
+      setError(`Fix the ${report.fails} blocking check${report.fails === 1 ? "" : "s"} below before sending the release.`);
       return;
     }
     setBusy(true);
@@ -295,6 +323,8 @@ export function ReleaseDialog({
               0 works on every app build. Set the first app build that can load this version.
             </p>
           </div>
+
+          {report ? <PreflightPanel report={report} compact /> : null}
 
           {manifest && !changelog.trim() ? (
             <p className="flex items-start gap-2 text-xs text-muted-foreground">

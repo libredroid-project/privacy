@@ -52,6 +52,8 @@ import { api, assertSafeUploadUrl } from "@/lib/api";
 import type { DevExtension, SourcePackage } from "@/developer/types";
 import { formatBytes, pendingVersion, PERMISSIONS } from "@/developer/types";
 import { publishErrorText, publishVersion } from "@/developer/publish";
+import { runPreflight } from "@/developer/preflight";
+import { PreflightPanel } from "@/developer/preflight-panel";
 
 const editorTheme = EditorView.theme({
   "&": { backgroundColor: "transparent", fontSize: "13px" },
@@ -714,6 +716,32 @@ function EditorPublish({
     ...ext.versions.map((entry) => entry.version_code),
   ) + 1;
 
+  const effectiveFiles = useMemo(() => {
+    if (!manifest || !manifestPath) return null;
+    const nextFiles: Record<string, Uint8Array> = { ...files };
+    nextFiles[manifestPath] = strToU8(
+      JSON.stringify({
+        ...manifest,
+        id: ext.ext_id,
+        version: version.trim(),
+        versionCode: parseInt(versionCode, 10) || Number(manifest.versionCode ?? 0),
+        permissions,
+      }, null, 2) + "\n",
+    );
+    return nextFiles;
+  }, [files, manifest, manifestPath, ext.ext_id, version, versionCode, permissions]);
+
+  const report = useMemo(() => {
+    if (!effectiveFiles || !manifest) return null;
+    return runPreflight(ext, effectiveFiles, {
+      version: version.trim(),
+      versionCode: parseInt(versionCode, 10) || 0,
+      changelog,
+      permissions,
+      minAppVersion: Number(manifest.minAppVersion || 0),
+    });
+  }, [effectiveFiles, manifest, ext, version, versionCode, changelog, permissions]);
+
   useEffect(() => {
     if (!open) return;
     setVersion(bumpPatch(typeof manifest?.version === "string" ? manifest.version : source?.version));
@@ -740,6 +768,10 @@ function EditorPublish({
     }
     if (!code) {
       setError("A version code is required.");
+      return;
+    }
+    if (report && !report.ok) {
+      setError(`Fix the ${report.fails} blocking check${report.fails === 1 ? "" : "s"} before publishing.`);
       return;
     }
     setBusy(true);
@@ -843,6 +875,8 @@ function EditorPublish({
               Also written to manifest.json. Keep it identical to the permissions the code really uses.
             </p>
           </div>
+
+          {report ? <PreflightPanel report={report} compact /> : null}
 
           {error ? (
             <Alert variant="destructive">
