@@ -17,6 +17,7 @@ const COLUMNS = [
   {
     title: "Developers",
     links: [
+      { href: "/developer", label: "Developer console" },
       { href: "/docs", label: "Documentation" },
       { href: "https://github.com/libredroid-project/KodaNetwork", label: "Source on GitHub" },
       {

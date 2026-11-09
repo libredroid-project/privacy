@@ -11,6 +11,7 @@ const entries = [
   "index.html",
   "store.html",
   "dashboard.html",
+  "developer.html",
   "docs/index.html",
   "invite.html",
   "reset.html",

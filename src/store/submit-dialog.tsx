@@ -35,6 +35,8 @@ const ERROR_TEXT: Record<string, string> = {
   pending_version_exists:
     "One version is already in review for this extension. Wait for the review before submitting the next one.",
   sha256_mismatch: "The uploaded package does not match what was announced - please try again.",
+  email_not_verified:
+    "Verify your e-mail first: use the developer console (/developer) or open the KodaHosting app, Settings, Account and verify the address there.",
 };
 
 type Status = { kind: "idle" | "busy" | "ok" | "err"; text: string };
