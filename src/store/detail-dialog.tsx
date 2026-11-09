@@ -209,15 +209,22 @@ export function DetailDialog({
                           {version.changelog}
                         </pre>
                       ) : null}
-                      <Button asChild size="sm" variant="outline" className="mt-3">
-                        <a
-                          href={`${API_BASE}/v1/extensions/${encodeURIComponent(ext.ext_id)}/download?version=${encodeURIComponent(version.version_code)}`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                        >
-                          <Download className="size-4" /> Download .kodaext
-                        </a>
-                      </Button>
+                      {index === 0 ? (
+                        <Button asChild size="sm" variant="outline" className="mt-3">
+                          <a
+                            href={`${API_BASE}/v1/extensions/${encodeURIComponent(ext.ext_id)}/download`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                          >
+                            <Download className="size-4" /> Download .kodaext
+                          </a>
+                        </Button>
+                      ) : (
+                        <p className="mt-3 text-xs text-muted-foreground">
+                          Older releases are not public. Support only hands them out for a valid
+                          reason, for example a legal request, within 365 days.
+                        </p>
+                      )}
                     </div>
                   ))}
                 </div>

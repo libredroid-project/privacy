@@ -84,6 +84,7 @@ The following retention rules apply in addition:
 - If you request a full data deletion and it is approved, your account and all personal data that is not legally required are deleted immediately. Records we must retain are moved into a separate, access-restricted retention table and deleted when the legal deadline ends: billing and payment records after 10 years (§ 147 AO, § 257 HGB), contract and server records after 6 years, and security or abuse evidence after 180 days.
 - Data export requests create a ZIP in our storage. The download link is valid for seven days; after that you can request a new export. The export contains the data stored for your account and linked devices, including extension publishing data if you used the developer console.
 - Support tickets, including developer support tickets, are kept while the ticket is open and for as long as needed to handle follow-up questions, then deleted with the account or earlier on request.
+- Published extension packages are retained for 365 days. Only the newest approved package is publicly downloadable; support may hand out an older release inside this window for a documented reason, for example a legal request. After 365 days older package files are deleted, while the newest approved package stays available.
 
 7. Your GDPR Rights (User Rights)
 
