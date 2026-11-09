@@ -10,7 +10,7 @@ import { GoogleButton } from "@/components/google-button";
 import { Brand } from "@/components/site-header";
 import { supabase } from "@/lib/supabase";
 
-export function LoginView() {
+export function LoginView({ intent = "dashboard" }: { intent?: "dashboard" | "developer" }) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -56,7 +56,9 @@ export function LoginView() {
                 </div>
                 <h1 className="text-2xl font-medium tracking-tight">Sign in</h1>
                 <p className="mt-2 text-base leading-6 text-muted-foreground">
-                  The dashboard shows your servers, devices and tickets. Use the account from the app.
+                  {intent === "developer"
+                    ? "Sign in to manage your extensions, releases and store listings. Use the account from the app."
+                    : "The dashboard shows your servers, devices and tickets. Use the account from the app."}
                 </p>
               </div>
 

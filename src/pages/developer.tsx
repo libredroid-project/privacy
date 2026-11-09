@@ -73,7 +73,7 @@ export function DeveloperPage() {
   if (!session) {
     return (
       <>
-        <LoginView />
+        <LoginView intent="developer" />
         <Toaster position="bottom-right" />
       </>
     );
