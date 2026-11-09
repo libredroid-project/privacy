@@ -64,6 +64,56 @@ import { cn } from "@/lib/utils";
 type View = "overview" | "extensions" | "releases" | "analytics" | "support" | "account";
 type WorkspaceTab = "listing" | "releases" | "code";
 
+interface ConsoleRoute {
+  view: View;
+  extId: string | null;
+  tab: WorkspaceTab;
+  release: boolean;
+}
+
+const SIMPLE_VIEWS: View[] = ["releases", "analytics", "support", "account"];
+
+function parseRoute(pathname: string): ConsoleRoute {
+  const parts = pathname.replace(/\/+$/, "").split("/").filter(Boolean);
+  const rest = parts[0] === "developer" ? parts.slice(1) : [];
+  const empty: ConsoleRoute = { view: "overview", extId: null, tab: "listing", release: false };
+
+  if (rest[0] === "extensions") {
+    if (!rest[1]) return { ...empty, view: "extensions" };
+    const tabPart = rest[2] || "listing";
+    const tab: WorkspaceTab = tabPart === "code" ? "code" : tabPart === "releases" ? "releases" : "listing";
+    return {
+      view: "extensions",
+      extId: decodeURIComponent(rest[1]),
+      tab,
+      release: tab === "releases" && rest[3] === "new",
+    };
+  }
+  if (rest[0] && SIMPLE_VIEWS.includes(rest[0] as View)) {
+    return { ...empty, view: rest[0] as View };
+  }
+  return empty;
+}
+
+function routePath(route: ConsoleRoute): string {
+  if (route.view === "overview") return "/developer";
+  if (route.view === "extensions") {
+    if (!route.extId) return "/developer/extensions";
+    const base = `/developer/extensions/${encodeURIComponent(route.extId)}/${route.tab}`;
+    return route.release ? `${base}/new` : base;
+  }
+  return `/developer/${route.view}`;
+}
+
+function navigate(route: ConsoleRoute, replace = false) {
+  const path = routePath(route);
+  if (window.location.pathname !== path) {
+    if (replace) window.history.replaceState({}, "", path);
+    else window.history.pushState({}, "", path);
+  }
+  return route;
+}
+
 // CodeMirror + fflate are only needed when the editor tab is open
 const CodeEditor = lazy(() =>
   import("@/developer/editor").then((module) => ({ default: module.CodeEditor })),
@@ -263,18 +313,21 @@ function ExtensionList({
 function Workspace({
   ext,
   tab,
+  releaseOpen,
   onTab,
   onBack,
+  onReleaseChange,
   onChanged,
 }: {
   ext: DevExtension;
   tab: WorkspaceTab;
+  releaseOpen: boolean;
   onTab: (tab: WorkspaceTab) => void;
   onBack: () => void;
+  onReleaseChange: (open: boolean) => void;
   onChanged: () => void;
 }) {
   const latest = latestVersion(ext);
-  const [releaseOpen, setReleaseOpen] = useState(false);
   const tabs: { id: WorkspaceTab; label: string }[] = [
     { id: "listing", label: "Store listing" },
     { id: "releases", label: "Releases" },
@@ -350,12 +403,12 @@ function Workspace({
         <ReleaseScreen
           ext={ext}
           onBack={() => {
-            setReleaseOpen(false);
+            onReleaseChange(false);
             onTab("releases");
           }}
           onPublished={onChanged}
           onEditListing={() => {
-            setReleaseOpen(false);
+            onReleaseChange(false);
             onTab("listing");
           }}
         />
@@ -385,7 +438,7 @@ function Workspace({
               ext={ext}
               onChanged={onChanged}
               onEditCode={() => onTab("code")}
-              onNewRelease={() => setReleaseOpen(true)}
+              onNewRelease={() => onReleaseChange(true)}
             />
           ) : null}
           {tab === "code" ? (
@@ -615,9 +668,7 @@ export function DeveloperConsole({
   onReload: () => void;
   onReloadMe: () => void;
 }) {
-  const [view, setView] = useState<View>("overview");
-  const [activeExtId, setActiveExtId] = useState<string | null>(null);
-  const [tab, setTab] = useState<WorkspaceTab>("listing");
+  const [route, setRoute] = useState<ConsoleRoute>(() => parseRoute(window.location.pathname));
   const [submitOpen, setSubmitOpen] = useState(false);
   const [light, setLight] = useState(() => {
     try {
@@ -636,19 +687,28 @@ export function DeveloperConsole({
     }
   }, [light]);
 
-  const active = extensions.find((ext) => ext.ext_id === activeExtId) || null;
+  useEffect(() => {
+    const onPop = () => {
+      setRoute(parseRoute(window.location.pathname));
+      window.scrollTo({ top: 0 });
+    };
+    window.addEventListener("popstate", onPop);
+    return () => window.removeEventListener("popstate", onPop);
+  }, []);
 
-  function openExtension(extId: string) {
-    setActiveExtId(extId);
-    setView("extensions");
-    setTab("listing");
+  const active = extensions.find((ext) => ext.ext_id === route.extId) || null;
+
+  function go(next: ConsoleRoute, replace = false) {
+    setRoute(navigate(next, replace));
     window.scrollTo({ top: 0 });
   }
 
+  function openExtension(extId: string) {
+    go({ view: "extensions", extId, tab: "listing", release: false });
+  }
+
   function switchView(next: View) {
-    setView(next);
-    if (next !== "extensions") setActiveExtId(null);
-    window.scrollTo({ top: 0 });
+    go({ view: next, extId: null, tab: "listing", release: false });
   }
 
   const mineItems: MyExtension[] = extensions.map((ext) => ({
@@ -687,10 +747,10 @@ export function DeveloperConsole({
                   {NAV.map((item) => (
                     <SidebarMenuItem key={item.id}>
                       <SidebarMenuButton
-                        isActive={view === item.id}
+                        isActive={route.view === item.id}
                         onClick={() => switchView(item.id)}
                         className={
-                          view === item.id
+                          route.view === item.id
                             ? "!bg-brand/10 font-medium !text-brand-ink dark:!text-brand"
                             : undefined
                         }
@@ -734,7 +794,7 @@ export function DeveloperConsole({
           <SidebarFooter>
             <SidebarMenu>
               <SidebarMenuItem>
-                <SidebarMenuButton isActive={view === "account"} onClick={() => switchView("account")}>
+                <SidebarMenuButton isActive={route.view === "account"} onClick={() => switchView("account")}>
                   <div className="flex size-6 items-center justify-center rounded-full bg-muted text-[10px] font-medium">
                     {(me?.email || "?").charAt(0).toUpperCase()}
                   </div>
@@ -781,7 +841,7 @@ export function DeveloperConsole({
                     Try again
                   </Button>
                 </Card>
-              ) : view === "overview" ? (
+              ) : route.view === "overview" ? (
                 <DeveloperOverview
                   me={me}
                   extensions={extensions}
@@ -790,13 +850,15 @@ export function DeveloperConsole({
                   onVerified={onReloadMe}
                   onShowAccount={() => switchView("account")}
                 />
-              ) : view === "extensions" ? (
+              ) : route.view === "extensions" ? (
                 active ? (
                   <Workspace
                     ext={active}
-                    tab={tab}
-                    onTab={setTab}
-                    onBack={() => setActiveExtId(null)}
+                    tab={route.tab}
+                    releaseOpen={route.release}
+                    onTab={(next) => go({ ...route, tab: next, release: false })}
+                    onBack={() => go({ ...route, extId: null, tab: "listing", release: false })}
+                    onReleaseChange={(open) => go({ ...route, release: open })}
                     onChanged={onReload}
                   />
                 ) : (
@@ -806,11 +868,11 @@ export function DeveloperConsole({
                     onNew={() => setSubmitOpen(true)}
                   />
                 )
-              ) : view === "releases" ? (
+              ) : route.view === "releases" ? (
                 <ReleasesView extensions={extensions} onOpen={openExtension} />
-              ) : view === "analytics" ? (
+              ) : route.view === "analytics" ? (
                 <DeveloperAnalytics extensions={extensions} />
-              ) : view === "support" ? (
+              ) : route.view === "support" ? (
                 <DeveloperSupport extensions={extensions} />
               ) : (
                 <AccountView

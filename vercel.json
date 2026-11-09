@@ -3,9 +3,20 @@
   "outputDirectory": "dist",
   "cleanUrls": true,
   "redirects": [
-    { "source": "/docs/", "destination": "/docs", "permanent": true }
+    {
+      "source": "/docs/",
+      "destination": "/docs",
+      "permanent": true
+    }
   ],
   "rewrites": [
-    { "source": "/invite/:token", "destination": "/invite" }
+    {
+      "source": "/invite/:token",
+      "destination": "/invite"
+    },
+    {
+      "source": "/developer/:path*",
+      "destination": "/developer"
+    }
   ]
 }

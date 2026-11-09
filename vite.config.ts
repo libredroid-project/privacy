@@ -31,9 +31,15 @@ function cleanUrls(): Plugin {
     const [pathname, search = ""] = url.split("?");
     if (!pathname || pathname === "/") return null;
     if (pathname.startsWith("/@") || pathname.startsWith("/node_modules") || pathname.startsWith("/src")) return null;
+    // extension ids contain dots, so the developer console cannot use the generic
+    // "a dot means an asset" rule. every /developer/* path is the same entry.
+    if (pathname.startsWith("/developer/")) {
+      return "/developer.html" + (search ? "?" + search : "");
+    }
     if (pathname.includes(".")) return null;
 
     const candidates: string[] = [];
+    if (pathname.startsWith("/developer/")) candidates.push("developer.html");
     if (pathname.startsWith("/invite/")) candidates.push("invite.html");
     if (pathname === "/docs" || pathname === "/docs/") candidates.push("docs/index.html");
     candidates.push(pathname.replace(/^\//, "") + ".html");
