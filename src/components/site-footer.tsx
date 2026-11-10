@@ -10,6 +10,7 @@ const COLUMNS = [
     links: [
       { href: "/dashboard", label: "Dashboard" },
       { href: "/store", label: "Extension store" },
+      { href: "/fdroid/", label: "F-Droid repository" },
       { href: "/#how", label: "How it works" },
       { href: "https://ko-fi.com/kodahosting", label: "Support development" },
     ],
