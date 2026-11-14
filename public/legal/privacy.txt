@@ -9,7 +9,7 @@ Welcome to KodaHosting. We respect your privacy and are committed to protecting 
 The Data Controller responsible for your personal information is:
 Karol Brzostowski
 Deutschland Fixberg 17, 33106 Paderborn-Wewer
-Email: support@host.kodanetwork.eu
+Email: support@kodaserv.eu
 
 Note on Legal Capacity: The developer of KodaHosting is a minor under German law (§ 106 BGB, beschränkte Geschäftsfähigkeit). Legal responsibility for the operation of this service, including data protection matters, is jointly held by the legal guardians. Correspondence regarding data protection, including requests under the GDPR, can be addressed to the email above. The legal guardians can be reached via the same address.
 
@@ -98,7 +98,7 @@ Under the General Data Protection Regulation (GDPR) and applicable privacy laws,
 - Right to Object (Art. 21 GDPR): You may object to the processing of your personal data based on legitimate interests.
 - Right to Withdraw Consent (Art. 7(3) GDPR): You may withdraw any consent you have given at any time.
 
-To exercise these rights, please contact us at support@host.kodanetwork.eu. If you are under 16, your request must be submitted by or with the consent of your legal guardian.
+To exercise these rights, please contact us at support@kodaserv.eu. If you are under 16, your request must be submitted by or with the consent of your legal guardian.
 
 You can also use the account screen in the app: "Request my data" creates a data export after an admin review, "Request full data deletion" starts a deletion request that must be approved by an admin, and "My requests" shows the status. The developer console offers the same account and support paths for extension developers.
 
@@ -135,6 +135,6 @@ https://www.ldi.nrw.de
 12. Contact Us
 
 If you have any questions or suggestions about our Privacy Policy, or if you wish to exercise your data protection rights, please contact us at:
-Email: support@host.kodanetwork.eu
+Email: support@kodaserv.eu
 
 For matters concerning the developer's status as a minor, the legal guardians can be reached via the same email address.

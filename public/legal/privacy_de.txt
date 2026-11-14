@@ -9,7 +9,7 @@ Willkommen bei KodaHosting. Wir respektieren deine Privatsphäre und verpflichte
 Der für deine personenbezogenen Daten verantwortliche Anbieter ist:
 Karol Brzostowski
 Deutschland, Fixberg 17, 33106 Paderborn-Wewer
-E-Mail: support@host.kodanetwork.eu
+E-Mail: support@kodaserv.eu
 
 Hinweis zur Rechtsfähigkeit: Der Entwickler von KodaHosting ist nach deutschem Recht minderjährig (§ 106 BGB, beschränkte Geschäftsfähigkeit). Die rechtliche Verantwortung für den Betrieb dieses Dienstes, einschließlich datenschutzrechtlicher Angelegenheiten, tragen mit die gesetzlichen Vertreter. Anliegen zum Datenschutz, einschließlich Anfragen nach der DSGVO, können an die oben genannte E-Mail-Adresse gerichtet werden. Die gesetzlichen Vertreter sind über dieselbe Adresse erreichbar.
 
@@ -99,7 +99,7 @@ Nach der Datenschutz-Grundverordnung (DSGVO) und anwendbaren Datenschutzgesetzen
 - Widerspruchsrecht (Art. 21 DSGVO): Du kannst der Verarbeitung deiner Daten auf Grundlage berechtigter Interessen widersprechen.
 - Recht auf Widerruf der Einwilligung (Art. 7 Abs. 3 DSGVO): Du kannst jederzeit eine erteilte Einwilligung widerrufen.
 
-Zur Ausübung dieser Rechte kontaktiere uns bitte unter support@host.kodanetwork.eu. Wenn du unter 16 Jahre alt bist, muss deine Anfrage von deinem gesetzlichen Vertreter gestellt oder von ihm gebilligt werden.
+Zur Ausübung dieser Rechte kontaktiere uns bitte unter support@kodaserv.eu. Wenn du unter 16 Jahre alt bist, muss deine Anfrage von deinem gesetzlichen Vertreter gestellt oder von ihm gebilligt werden.
 
 Du kannst auch den Konto-Bildschirm in der App nutzen: „Meine Daten anfordern" erstellt nach einer Admin-Prüfung einen Datenexport, „Vollständige Datenlöschung beantragen" startet einen Löschantrag, der von einem Admin genehmigt werden muss, und „Meine Anträge" zeigt den Status. Die Entwicklerkonsole bietet dieselben Konto- und Support-Wege für Erweiterungs-Entwickler.
 
@@ -136,6 +136,6 @@ https://www.ldi.nrw.de
 12. Kontakt
 
 Wenn du Fragen oder Anregungen zu unserer Datenschutzerklärung hast oder deine Datenschutzrechte ausüben möchtest, kontaktiere uns unter:
-E-Mail: support@host.kodanetwork.eu
+E-Mail: support@kodaserv.eu
 
 In Angelegenheiten, die den Status des Entwicklers als Minderjährigen betreffen, sind die gesetzlichen Vertreter über dieselbe E-Mail-Adresse erreichbar.

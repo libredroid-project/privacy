@@ -2,7 +2,7 @@ import type { ReactNode } from "react";
 import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
 
-const SUPPORT_MAIL = "support@host.kodanetwork.eu";
+const SUPPORT_MAIL = "support@kodaserv.eu";
 
 type Kind = "account" | "data";
 

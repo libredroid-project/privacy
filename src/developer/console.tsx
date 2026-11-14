@@ -781,7 +781,7 @@ export function DeveloperConsole({
                     </SidebarMenuButton>
                   </SidebarMenuItem>
                   <SidebarMenuItem>
-                    <SidebarMenuButton onClick={() => (window.location.href = "mailto:contact@kodaserv.eu")}>
+                    <SidebarMenuButton onClick={() => (window.location.href = "mailto:support@kodaserv.eu")}>
                       <LifeBuoy />
                       <span>Email support</span>
                     </SidebarMenuButton>
