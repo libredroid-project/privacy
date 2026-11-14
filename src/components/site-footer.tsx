@@ -34,6 +34,8 @@ const COLUMNS = [
       { href: "/tos", label: "Terms of Service" },
       { href: "/licenses", label: "Licenses" },
       { href: "/impressum", label: "Impressum" },
+      { href: "/account-deletion", label: "Delete account" },
+      { href: "/data-deletion", label: "Delete data" },
     ],
   },
 ];

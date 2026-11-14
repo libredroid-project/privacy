@@ -19,6 +19,8 @@ const entries = [
   "tos.html",
   "licenses.html",
   "impressum.html",
+  "account-deletion.html",
+  "data-deletion.html",
 ];
 
 /**
