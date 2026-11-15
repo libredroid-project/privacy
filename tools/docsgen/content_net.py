@@ -57,7 +57,7 @@ GROUPS = [
 <p>The MCP token is not the dashboard token and not the KodaHosting account password. It is a separate credential that only works on this server and only for the tools you allow.</p>
 <p>The app's MCP sheet also has <b>How to set up</b> and <b>Troubleshooting</b> rows with the same steps, so the setup and the common fixes are available without opening this page.</p>
 <h4>Connect an AI client</h4>
-<p>Every client needs the same three values: the endpoint URL, the MCP token and the HTTP transport. Only the menu names differ. The table maps the common harnesses; the examples below show the exact file or fields.</p>
+<p>Every client needs the same three values: the endpoint URL, the MCP token and the HTTP transport. Only the menu names differ. The table maps the common harnesses; the examples below show the exact file or fields. The app's Connection sheet has a <b>Copy JSON</b> button that produces the ready-to-paste <code>mcpServers</code> object.</p>
 <table>
   <tr><th>Client</th><th>Where it lives</th><th>What to enter</th></tr>
   <tr><td>ZCode</td><td>MCP server list, New MCP server</td><td>Type HTTP, URL, Headers JSON</td></tr>
