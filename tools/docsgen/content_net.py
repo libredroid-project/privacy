@@ -57,18 +57,103 @@ GROUPS = [
 <p>The MCP token is not the dashboard token and not the KodaHosting account password. It is a separate credential that only works on this server and only for the tools you allow.</p>
 <p>The app's MCP sheet also has <b>How to set up</b> and <b>Troubleshooting</b> rows with the same steps, so the setup and the common fixes are available without opening this page.</p>
 <h4>Connect an AI client</h4>
-<p>Use the client's remote HTTP MCP option. The exact menu differs per client, but the values are always the same: the endpoint URL and an <code>Authorization: Bearer</code> header with the MCP token. Clients that use the common <code>mcpServers</code> JSON format can use:</p>
+<p>Every client needs the same three values: the endpoint URL, the MCP token and the HTTP transport. Only the menu names differ. The table maps the common harnesses; the examples below show the exact file or fields.</p>
+<table>
+  <tr><th>Client</th><th>Where it lives</th><th>What to enter</th></tr>
+  <tr><td>ZCode</td><td>MCP server list, New MCP server</td><td>Type HTTP, URL, Headers JSON</td></tr>
+  <tr><td>Codex</td><td><code>~/.codex/config.toml</code></td><td><code>[mcp_servers.…]</code>, <code>url</code>, <code>bearer_token_env_var</code></td></tr>
+  <tr><td>Antigravity</td><td><code>~/.gemini/config/mcp_config.json</code></td><td><code>serverUrl</code>, <code>headers</code></td></tr>
+  <tr><td>Claude Code</td><td><code>.mcp.json</code> or <code>claude mcp add-json</code></td><td><code>type: http</code>, <code>url</code>, <code>headers</code></td></tr>
+  <tr><td>Cursor</td><td><code>~/.cursor/mcp.json</code> or <code>.cursor/mcp.json</code></td><td><code>url</code>, <code>headers</code></td></tr>
+  <tr><td>VS Code</td><td><code>.vscode/mcp.json</code> or user <code>mcp.json</code></td><td><code>servers</code>, <code>type: http</code>, <code>url</code>, <code>headers</code></td></tr>
+  <tr><td>Windsurf</td><td><code>~/.codeium/windsurf/mcp_config.json</code></td><td><code>serverUrl</code>, <code>headers</code></td></tr>
+  <tr><td>Claude Desktop</td><td>Connectors or a stdio bridge</td><td>OAuth, or <code>mcp-remote</code> for a static Bearer header</td></tr>
+</table>
+<h4>ZCode</h4>
+<ol>
+  <li>Open the MCP server list and choose <b>New MCP server</b>.</li>
+  <li>Name: <code>kodahosting-your-server</code>. Scope: <b>This computer</b> or <b>User</b>.</li>
+  <li>Type: <b>HTTP</b>. Timeout MS: <code>30000</code>. Protocol version: <b>Auto</b>.</li>
+  <li>URL: <code>https://your-server.kodaserv.eu/mcp</code>.</li>
+  <li>Headers: <code>{"Authorization": "Bearer &lt;mcp-token&gt;"}</code> in the Form or JSON tab.</li>
+  <li>Save. The KodaDash tools should appear in the client's tool list.</li>
+</ol>
+<p>30000 ms is enough; use 60000 if the phone is slow to start the server. Leave Protocol version on Auto.</p>
+<h4>Codex</h4>
+<pre><code>[mcp_servers.kodahosting]
+url = "https://your-server.kodaserv.eu/mcp"
+bearer_token_env_var = "KODA_MCP_TOKEN"</code></pre>
+<p>Export the token in the environment Codex starts from, not in the TOML: <code>export KODA_MCP_TOKEN=&lt;mcp-token&gt;</code>. The CLI form is <code>codex mcp add kodahosting --url https://your-server.kodaserv.eu/mcp --bearer-token-env-var KODA_MCP_TOKEN</code>. If you need a static header, use <code>[mcp_servers.kodahosting.http_headers]</code> with <code>Authorization = "Bearer ..."</code>; the environment variable is safer.</p>
+<h4>Antigravity</h4>
+<pre><code>{
+  "mcpServers": {
+    "kodahosting": {
+      "serverUrl": "https://your-server.kodaserv.eu/mcp",
+      "headers": { "Authorization": "Bearer &lt;mcp-token&gt;" }
+    }
+  }
+}</code></pre>
+<p>Antigravity expects <code>serverUrl</code>, not <code>url</code>. The global file is <code>~/.gemini/config/mcp_config.json</code>; a workspace can use <code>.agents/mcp_config.json</code>. The CLI form is <code>agy mcp add --type http --header "Authorization: Bearer &lt;mcp-token&gt;" kodahosting https://your-server.kodaserv.eu/mcp</code>.</p>
+<h4>Claude Code</h4>
+<pre><code>{
+  "mcpServers": {
+    "kodahosting": {
+      "type": "http",
+      "url": "https://your-server.kodaserv.eu/mcp",
+      "headers": { "Authorization": "Bearer ${KODA_MCP_TOKEN}" }
+    }
+  }
+}</code></pre>
+<p>Put this in <code>.mcp.json</code> or use <code>claude mcp add-json kodahosting '{...}'</code>. Claude Code expands shell environment variables; it does not read a plain <code>.env</code> file.</p>
+<h4>Cursor</h4>
 <pre><code>{
   "mcpServers": {
     "kodahosting": {
       "url": "https://your-server.kodaserv.eu/mcp",
-      "headers": {
-        "Authorization": "Bearer &lt;mcp-token&gt;"
-      }
+      "headers": { "Authorization": "Bearer ${env:KODA_MCP_TOKEN}" }
     }
   }
 }</code></pre>
-<p>If your client only supports local stdio MCP servers, it needs an HTTP-to-stdio bridge; KodaDash does not ship one. Use a client with remote HTTP MCP support, or the client's own remote connector.</p>
+<p>Global file <code>~/.cursor/mcp.json</code>, project file <code>.cursor/mcp.json</code>. Cursor detects Streamable HTTP from <code>url</code>.</p>
+<h4>VS Code</h4>
+<pre><code>{
+  "inputs": [
+    { "type": "promptString", "id": "koda-mcp-token", "description": "KodaHosting MCP token", "password": true }
+  ],
+  "servers": {
+    "kodahosting": {
+      "type": "http",
+      "url": "https://your-server.kodaserv.eu/mcp",
+      "headers": { "Authorization": "Bearer ${input:koda-mcp-token}" }
+    }
+  }
+}</code></pre>
+<p>VS Code uses <code>servers</code>, not <code>mcpServers</code>. Put it in <code>.vscode/mcp.json</code> or run <b>MCP: Open User Configuration</b> from the Command Palette.</p>
+<h4>Windsurf</h4>
+<pre><code>{
+  "mcpServers": {
+    "kodahosting": {
+      "serverUrl": "https://your-server.kodaserv.eu/mcp",
+      "headers": { "Authorization": "Bearer ${env:KODA_MCP_TOKEN}" }
+    }
+  }
+}</code></pre>
+<p>Windsurf uses <code>serverUrl</code>; a copied <code>url</code> key can fail silently. Refresh the MCP panel after editing.</p>
+<h4>Claude Desktop</h4>
+<p>The native custom connector accepts public or OAuth servers; a static Bearer header is not available in every build. If your build has a request-header field, use it. Otherwise add a local stdio bridge such as <code>mcp-remote</code>:</p>
+<pre><code>{
+  "mcpServers": {
+    "kodahosting": {
+      "command": "npx",
+      "args": ["-y", "mcp-remote", "https://your-server.kodaserv.eu/mcp",
+               "--header", "Authorization:${AUTH_HEADER}"],
+      "env": { "AUTH_HEADER": "Bearer &lt;mcp-token&gt;" }
+    }
+  }
+}</code></pre>
+<p>On Windows, keep the space inside <code>AUTH_HEADER</code> and use <code>Authorization:${AUTH_HEADER}</code>; a space in the argument can be split. KodaDash does not ship this bridge.</p>
+<h4>Anything else</h4>
+<p>Use the common <code>mcpServers</code> shape with <code>url</code> and <code>headers</code>. If the client asks for a type, choose HTTP or Streamable HTTP. If it uses <code>serverUrl</code> instead of <code>url</code>, rename the key. A client that only supports stdio needs an HTTP-to-stdio bridge.</p>
 <h4>Test it with curl</h4>
 <pre><code>curl -s https://your-server.kodaserv.eu/mcp \\
   -H "Authorization: Bearer &lt;mcp-token&gt;" \\
