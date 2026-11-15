@@ -40,6 +40,76 @@ GROUPS = [
 </table>
 <p>The dashboard has its own token and optional password, and the backups tab is deliberately read only: a stolen dashboard token should not be able to destroy the only copy of a world.</p>
 """),
+        ("koda-dash-mcp", "MCP for AI clients", """
+<p>KodaDash 1.1.0 adds a Model Context Protocol endpoint. An AI client that supports remote MCP can then inspect the server, read files and logs, run console commands and change settings without the app being open. The AI is a normal MCP client, not a chat window inside KodaHosting.</p>
+<h4>Before you start</h4>
+<ul>
+  <li>A Paper or Purpur server with KodaDash enabled and running.</li>
+  <li>KodaHosting v0.147beta / version code 8527 or newer, because that build contains the KodaDash 1.1.0 jar.</li>
+  <li>The HTTPS dashboard address, for example <code>https://your-server.kodaserv.eu/</code>. The MCP endpoint is the same host with <code>/mcp</code>.</li>
+</ul>
+<h4>Enable MCP</h4>
+<ol>
+  <li>Open the KodaDash dashboard and go to <b>Settings, AI access (MCP)</b>. In the app the same screen is under the server, <b>KodaDash, AI access (MCP)</b>.</li>
+  <li>Open <b>Connection</b> and turn on <b>Enable MCP</b>. KodaDash generates a separate MCP token.</li>
+  <li>Copy the endpoint and the token. The endpoint looks like <code>https://your-server.kodaserv.eu/mcp</code>.</li>
+</ol>
+<p>The MCP token is not the dashboard token and not the KodaHosting account password. It is a separate credential that only works on this server and only for the tools you allow.</p>
+<p>The app's MCP sheet also has <b>How to set up</b> and <b>Troubleshooting</b> rows with the same steps, so the setup and the common fixes are available without opening this page.</p>
+<h4>Connect an AI client</h4>
+<p>Use the client's remote HTTP MCP option. The exact menu differs per client, but the values are always the same: the endpoint URL and an <code>Authorization: Bearer</code> header with the MCP token. Clients that use the common <code>mcpServers</code> JSON format can use:</p>
+<pre><code>{
+  "mcpServers": {
+    "kodahosting": {
+      "url": "https://your-server.kodaserv.eu/mcp",
+      "headers": {
+        "Authorization": "Bearer &lt;mcp-token&gt;"
+      }
+    }
+  }
+}</code></pre>
+<p>If your client only supports local stdio MCP servers, it needs an HTTP-to-stdio bridge; KodaDash does not ship one. Use a client with remote HTTP MCP support, or the client's own remote connector.</p>
+<h4>Test it with curl</h4>
+<pre><code>curl -s https://your-server.kodaserv.eu/mcp \\
+  -H "Authorization: Bearer &lt;mcp-token&gt;" \\
+  -H "Content-Type: application/json" \\
+  -d '{"jsonrpc":"2.0","id":1,"method":"tools/list"}'</code></pre>
+<p>A successful answer contains a <code>tools</code> array. <code>GET /mcp</code> returns 405 on purpose: this endpoint accepts POST only and does not offer SSE.</p>
+<h4>What the AI can do</h4>
+<table>
+  <tr><th>Area</th><th>Tools</th></tr>
+  <tr><td>Read</td><td>server status, console tail, online players, playtime, stats history, files, logs, plugins, server.properties, schedules and the backup index</td></tr>
+  <tr><td>Console</td><td>run a command as the console sender, except start, stop, restart and hibernate</td></tr>
+  <tr><td>Files</td><td>list, read, write, rename, create folders and delete</td></tr>
+  <tr><td>Server</td><td>read and change server.properties</td></tr>
+  <tr><td>Plugins</td><td>list, enable, disable and install a jar from a public HTTPS URL</td></tr>
+</table>
+<p>The AI can never start, stop, restart or hibernate the server. Those actions stay with the human owner in the app or the dashboard. The server rejects those console commands even if the AI tries.</p>
+<h4>Security</h4>
+<ul>
+  <li><b>Read-only</b> hides every write tool. Use it when the AI should only look around.</li>
+  <li><b>Capability switches</b> turn console, file writes, server.properties and plugins on or off separately.</li>
+  <li><b>Regenerate</b> rotates the MCP token immediately. The old token stops working; update the AI client afterwards.</li>
+  <li>Destructive tools need <code>confirm:true</code>, and file writes need it to overwrite an existing file.</li>
+  <li>Every call is written to <code>plugins/KodaDash/mcp-audit.log</code>. File contents and values whose names contain password, secret or token are redacted.</li>
+  <li><code>plugins/KodaDash/config.yml</code>, the audit log and <code>.frpc.toml</code> are blocked from the MCP file tools.</li>
+  <li>The token is a Bearer secret. Anyone who has it can use the enabled tools. Treat it like a root password and do not put it in a public repository or a screenshot.</li>
+</ul>
+<h4>What the AI is told</h4>
+<p>On connect, KodaDash sends an MCP system prompt with the KodaHosting context, the server software and version, the worlds, plugins, current players and TPS, and the phone model, Android version, RAM, battery and storage. It also states the rules: never start or stop the server, ask before destructive changes, never reveal tokens, and prefer read-only tools.</p>
+<p>Server version and software come from the running server and are authoritative. The app and cloud mirror in <code>server-info.json</code> is secondary and labelled as possibly stale. A wrong cloud <code>server_version</code> is shown as a mirror value and never used as the real version. The read-only <code>server_context</code> tool returns the same data later, even if the client does not keep the initial prompt.</p>
+<h4>Troubleshooting</h4>
+<table>
+  <tr><th>Symptom</th><th>Check</th></tr>
+  <tr><td>404</td><td>MCP is off, or KodaDash is off. Turn both on; the endpoint exists only while KodaDash is enabled.</td></tr>
+  <tr><td>401</td><td>The token is wrong or was regenerated. Copy the current token from Connection.</td></tr>
+  <tr><td>405 on GET</td><td>Normal. Use POST; there is no SSE stream.</td></tr>
+  <tr><td>No connection</td><td>The server must be online and the HTTPS dashboard must work. Open <code>https://&lt;server&gt;/</code> first.</td></tr>
+  <tr><td>Tools are missing</td><td>Read-only mode or a capability switch is off. Open Permissions.</td></tr>
+  <tr><td>Old plugin</td><td>KodaDash is loaded from the app on server start. Install 8527 or newer, then restart the server once.</td></tr>
+</table>
+<p>The audit log is the first place to look when the AI did something unexpected. It records the tool, redacted arguments, result and duration for every call.</p>
+"""),
         ("bedrock", "Bedrock crossplay", """
 <p>With Geyser and Floodgate installed, Bedrock players can join a Java server. The app installs both plugins, writes their configuration from templates that already match the server settings, and opens the extra port the Bedrock protocol needs.</p>
 <p>PumpkinMC, the native server, has Bedrock support built in, so on that server the switch is simply part of the server itself. Either way the dashboard shows both addresses: the Java one and the Bedrock one with its port.</p>

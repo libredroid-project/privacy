@@ -26,10 +26,10 @@ GROUPS = [
 <h4>Running your own</h4>
 <ol>
   <li>Clone the repository and build it once with JDK 21.</li>
-  <li>Create a Supabase project and apply the SQL files from <code>supabase/</code> in order, migrations first, then security fixes, then releases and extensions. Each file ends with a statement that reloads the API schema.</li>
-  <li>Create the storage buckets your features need: <code>artifacts</code>, <code>release_images</code>, <code>support_attachments</code>, <code>extension_artifacts</code>, <code>extension_icons</code>.</li>
-  <li>Deploy the edge functions and give them their secrets. <code>get-tunnel-config</code> is the one you cannot skip, the app asks it for its tunnel credentials.</li>
-  <li>Run an frps server, or use an existing service, and put its address plus your Supabase URL and public key into the native header file.</li>
+  <li>Create a Supabase project and apply the SQL files from <code>supabase/</code>: first <code>migrations/</code>, then <code>security_fix_*.sql</code>, then the remaining feature SQL (releases, extensions, notifications, KodaDash beta and profile avatar). Each file reloads the API schema.</li>
+  <li>Create the storage buckets: <code>artifacts</code>, <code>release_images</code>, <code>support_attachments</code>, <code>extension_assets</code> and <code>avatars</code> public, <code>extension_packages</code> and <code>data_exports</code> private.</li>
+  <li>Deploy the edge functions and set their secrets. <code>supabase/README.md</code> lists the full set; <code>get-tunnel-config</code> is the one you cannot skip, the app asks it for its tunnel credentials.</li>
+  <li>Run an frps server (a hardened starting point is <code>vps-https/frps.toml.example</code>) and put its address plus your Supabase URL and public key into the native header file.</li>
   <li>Build a signed release and install it. The first screen registers a device and creates the row everything else hangs off.</li>
   <li>Optional: the Discord bot with your own token, and the admin panel if you prefer a browser over the admin app.</li>
 </ol>

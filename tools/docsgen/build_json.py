@@ -97,7 +97,7 @@ def main():
         sys.exit("duplicate ids: %s" % duplicates)
 
     data = {
-        "updated": "October 2026",
+        "updated": "November 2026",
         "sectionCount": len(flat),
         "groups": groups,
         "index": index,
