@@ -31,7 +31,7 @@ GROUPS = [
   <li>Deploy the edge functions and set their secrets. <code>supabase/README.md</code> lists the full set; <code>get-tunnel-config</code> is the one you cannot skip, the app asks it for its tunnel credentials.</li>
   <li>Run an frps server (a hardened starting point is <code>vps-https/frps.toml.example</code>) and put its address plus your Supabase URL and public key into the native header file.</li>
   <li>Build a signed release and install it. The first screen registers a device and creates the row everything else hangs off.</li>
-  <li>Optional: the Discord bot with your own token, and the admin panel if you prefer a browser over the admin app.</li>
+  <li>Optional: the Discord bot with your own token. The team admin panel and admin app are not part of the public source.</li>
 </ol>
 <div class="callout">A fresh instance starts empty on purpose. Without a backend the app still runs, but the first start cannot register a device and most screens stay quiet.</div>
 """),
