@@ -59,7 +59,8 @@ Die App nutzt bestimmte Drittanbieter-Dienste, die Informationen erfassen könne
 - Supabase: Für Authentifizierung und Echtzeit-Datenbankfunktionalität (Serververwaltungsstatus). Supabase speichert deine E-Mail-Adresse und dein Authentifizierungs-Token in verschlüsselter Form.
 - OpenRouter: Für die optionale, einwilligungsbasierte KI-Crash-Analyse aus Abschnitt 2. OpenRouter ist der Auftragsverarbeiter, der Anfragen an Drittanbieter-KI-Modelle weiterleitet (siehe Abschnitt 2 für die Liste möglicher Anbieter).
 - Resend: Für die Zustellung transaktionaler E-Mails (Verifizierungscodes, Passwort-Resets, Support-Korrespondenz) an deine E-Mail-Adresse.
-- Modrinth API / Spigot: Zum Suchen und Herunterladen von Server-Plugins direkt in der App.
+- Modrinth- und CurseForge-API: Zum Suchen und Herunterladen von Plugins, Mods und Modpacks. Suchbegriff, gewählte Minecraft-Version, Servertyp und deine IP-Adresse werden an den gewählten Anbieter gesendet. CurseForge-Anfragen nutzen einen App-API-Schlüssel; es werden keine Kontodaten oder Geräte-ID gesendet. Datenschutz Modrinth: https://modrinth.com/legal/privacy. Datenschutz CurseForge/Overwolf: https://legal.overwolf.com/docs/overwolf/platform/platform-privacy-policy/.
+- PaperMC und SpigotMC: Zum Herunterladen von Serversoftware und Versions-Metadaten.
 - GitHub Releases: Zum Herunterladen essentieller Server-Binärdateien wie Java und sicheren Tunnel-Clients.
 - Bore / FRP (Fast Reverse Proxy): Ausschließlich zum Aufbau der sicheren Netzwerktunnel zwischen deinem Gerät und unserer VPS-Infrastruktur.
 - Ko-fi: Für freiwillige finanzielle Unterstützung des Entwicklers. Ko-fi ist ein externer Dienst; der Besuch ihrer Website oder eine Spende unterliegt deren Bedingungen und Datenschutzerklärung. Spenden sind freiwillige Geschenke und schalten keine Funktionen frei.

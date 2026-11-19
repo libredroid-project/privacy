@@ -59,7 +59,8 @@ The App utilizes certain third-party services that may collect information used 
 - Supabase: For authentication and real-time database functionality (server management state). Supabase stores your email address and authentication token in encrypted form.
 - OpenRouter: For the optional, consent-based AI crash analysis described in Section 2. OpenRouter is the processor that forwards requests to third-party AI model providers (see Section 2 for the list of possible providers).
 - Resend: For delivering transactional emails (verification codes, password resets, support correspondence) to your email address.
-- Modrinth API / Spigot: To search and download server plugins directly within the app.
+- Modrinth and CurseForge APIs: To search for and download plugins, mods and modpacks. The search term, the selected Minecraft version and server type, and your IP address are sent to the selected provider. CurseForge requests use an app-level API key; no account data or device identifier is sent. Modrinth privacy: https://modrinth.com/legal/privacy. CurseForge/Overwolf privacy: https://legal.overwolf.com/docs/overwolf/platform/platform-privacy-policy/.
+- PaperMC and SpigotMC: To download server software and version metadata.
 - GitHub Releases: Used to download essential server binaries like Java and secure tunnel clients.
 - Bore / FRP (Fast Reverse Proxy): Used exclusively to create the secure network tunnels between your device and our VPS infrastructure.
 - Ko-fi: Used for voluntary financial support of the developer. Ko-fi is an external service; visiting their site or making a donation is subject to their terms and privacy policy. Donations are voluntary gifts and do not unlock any features.

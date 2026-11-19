@@ -41,7 +41,7 @@ GROUPS = [
 <p>The dashboard has its own token and optional password, and the backups tab is deliberately read only: a stolen dashboard token should not be able to destroy the only copy of a world.</p>
 """),
         ("koda-dash-mcp", "MCP for AI clients", """
-<p>KodaDash 1.1.0 adds a Model Context Protocol endpoint. An AI client that supports remote MCP can then inspect the server, read files and logs, run console commands and change settings without the app being open. The AI is a normal MCP client, not a chat window inside KodaHosting.</p>
+<p>KodaDash 1.2.0 adds a Model Context Protocol endpoint. An AI client that supports remote MCP can then inspect the server, read files and logs, run console commands and change settings without the app being open. The AI is a normal MCP client, not a chat window inside KodaHosting.</p>
 <h4>Before you start</h4>
 <ul>
   <li>A Paper or Purpur server with KodaDash enabled and running.</li>
@@ -163,19 +163,21 @@ bearer_token_env_var = "KODA_MCP_TOKEN"</code></pre>
 <h4>What the AI can do</h4>
 <table>
   <tr><th>Area</th><th>Tools</th></tr>
-  <tr><td>Read</td><td>server status, console tail, online players, playtime, stats history, files, logs, plugins, server.properties, schedules and the backup index</td></tr>
+  <tr><td>Read</td><td>server status, MCP status, console tail, online players, playtime, stats history, files, logs, plugins, server.properties, schedules and the backup index</td></tr>
   <tr><td>Console</td><td>run a command as the console sender, except start, stop, restart and hibernate</td></tr>
   <tr><td>Files</td><td>list, read, write, rename, create folders and delete</td></tr>
-  <tr><td>Server</td><td>read and change server.properties</td></tr>
-  <tr><td>Plugins</td><td>list, enable, disable and install a jar from a public HTTPS URL</td></tr>
+  <tr><td>Server</td><td>read and change server.properties, plus one validated setting at a time: MOTD, max players, difficulty, gamemode, PvP, whitelist, online-mode, view distance, simulation distance and spawn protection</td></tr>
+  <tr><td>Plugins</td><td>list, enable, disable, install from a public HTTPS URL, search Modrinth and install a compatible Modrinth version with SHA-512 verification</td></tr>
 </table>
 <p>The AI can never start, stop, restart or hibernate the server. Those actions stay with the human owner in the app or the dashboard. The server rejects those console commands even if the AI tries.</p>
+<p>Plugin and settings helpers: <code>mcp_status</code>, <code>modrinth_search</code>, <code>modrinth_install</code> and <code>server_setting</code>.</p>
 <h4>Security</h4>
 <ul>
   <li><b>Read-only</b> hides every write tool. Use it when the AI should only look around.</li>
-  <li><b>Capability switches</b> turn console, file writes, server.properties and plugins on or off separately.</li>
+  <li><b>Capability switches</b> turn console, file writes, server.properties, plugins and Modrinth downloads on or off separately.</li>
   <li><b>Regenerate</b> rotates the MCP token immediately. The old token stops working; update the AI client afterwards.</li>
-  <li>Destructive tools need <code>confirm:true</code>, and file writes need it to overwrite an existing file.</li>
+  <li>Destructive tools need <code>confirm:true</code>, and file writes need it to overwrite an existing file. Modrinth installs verify the SHA-512 from the version metadata; a mismatch deletes the downloaded file.</li>
+  <li>Modrinth API and download requests go only to <code>api.modrinth.com</code> and <code>cdn.modrinth.com</code> over HTTPS; private, loopback and reserved addresses are rejected.</li>
   <li>Every call is written to <code>plugins/KodaDash/mcp-audit.log</code>. File contents and values whose names contain password, secret or token are redacted.</li>
   <li><code>plugins/KodaDash/config.yml</code>, the audit log and <code>.frpc.toml</code> are blocked from the MCP file tools.</li>
   <li>The token is a Bearer secret. Anyone who has it can use the enabled tools. Treat it like a root password and do not put it in a public repository or a screenshot.</li>
