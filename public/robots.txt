@@ -13,4 +13,4 @@ Allow: /
 Disallow: /invite
 Disallow: /reset
 
-Sitemap: https://host.kodanetwork.eu/sitemap.xml
+Sitemap: https://host.kodanetwork.eu/sitemap-main.xml
