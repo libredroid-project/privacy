@@ -55,7 +55,7 @@ function VersionRow({ version }: { version: DevVersion }) {
         <td className="py-3 pr-4 text-xs text-muted-foreground">{formatBytes(version.file_size)}</td>
         <td className="py-3 pr-4 text-xs text-muted-foreground">{formatDateTime(version.created_at)}</td>
         <td className="max-w-[280px] py-3 pr-4">
-          <p className="truncate text-xs text-muted-foreground">{version.changelog || "—"}</p>
+          <p className="truncate text-xs text-muted-foreground">{version.changelog || "-"}</p>
         </td>
         <td className="py-3 text-right text-xs text-muted-foreground">{open ? "Hide" : "Details"}</td>
       </tr>
@@ -82,7 +82,7 @@ function VersionRow({ version }: { version: DevVersion }) {
                 </p>
                 <p className="flex items-center gap-2">
                   <span className="text-muted-foreground">SHA-256:</span>
-                  <span className="truncate font-mono">{version.sha256 || "—"}</span>
+                  <span className="truncate font-mono">{version.sha256 || "-"}</span>
                   {version.sha256 ? <CopyButton value={version.sha256} /> : null}
                 </p>
                 <p>

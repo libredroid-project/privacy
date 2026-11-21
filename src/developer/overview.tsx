@@ -13,6 +13,7 @@ import { Card } from "@/components/ui/card";
 import type { DevExtension, DeveloperMe } from "@/developer/types";
 import { formatDate, formatDateTime, latestVersion, pendingVersion, displayStatus, displayStatusTone } from "@/developer/types";
 import { VerifyEmail } from "@/developer/verify-email";
+import { safeImageUrl } from "@/lib/security";
 
 function Stat({
   label,
@@ -148,6 +149,7 @@ export function DeveloperOverview({
             <ul className="mt-4 divide-y">
               {extensions.slice(0, 6).map((ext) => {
                 const latest = latestVersion(ext);
+                const iconSrc = safeImageUrl(ext.icon_url);
                 return (
                   <li key={ext.ext_id}>
                     <button
@@ -156,8 +158,8 @@ export function DeveloperOverview({
                       className="flex w-full items-center gap-3 py-3 text-left transition-colors hover:bg-accent/30"
                     >
                       <div className="flex size-10 shrink-0 items-center justify-center overflow-hidden rounded-lg border bg-muted text-sm font-medium">
-                        {ext.icon_url ? (
-                          <img src={ext.icon_url} alt="" className="size-full object-cover" />
+                        {iconSrc ? (
+                          <img src={iconSrc} alt="" className="size-full object-cover" />
                         ) : (
                           ext.name.charAt(0).toUpperCase()
                         )}

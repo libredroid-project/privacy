@@ -212,7 +212,7 @@ export function ReleaseScreen({
           <h1 className="mt-3 text-2xl font-semibold tracking-tight">New release for {ext.name}</h1>
           <p className="mt-1 text-sm text-muted-foreground">
             The package goes through the same review as a first submission. Last release: v
-            {latest?.version || "—"} ({latest?.version_code ?? 0}).
+            {latest?.version || "-"} ({latest?.version_code ?? 0}).
           </p>
         </div>
         <Badge variant="outline" className="font-mono font-normal">
@@ -403,7 +403,7 @@ export function ReleaseScreen({
               </div>
               <div>
                 <dt className="text-xs text-muted-foreground">Category</dt>
-                <dd className="mt-0.5">{ext.category || "—"}</dd>
+                <dd className="mt-0.5">{ext.category || "-"}</dd>
               </div>
               <div>
                 <dt className="text-xs text-muted-foreground">License</dt>
@@ -411,7 +411,7 @@ export function ReleaseScreen({
               </div>
               <div>
                 <dt className="text-xs text-muted-foreground">Author</dt>
-                <dd className="mt-0.5">{ext.author || "—"}</dd>
+                <dd className="mt-0.5">{ext.author || "-"}</dd>
               </div>
               <div className="sm:col-span-2">
                 <dt className="text-xs text-muted-foreground">Short description</dt>
@@ -442,15 +442,15 @@ export function ReleaseScreen({
             <dl className="mt-3 space-y-2 text-sm">
               <div className="flex items-baseline justify-between gap-3">
                 <dt className="text-muted-foreground">Version</dt>
-                <dd className="font-mono text-xs">{version || "—"}</dd>
+                <dd className="font-mono text-xs">{version || "-"}</dd>
               </div>
               <div className="flex items-baseline justify-between gap-3">
                 <dt className="text-muted-foreground">Code</dt>
-                <dd className="font-mono text-xs">{versionCode || "—"}</dd>
+                <dd className="font-mono text-xs">{versionCode || "-"}</dd>
               </div>
               <div className="flex items-baseline justify-between gap-3">
                 <dt className="text-muted-foreground">Package</dt>
-                <dd className="font-mono text-xs">{file ? formatBytes(file.size) : "—"}</dd>
+                <dd className="font-mono text-xs">{file ? formatBytes(file.size) : "-"}</dd>
               </div>
               <div className="flex items-baseline justify-between gap-3">
                 <dt className="text-muted-foreground">Permissions</dt>

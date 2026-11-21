@@ -38,6 +38,9 @@ import {
   SidebarProvider,
   SidebarTrigger,
 } from "@/components/ui/sidebar";
+import { AnimatedSidebarNav, type AnimatedSidebarItem } from "@/components/animated-sidebar-nav";
+import { AnimatedSwitch } from "@/components/animated-switch";
+import { ErrorState } from "@/components/error-state";
 import { SiteFooter } from "@/components/site-footer";
 import type { DevExtension, DeveloperMe } from "@/developer/types";
 import {
@@ -59,6 +62,7 @@ import { DeveloperAnalytics } from "@/developer/analytics";
 import { ReleaseScreen } from "@/developer/release-screen";
 import { SubmitDialog } from "@/store/submit-dialog";
 import type { MyExtension } from "@/store/types";
+import { safeImageUrl } from "@/lib/security";
 import { cn } from "@/lib/utils";
 
 type View = "overview" | "extensions" | "releases" | "analytics" | "support" | "account";
@@ -138,30 +142,24 @@ function StatusFilters({
 }) {
   const items = ["all", "APPROVED", "PENDING", "REJECTED", "WITHDRAWN"];
   return (
-    <div className="flex flex-wrap gap-2">
-      {items.map((item) => {
-        const active = value === item;
+    <AnimatedSwitch<string>
+      ariaLabel="Filter extensions by status"
+      size="sm"
+      value={value}
+      onChange={onChange}
+      options={items.map((item) => {
         const label = item === "all" ? "All" : item.charAt(0) + item.slice(1).toLowerCase();
-        return (
-          <button
-            key={item}
-            type="button"
-            onClick={() => onChange(item)}
-            className={cn(
-              "rounded-full border px-3 py-1.5 text-xs transition-colors",
-              active
-                ? "border-foreground/20 bg-foreground text-background"
-                : "text-muted-foreground hover:bg-accent hover:text-foreground",
-            )}
-          >
-            {label}
-            <span className={cn("ml-1.5", active ? "text-background/60" : "text-muted-foreground")}>
-              {counts[item] ?? 0}
+        return {
+          id: item,
+          label: (
+            <span className="inline-flex items-center gap-1.5">
+              <span>{label}</span>
+              <span className="font-mono text-[11px] opacity-65 tabular">{counts[item] ?? 0}</span>
             </span>
-          </button>
-        );
+          ),
+        };
       })}
-    </div>
+    />
   );
 }
 
@@ -258,6 +256,7 @@ function ExtensionList({
               <tbody>
                 {filtered.map((ext) => {
                   const latest = latestVersion(ext);
+                  const iconSrc = safeImageUrl(ext.icon_url);
                   return (
                     <tr
                       key={ext.ext_id}
@@ -267,8 +266,8 @@ function ExtensionList({
                       <td className="px-4 py-3">
                         <div className="flex items-center gap-3">
                           <div className="flex size-9 shrink-0 items-center justify-center overflow-hidden rounded-lg border bg-muted text-xs font-medium">
-                            {ext.icon_url ? (
-                              <img src={ext.icon_url} alt="" className="size-full object-cover" />
+                            {iconSrc ? (
+                              <img src={iconSrc} alt="" className="size-full object-cover" />
                             ) : (
                               ext.name.charAt(0).toUpperCase()
                             )}
@@ -286,13 +285,13 @@ function ExtensionList({
                           {displayStatus(ext)}
                         </Badge>
                       </td>
-                      <td className="px-4 py-3 font-mono text-xs">
-                        {latest ? `v${latest.version} (${latest.version_code})` : "—"}
+                      <td className="px-4 py-3 font-mono text-xs tabular">
+                        {latest ? `v${latest.version} (${latest.version_code})` : "-"}
                       </td>
-                      <td className="px-4 py-3 text-xs text-muted-foreground">
+                      <td className="px-4 py-3 font-mono text-xs text-muted-foreground tabular">
                         {ext.downloads.toLocaleString()}
                       </td>
-                      <td className="px-4 py-3 text-xs text-muted-foreground">
+                      <td className="px-4 py-3 font-mono text-xs text-muted-foreground tabular">
                         {formatDate(ext.updated_at)}
                       </td>
                       <td className="px-4 py-3 text-right">
@@ -347,8 +346,8 @@ function Workspace({
         <div className="mt-3 flex flex-wrap items-start justify-between gap-4">
           <div className="flex min-w-0 items-center gap-3">
             <div className="flex size-12 shrink-0 items-center justify-center overflow-hidden rounded-xl border bg-muted text-base font-medium">
-              {ext.icon_url ? (
-                <img src={ext.icon_url} alt="" className="size-full object-cover" />
+              {safeImageUrl(ext.icon_url) ? (
+                <img src={safeImageUrl(ext.icon_url)!} alt="" className="size-full object-cover" />
               ) : (
                 ext.name.charAt(0).toUpperCase()
               )}
@@ -414,23 +413,14 @@ function Workspace({
         />
       ) : (
         <>
-          <div className="flex gap-1 overflow-x-auto overflow-y-hidden border-b [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-            {tabs.map((item) => (
-              <button
-                key={item.id}
-                type="button"
-                onClick={() => onTab(item.id)}
-                className={cn(
-                  "-mb-px shrink-0 border-b-2 px-3 py-2.5 text-sm transition-colors",
-                  tab === item.id
-                    ? "border-foreground text-foreground"
-                    : "border-transparent text-muted-foreground hover:text-foreground",
-                )}
-              >
-                {item.label}
-              </button>
-            ))}
-          </div>
+          <AnimatedSwitch<WorkspaceTab>
+            role="tablist"
+            ariaLabel="Extension workspace sections"
+            size="sm"
+            value={tab}
+            onChange={onTab}
+            options={tabs}
+          />
 
           {tab === "listing" ? <ListingEditor ext={ext} onSaved={onChanged} /> : null}
           {tab === "releases" ? (
@@ -488,23 +478,16 @@ function ReleasesView({
         </p>
       </div>
 
-      <div className="flex flex-wrap gap-2">
-        {["ALL", "PENDING", "APPROVED", "REJECTED"].map((item) => (
-          <button
-            key={item}
-            type="button"
-            onClick={() => setFilter(item)}
-            className={cn(
-              "rounded-full border px-3 py-1.5 text-xs transition-colors",
-              filter === item
-                ? "border-foreground/20 bg-foreground text-background"
-                : "text-muted-foreground hover:bg-accent hover:text-foreground",
-            )}
-          >
-            {item === "ALL" ? "All" : item.charAt(0) + item.slice(1).toLowerCase()}
-          </button>
-        ))}
-      </div>
+      <AnimatedSwitch<string>
+        ariaLabel="Filter releases by status"
+        size="sm"
+        value={filter}
+        onChange={setFilter}
+        options={["ALL", "PENDING", "APPROVED", "REJECTED"].map((item) => ({
+          id: item,
+          label: item === "ALL" ? "All" : item.charAt(0) + item.slice(1).toLowerCase(),
+        }))}
+      />
 
       {rows.length === 0 ? (
         <Card className="p-10 text-center text-sm text-muted-foreground shadow-none">
@@ -550,7 +533,7 @@ function ReleasesView({
                       {formatDateTime(version.created_at)}
                     </td>
                     <td className="max-w-[260px] px-4 py-3">
-                      <p className="truncate text-xs text-muted-foreground">{version.review_note || "—"}</p>
+                      <p className="truncate text-xs text-muted-foreground">{version.review_note || "-"}</p>
                     </td>
                   </tr>
                 ))}
@@ -592,7 +575,7 @@ function AccountView({
         <dl className="mt-4 grid gap-4 text-sm sm:grid-cols-2">
           <div>
             <dt className="text-xs text-muted-foreground">E-mail</dt>
-            <dd className="mt-0.5 truncate">{me?.email || "—"}</dd>
+            <dd className="mt-0.5 truncate">{me?.email || "-"}</dd>
           </div>
           <div>
             <dt className="text-xs text-muted-foreground">Status</dt>
@@ -669,7 +652,10 @@ export function DeveloperConsole({
   onReloadMe: () => void;
 }) {
   const [route, setRoute] = useState<ConsoleRoute>(() => parseRoute(window.location.pathname));
-  const [submitOpen, setSubmitOpen] = useState(false);
+  const [submitOpen, setSubmitOpen] = useState(() => {
+    const params = new URLSearchParams(window.location.search);
+    return params.get("new") === "1" || params.get("submit") === "1";
+  });
   const [light, setLight] = useState(() => {
     try {
       return localStorage.getItem("koda_console_theme") === "light";
@@ -677,6 +663,15 @@ export function DeveloperConsole({
       return false;
     }
   });
+
+  useEffect(() => {
+    const url = new URL(window.location.href);
+    if (url.searchParams.has("new") || url.searchParams.has("submit")) {
+      url.searchParams.delete("new");
+      url.searchParams.delete("submit");
+      window.history.replaceState({}, "", url.pathname + url.search + url.hash);
+    }
+  }, []);
 
   useEffect(() => {
     document.documentElement.classList.toggle("dark", !light);
@@ -723,109 +718,118 @@ export function DeveloperConsole({
     })),
   }));
 
+  const consoleNavItems: AnimatedSidebarItem[] = useMemo(
+    () =>
+      NAV.map((item) => ({
+        id: item.id,
+        label: item.label,
+        icon: item.icon,
+        onClick: () => switchView(item.id),
+      })),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [],
+  );
+
+  const resourceItems: AnimatedSidebarItem[] = useMemo(
+    () => [
+      { id: "docs", label: "Documentation", icon: BookOpen, href: "/docs" },
+      { id: "store", label: "Store", icon: Puzzle, href: "/store" },
+      { id: "support-mail", label: "Email support", icon: LifeBuoy, href: "mailto:support@kodaserv.eu" },
+    ],
+    [],
+  );
+
   return (
     <>
       <SidebarProvider>
-        <Sidebar>
-          <SidebarHeader>
-            <a href="/" className="flex items-center gap-2.5 px-2 py-1.5">
-              <img src="/assets/logo.png" alt="" className="size-7 rounded-md" />
-              <span className="text-sm font-semibold">
+        <Sidebar className="border-r border-zinc-200 bg-zinc-50 dark:border-white/[0.06] dark:bg-black">
+          <div aria-hidden="true" className="dev-rainbow-line h-[3px] w-full shrink-0" />
+          <SidebarHeader className="border-b border-zinc-200/80 px-4 py-4 dark:border-white/[0.06]">
+            <a href="/" className="flex items-center gap-2.5">
+              <img src="/assets/logo.png" alt="" className="size-6 rounded-md" />
+              <span className="font-display text-[15px] font-semibold tracking-[-0.025em] text-zinc-950 dark:text-white">
                 Koda<span className="text-brand-ink">Hosting</span>
               </span>
             </a>
-            <p className="px-2 pb-1 text-[11px] font-medium tracking-wide text-muted-foreground uppercase">
-              Developer console
-            </p>
           </SidebarHeader>
 
-          <SidebarContent>
-            <SidebarGroup>
-              <SidebarGroupLabel>Console</SidebarGroupLabel>
+          <SidebarContent className="px-2.5 py-4">
+            <SidebarGroup className="p-0">
+              <SidebarGroupLabel className="mb-1 h-6 px-2.5 font-mono text-[10.5px] font-medium tracking-[0.08em] text-zinc-500 uppercase dark:text-zinc-600">
+                Console
+              </SidebarGroupLabel>
               <SidebarGroupContent>
-                <SidebarMenu>
-                  {NAV.map((item) => (
-                    <SidebarMenuItem key={item.id}>
-                      <SidebarMenuButton
-                        isActive={route.view === item.id}
-                        onClick={() => switchView(item.id)}
-                        className={
-                          route.view === item.id
-                            ? "!bg-brand/10 font-medium !text-brand-ink dark:!text-brand"
-                            : undefined
-                        }
-                      >
-                        <item.icon />
-                        <span>{item.label}</span>
-                      </SidebarMenuButton>
-                    </SidebarMenuItem>
-                  ))}
-                </SidebarMenu>
+                <AnimatedSidebarNav
+                  items={consoleNavItems}
+                  activeId={route.view === "account" ? null : route.view}
+                />
               </SidebarGroupContent>
             </SidebarGroup>
 
-            <SidebarGroup>
-              <SidebarGroupLabel>Resources</SidebarGroupLabel>
+            <SidebarGroup className="mt-6 p-0">
+              <SidebarGroupLabel className="mb-1 h-6 px-2.5 font-mono text-[10.5px] font-medium tracking-[0.08em] text-zinc-500 uppercase dark:text-zinc-600">
+                Resources
+              </SidebarGroupLabel>
               <SidebarGroupContent>
-                <SidebarMenu>
-                  <SidebarMenuItem>
-                    <SidebarMenuButton onClick={() => (window.location.href = "/docs")}>
-                      <BookOpen />
-                      <span>Documentation</span>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                  <SidebarMenuItem>
-                    <SidebarMenuButton onClick={() => (window.location.href = "/store")}>
-                      <Puzzle />
-                      <span>Store</span>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                  <SidebarMenuItem>
-                    <SidebarMenuButton onClick={() => (window.location.href = "mailto:support@kodaserv.eu")}>
-                      <LifeBuoy />
-                      <span>Email support</span>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                </SidebarMenu>
+                <AnimatedSidebarNav items={resourceItems} activeId={null} />
               </SidebarGroupContent>
             </SidebarGroup>
           </SidebarContent>
 
-          <SidebarFooter>
+          <SidebarFooter className="border-t border-zinc-200/80 p-2.5 dark:border-white/[0.06]">
             <SidebarMenu>
               <SidebarMenuItem>
-                <SidebarMenuButton isActive={route.view === "account"} onClick={() => switchView("account")}>
-                  <div className="flex size-6 items-center justify-center rounded-full bg-muted text-[10px] font-medium">
-                    {(me?.email || "?").charAt(0).toUpperCase()}
+                <SidebarMenuButton
+                  isActive={route.view === "account"}
+                  onClick={() => switchView("account")}
+                  className={cn(
+                    "relative h-auto rounded-lg px-2.5 py-2 font-display transition-colors",
+                    route.view === "account"
+                      ? "!bg-black/[0.06] !text-zinc-950 dark:!bg-white/[0.065] dark:!text-white"
+                      : "text-zinc-600 hover:!bg-black/[0.04] hover:!text-zinc-950 dark:text-zinc-300 dark:hover:!bg-white/[0.04] dark:hover:!text-white",
+                  )}
+                >
+                  <div className="flex size-7 shrink-0 items-center justify-center rounded-lg bg-black/[0.07] font-mono text-[11px] font-medium text-zinc-950 dark:bg-white/[0.08] dark:text-white">
+                    {(me?.email || "A").charAt(0).toUpperCase()}
                   </div>
-                  <span className="truncate">{me?.email || "Account"}</span>
+                  <div className="min-w-0 flex-1 text-left">
+                    <div className="truncate text-xs font-medium text-zinc-950 dark:text-white">
+                      {me?.mc_username || "Account"}
+                    </div>
+                    <div className="truncate text-[11px] text-zinc-500 dark:text-zinc-500">
+                      {me?.email || "Developer settings"}
+                    </div>
+                  </div>
+                  <ChevronRight className="size-3.5 shrink-0 text-zinc-400 dark:text-zinc-600" />
                 </SidebarMenuButton>
               </SidebarMenuItem>
             </SidebarMenu>
           </SidebarFooter>
         </Sidebar>
 
-        <SidebarInset>
-          <header className="sticky top-0 z-30 flex h-14 items-center gap-3 bg-card px-4 md:px-6">
-            <SidebarTrigger />
-            <span className="text-sm font-medium">Developer console</span>
+        <SidebarInset className="bg-white text-zinc-950 dark:bg-black dark:text-zinc-100">
+          <header className="sticky top-0 z-30 flex h-16 items-center gap-3 border-b border-zinc-200/80 bg-white/85 px-4 backdrop-blur-md dark:border-white/[0.06] dark:bg-black/80 md:px-6">
+            <SidebarTrigger className="rounded-lg text-zinc-600 hover:bg-zinc-100 hover:text-zinc-950 dark:text-zinc-400 dark:hover:bg-white/[0.06] dark:hover:text-white" />
+            <span className="font-display text-sm font-medium text-zinc-950 dark:text-white">
+              Developer console
+            </span>
             <div className="flex-1" />
-            <Button
-              variant="ghost"
-              size="sm"
+            <button
+              type="button"
               onClick={() => setLight((value) => !value)}
               aria-label={light ? "Switch to dark mode" : "Switch to light mode"}
+              className="koda-btn-pill h-8 px-3 text-xs whitespace-nowrap shrink-0"
             >
-              {light ? <Moon className="size-4" /> : <Sun className="size-4" />}
+              {light ? <Moon className="size-3.5" /> : <Sun className="size-3.5" />}
               {light ? "Dark" : "Light"}
-            </Button>
-            <Button asChild variant="ghost" size="sm">
-              <a href="/dashboard">
-                Dashboard <ExternalLink className="size-4" />
-              </a>
-            </Button>
+            </button>
+            <a
+              href="/dashboard"
+              className="koda-btn-pill h-8 px-3.5 text-xs whitespace-nowrap shrink-0"
+            >
+              Dashboard <ExternalLink className="size-3.5 opacity-70" />
+            </a>
           </header>
-          <div className="h-px w-full bg-gradient-to-r from-brand/70 via-violet-500/50 to-sky-500/50" />
 
           <div className="p-4 md:p-8">
             <div className="mx-auto w-full max-w-5xl">
@@ -834,13 +838,18 @@ export function DeveloperConsole({
                   <Loader2 className="size-4 animate-spin" /> Loading your extensions…
                 </div>
               ) : error ? (
-                <Card className="gap-3 p-6 shadow-none">
-                  <p className="text-sm font-medium">The console could not load.</p>
-                  <p className="text-sm text-muted-foreground">{error}</p>
-                  <Button size="sm" variant="outline" onClick={onReload}>
-                    Try again
-                  </Button>
-                </Card>
+                <ErrorState
+                  code="CONSOLE UNAVAILABLE"
+                  title="The console could not load"
+                  description="We could not reach the KodaHosting developer API. Check your network connection and try again."
+                  detail={error}
+                  onRetry={onReload}
+                  secondaryAction={
+                    <a href="/dashboard" className="koda-btn-pill h-9 px-4 text-xs">
+                      Open dashboard
+                    </a>
+                  }
+                />
               ) : route.view === "overview" ? (
                 <DeveloperOverview
                   me={me}

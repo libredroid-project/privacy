@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
 import { Download, ExternalLink, FileCode2, Globe, Loader2, ShieldCheck } from "lucide-react";
-import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { ErrorState } from "@/components/error-state";
 import {
   Dialog,
   DialogContent,
@@ -12,12 +12,14 @@ import {
 } from "@/components/ui/dialog";
 import { formatKb, relativeDate } from "@/lib/format";
 import { publicApi } from "@/lib/api";
+import { safeExternalUrl, safeImageUrl } from "@/lib/security";
 import { API_BASE } from "@/lib/supabase";
 import type { ExtensionDetail } from "@/store/types";
 
 function Icon({ url, name, size = "size-14" }: { url?: string; name: string; size?: string }) {
-  if (url) {
-    return <img src={url} alt="" className={`${size} shrink-0 rounded-lg border object-cover`} />;
+  const safeUrl = safeImageUrl(url);
+  if (safeUrl) {
+    return <img src={safeUrl} alt="" className={`${size} shrink-0 rounded-lg border object-cover`} />;
   }
   return (
     <div
@@ -61,6 +63,11 @@ export function DetailDialog({
   }, [extId]);
 
   const latest = ext?.versions?.[0];
+  const safeSourceUrl = safeExternalUrl(ext?.source_url);
+  const safeHomepageUrl = safeExternalUrl(ext?.homepage_url);
+  const safeScreenshots = (ext?.screenshots || [])
+    .map((shot) => safeImageUrl(shot))
+    .filter((shot): shot is string => Boolean(shot));
 
   return (
     <Dialog open={Boolean(extId)} onOpenChange={(open) => (open ? null : onClose())}>
@@ -75,9 +82,11 @@ export function DetailDialog({
         ) : error ? (
           <div className="p-6">
             <DialogTitle className="sr-only">Extension</DialogTitle>
-            <Alert variant="destructive">
-              <AlertDescription>Could not load this extension: {error}</AlertDescription>
-            </Alert>
+            <ErrorState
+              compact
+              title="Could not load this extension"
+              detail={error}
+            />
           </div>
         ) : ext ? (
           <>
@@ -118,11 +127,11 @@ export function DetailDialog({
             <div className="space-y-6 p-6">
               <div className="grid grid-cols-2 gap-x-6 gap-y-3 rounded-lg border bg-muted/40 p-4 text-sm">
                 {[
-                  ["Version", latest?.version ? `v${latest.version}` : "—"],
+                  ["Version", latest?.version ? `v${latest.version}` : "-"],
                   ["Size", formatKb(latest?.file_size)],
-                  ["License", ext.license || "—"],
-                  ["SHA-256", latest?.sha256 ? `${latest.sha256.slice(0, 16)}…` : "—"],
-                  ["Needs app", latest?.min_app_version ? `v${latest.min_app_version}` : "—"],
+                  ["License", ext.license || "-"],
+                  ["SHA-256", latest?.sha256 ? `${latest.sha256.slice(0, 16)}…` : "-"],
+                  ["Needs app", latest?.min_app_version ? `v${latest.min_app_version}` : "-"],
                   ["Downloads", String(ext.downloads || 0)],
                 ].map(([label, value]) => (
                   <div key={label} className="flex flex-col gap-0.5">
@@ -140,9 +149,9 @@ export function DetailDialog({
                 {ext.description || ext.summary || "No description provided."}
               </p>
 
-              {ext.screenshots?.length ? (
+              {safeScreenshots.length ? (
                 <div className="flex gap-3 overflow-x-auto pb-1">
-                  {ext.screenshots.map((shot) => (
+                  {safeScreenshots.map((shot) => (
                     <img
                       key={shot}
                       src={shot}
@@ -154,11 +163,11 @@ export function DetailDialog({
                 </div>
               ) : null}
 
-              {ext.source_url || ext.homepage_url ? (
+              {safeSourceUrl || safeHomepageUrl ? (
                 <div className="flex flex-wrap gap-4 text-sm">
-                  {ext.source_url ? (
+                  {safeSourceUrl ? (
                     <a
-                      href={ext.source_url}
+                      href={safeSourceUrl}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="inline-flex items-center gap-1.5 font-medium underline decoration-border underline-offset-4 hover:decoration-brand"
@@ -166,9 +175,9 @@ export function DetailDialog({
                       <FileCode2 className="size-4" /> Source code
                     </a>
                   ) : null}
-                  {ext.homepage_url ? (
+                  {safeHomepageUrl ? (
                     <a
-                      href={ext.homepage_url}
+                      href={safeHomepageUrl}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="inline-flex items-center gap-1.5 font-medium underline decoration-border underline-offset-4 hover:decoration-brand"

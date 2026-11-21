@@ -1,9 +1,9 @@
 import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { ArrowLeft, ArrowRight, List, Search } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Sheet, SheetContent, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
+import { AnimatedSidebarNav } from "@/components/animated-sidebar-nav";
+import { ErrorState } from "@/components/error-state";
 import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
 import { cn } from "@/lib/utils";
@@ -20,7 +20,10 @@ interface DocsData {
   sectionCount: number;
   groups: { label: string; sections: DocsSection[] }[];
   index: { a: string; s: string; t: string; g: string; h: string; x: string }[];
-  prevNext: Record<string, { prev: { id: string; title: string } | null; next: { id: string; title: string } | null }>;
+  prevNext: Record<
+    string,
+    { prev: { id: string; title: string } | null; next: { id: string; title: string } | null }
+  >;
 }
 
 interface SearchHit {
@@ -72,7 +75,9 @@ function Highlight({ text, term }: { text: string; term: string }) {
   return (
     <>
       {text.slice(0, at)}
-      <mark className="rounded bg-brand-soft px-0.5 text-foreground">{text.slice(at, at + needle.length)}</mark>
+      <mark className="rounded bg-brand-soft px-0.5 text-foreground">
+        {text.slice(at, at + needle.length)}
+      </mark>
       {text.slice(at + needle.length)}
     </>
   );
@@ -94,44 +99,31 @@ function DocsNav({
   active: string;
   onNavigate?: () => void;
 }) {
-  const activeLink = useRef<HTMLAnchorElement>(null);
-
-  useEffect(() => {
-    activeLink.current?.scrollIntoView({ block: "nearest" });
-  }, [active]);
-
   return (
     <nav aria-label="Documentation contents" className="space-y-6">
       {data.groups.map((group) => (
         <div key={group.label}>
-          <h3 className="mb-2 px-3 text-[13px] font-medium text-muted-foreground">
+          <h3 className="mb-1.5 px-2.5 font-mono text-[10.5px] font-medium tracking-[0.08em] text-zinc-600 uppercase">
             {group.label}
           </h3>
-          <ul className="space-y-0.5">
-            {group.sections.map((section) => (
-              <li key={section.id}>
-                <a
-                  href={`#${section.id}`}
-                  ref={active === section.id ? activeLink : undefined}
-                  onClick={onNavigate}
-                  aria-current={active === section.id ? "location" : undefined}
-                  className={cn(
-                    "block border-l-2 py-1.5 pl-3 text-[13px] leading-5 transition-colors",
-                    active === section.id
-                      ? "border-brand font-medium text-foreground"
-                      : "border-transparent text-muted-foreground hover:border-border hover:text-foreground",
-                  )}
-                >
-                  {section.title}
-                </a>
-              </li>
-            ))}
-          </ul>
+          <AnimatedSidebarNav
+            activeId={group.sections.some((section) => section.id === active) ? active : null}
+            scrollActiveIntoView
+            items={group.sections.map((section) => ({
+              id: section.id,
+              label: section.title,
+              href: `#${section.id}`,
+              onClick: onNavigate,
+            }))}
+          />
         </div>
       ))}
       <div className="px-3 pt-2">
-        <a href="#ai-notice" className="text-[12px] text-muted-foreground underline underline-offset-4 hover:text-foreground">
-          About these docs (AI)
+        <a
+          href="#ai-notice"
+          className="text-xs text-zinc-500 transition-colors hover:text-zinc-200"
+        >
+          About these docs
         </a>
       </div>
     </nav>
@@ -169,12 +161,12 @@ function DocsSearch({ data }: { data: DocsData }) {
 
   return (
     <div className="relative w-full max-w-md">
-      <Search className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
+      <Search className="pointer-events-none absolute top-1/2 left-3.5 size-4 -translate-y-1/2 text-zinc-500" />
       <Input
         ref={inputRef}
         value={query}
         placeholder="Search the documentation"
-        className="pl-9"
+        className="h-10 rounded-full border-0 bg-white/[0.06] pl-10 text-sm text-white placeholder:text-zinc-500 focus-visible:ring-1 focus-visible:ring-white/20"
         aria-label="Search the documentation"
         autoComplete="off"
         spellCheck={false}
@@ -190,35 +182,37 @@ function DocsSearch({ data }: { data: DocsData }) {
           if (event.key === "Enter" && hits[0]) go(hits[0].a);
         }}
       />
-      <div className="pointer-events-none absolute top-1/2 right-3 hidden -translate-y-1/2 gap-1 sm:flex">
-        <kbd className="rounded border bg-muted px-1.5 py-0.5 font-mono text-[10px] text-muted-foreground">⌘K</kbd>
+      <div className="pointer-events-none absolute top-1/2 right-3.5 hidden -translate-y-1/2 gap-1 sm:flex">
+        <kbd className="rounded-md bg-white/[0.08] px-1.5 py-0.5 font-mono text-[10px] text-zinc-400">
+          ⌘K
+        </kbd>
       </div>
 
       {open ? (
         <div
-          className="absolute top-full right-0 left-0 z-30 mt-2 max-h-96 overflow-y-auto rounded-lg border bg-popover shadow-lg"
+          className="absolute top-full right-0 left-0 z-30 mt-2 max-h-96 overflow-y-auto rounded-2xl bg-[#0d0d10] p-1.5 shadow-2xl"
           onMouseDown={(event) => event.preventDefault()}
         >
           {hits.length === 0 ? (
-            <p className="p-4 text-sm text-muted-foreground">Nothing found. Try a shorter word.</p>
+            <p className="p-4 text-sm text-zinc-400">Nothing found. Try a shorter word.</p>
           ) : (
-            <ul className="divide-y">
+            <ul className="space-y-0.5">
               {hits.map((hit) => (
                 <li key={hit.a}>
                   <button
                     type="button"
                     onClick={() => go(hit.a)}
-                    className="block w-full px-4 py-3 text-left transition-colors hover:bg-accent"
+                    className="block w-full rounded-xl px-3.5 py-3 text-left transition-colors hover:bg-white/[0.06]"
                   >
-                    <div className="flex items-baseline gap-2 text-[11px] text-muted-foreground">
+                    <div className="flex items-baseline gap-2 font-mono text-[11px] text-zinc-500">
                       <span>{hit.g}</span>
                       <span>·</span>
-                      <span className="text-foreground">{hit.t}</span>
+                      <span className="text-zinc-300">{hit.t}</span>
                     </div>
-                    <div className="mt-0.5 text-sm font-medium">
+                    <div className="mt-0.5 font-display text-sm font-medium text-white">
                       <Highlight text={hit.h} term={query} />
                     </div>
-                    <p className="mt-0.5 line-clamp-2 text-xs leading-5 text-muted-foreground">
+                    <p className="mt-0.5 line-clamp-2 text-xs leading-5 text-zinc-400">
                       <Highlight text={hit.excerpt} term={query} />
                     </p>
                   </button>
@@ -237,10 +231,10 @@ function LoadingState(): ReactNode {
     <div className="space-y-4 py-10">
       {Array.from({ length: 4 }).map((_, index) => (
         <div key={index} className="space-y-3">
-          <div className="h-3 w-24 animate-pulse rounded bg-muted" />
-          <div className="h-6 w-2/3 animate-pulse rounded bg-muted" />
-          <div className="h-4 w-full animate-pulse rounded bg-muted" />
-          <div className="h-4 w-11/12 animate-pulse rounded bg-muted" />
+          <div className="h-3 w-24 animate-pulse rounded bg-white/[0.06]" />
+          <div className="h-6 w-2/3 animate-pulse rounded bg-white/[0.06]" />
+          <div className="h-4 w-full animate-pulse rounded bg-white/[0.06]" />
+          <div className="h-4 w-11/12 animate-pulse rounded bg-white/[0.06]" />
         </div>
       ))}
     </div>
@@ -303,55 +297,75 @@ export function DocsPage() {
   }, [data, sections]);
 
   return (
-    <div className="min-h-screen">
-      <SiteHeader />
+    <div className="min-h-screen bg-black text-zinc-100">
+      <SiteHeader active="docs" />
 
       <div className="mx-auto w-full max-w-6xl px-4 sm:px-6">
-        <div className="py-10 pt-28">
-          <h1 className="max-w-3xl text-3xl font-medium tracking-[-0.035em] sm:text-4xl lg:text-5xl">
+        <div className="pt-28 pb-10">
+          <p className="font-mono text-xs text-brand-ink">Technical reference</p>
+          <h1 className="resend-title mt-2 max-w-3xl font-display text-3xl font-medium tracking-[-0.035em] sm:text-4xl lg:text-5xl">
             Everything, written down.
           </h1>
-          <p className="mt-3 max-w-2xl text-sm leading-6 text-muted-foreground sm:text-base">
-            Running KodaHosting, extending it and making it your own. Parts of it were written with AI
-            assistance, see{" "}
-            <a href="#ai-notice" className="font-medium text-foreground underline decoration-border underline-offset-4 hover:decoration-brand">
-              the notice at the end
+          <p className="mt-3 max-w-2xl text-[15px] leading-7 text-zinc-400">
+            Running KodaHosting, configuring tunnels, extending the app, and publishing to the
+            store. See{" "}
+            <a
+              href="#ai-notice"
+              className="font-medium text-zinc-200 underline decoration-white/20 underline-offset-4 transition-colors hover:text-white"
+            >
+              the authorship notice at the end
             </a>
             .
           </p>
 
-          <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            {data ? <DocsSearch data={data} /> : <div className="h-9 w-full max-w-md rounded-md bg-muted" />}
-            <div className="flex items-center gap-3 text-xs text-muted-foreground">
+          <div className="mt-7 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            {data ? (
+              <DocsSearch data={data} />
+            ) : (
+              <div className="h-10 w-full max-w-md rounded-full bg-white/[0.06]" />
+            )}
+            <div className="flex items-center gap-3 font-mono text-xs text-zinc-500 tabular">
               <span>
-                {data?.sectionCount ?? "—"} sections · Last updated {data?.updated ?? "—"}
+                {data?.sectionCount ?? "..."} sections · Updated {data?.updated ?? "..."}
               </span>
               <Sheet open={mobileNav} onOpenChange={setMobileNav}>
                 <SheetTrigger asChild>
-                  <Button variant="outline" size="sm" className="lg:hidden">
-                    <List className="size-4" />
+                  <button
+                    type="button"
+                    className="koda-btn-pill h-9 px-3.5 text-xs lg:hidden"
+                  >
+                    <List className="size-3.5" />
                     Contents
-                  </Button>
+                  </button>
                 </SheetTrigger>
-                <SheetContent side="left" className="w-[320px] overflow-y-auto">
-                  <SheetTitle className="mb-4">Contents</SheetTitle>
-                  {data ? <DocsNav data={data} active={active} onNavigate={() => setMobileNav(false)} /> : null}
+                <SheetContent side="left" className="w-[300px] overflow-y-auto border-0 bg-[#050507] p-5">
+                  <SheetTitle className="mb-5 font-display text-sm font-medium text-white">
+                    Documentation
+                  </SheetTitle>
+                  {data ? (
+                    <DocsNav data={data} active={active} onNavigate={() => setMobileNav(false)} />
+                  ) : null}
                 </SheetContent>
               </Sheet>
             </div>
           </div>
         </div>
 
-        <div className="grid gap-12 py-10 lg:grid-cols-[250px_minmax(0,1fr)]">
-          <aside className="hidden lg:block">
-            <div className="sticky top-24 max-h-[calc(100vh-7rem)] overflow-y-auto pr-4 pb-8">
+        <div className="grid gap-12 py-8 lg:grid-cols-[240px_minmax(0,1fr)]">
+          <aside className="hidden lg:block lg:border-r lg:border-white/[0.06] lg:pr-6">
+            <div className="sticky top-24 max-h-[calc(100vh-7rem)] overflow-y-auto pb-6">
               {data ? <DocsNav data={data} active={active} /> : null}
             </div>
           </aside>
 
           <main className="min-w-0 max-w-3xl">
             {failed ? (
-              <p className="text-sm text-destructive">The documentation could not be loaded.</p>
+              <ErrorState
+                code="DOCS UNAVAILABLE"
+                title="The documentation could not be loaded"
+                description="Reload the page to fetch the documentation bundle again."
+                onRetry={() => window.location.reload()}
+              />
             ) : !data ? (
               <LoadingState />
             ) : (
@@ -362,23 +376,28 @@ export function DocsPage() {
                     <section
                       key={section.id}
                       id={section.id}
-                      className={cn("scroll-mt-24", index > 0 && "mt-16", index > 0 ? "pt-16" : "")}
+                      className={cn("scroll-mt-24", index > 0 && "mt-16 pt-10")}
                     >
-                      <h2 className="text-2xl font-medium tracking-tight">{section.title}</h2>
+                      <h2 className="font-display text-2xl font-medium tracking-[-0.025em] text-white">
+                        {section.title}
+                      </h2>
                       {/* Trusted HTML authored in tools/docsgen/content_*.py. */}
-                      <div className="docs-prose mt-4" dangerouslySetInnerHTML={{ __html: section.html }} />
+                      <div
+                        className="docs-prose mt-4"
+                        dangerouslySetInnerHTML={{ __html: section.html }}
+                      />
 
                       {nav && (nav.prev || nav.next) ? (
-                        <div className="mt-8 grid gap-3 border-t pt-6 sm:grid-cols-2">
+                        <div className="mt-10 grid gap-3 sm:grid-cols-2">
                           {nav.prev ? (
                             <a
                               href={`#${nav.prev.id}`}
-                              className="group flex flex-col gap-1 rounded-lg border p-4 transition-colors hover:bg-muted/50"
+                              className="group flex flex-col gap-1 rounded-2xl bg-[#09090b] p-4 transition-colors hover:bg-white/[0.06]"
                             >
-                              <span className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                              <span className="flex items-center gap-1.5 font-mono text-xs text-zinc-500">
                                 <ArrowLeft className="size-3.5" /> Previous
                               </span>
-                              <span className="text-sm font-medium group-hover:underline group-hover:underline-offset-4">
+                              <span className="font-display text-sm font-medium text-zinc-200 transition-colors group-hover:text-white">
                                 {nav.prev.title}
                               </span>
                             </a>
@@ -388,12 +407,12 @@ export function DocsPage() {
                           {nav.next ? (
                             <a
                               href={`#${nav.next.id}`}
-                              className="group flex flex-col items-end gap-1 rounded-lg border p-4 text-right transition-colors hover:bg-muted/50"
+                              className="group flex flex-col items-end gap-1 rounded-2xl bg-[#09090b] p-4 text-right transition-colors hover:bg-white/[0.06]"
                             >
-                              <span className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                              <span className="flex items-center gap-1.5 font-mono text-xs text-zinc-500">
                                 Next <ArrowRight className="size-3.5" />
                               </span>
-                              <span className="text-sm font-medium group-hover:underline group-hover:underline-offset-4">
+                              <span className="font-display text-sm font-medium text-zinc-200 transition-colors group-hover:text-white">
                                 {nav.next.title}
                               </span>
                             </a>
@@ -406,17 +425,22 @@ export function DocsPage() {
                   );
                 })}
 
-                <section id="ai-notice" className="mt-14 scroll-mt-24 rounded-lg border bg-muted/40 p-6">
-                  <Badge variant="outline" className="mb-3 font-mono text-[10px]">AI</Badge>
-                  <p className="text-sm leading-6 text-muted-foreground">
-                    <strong className="font-semibold text-foreground">About these docs.</strong> Large parts of
-                    this documentation were drafted with the assistance of an AI language model
-                    (deepseek-flash-v4.1) and reviewed by the developer. The AI was used for the wording, the
-                    structure and the examples only. The KodaHosting Android application itself, its server
-                    hosting logic, the networking infrastructure and all executable code are written entirely by
-                    the developer and are not AI-generated; where this documentation describes code, the code is
-                    the source of truth. Legal responsibility for all content, including the AI-assisted
-                    sections, rests with the developer and their legal guardians, as set out in the Impressum.
+                <section
+                  id="ai-notice"
+                  className="mt-16 scroll-mt-24 rounded-2xl bg-[#09090b] p-6"
+                >
+                  <p className="font-mono text-xs text-zinc-500">Authorship notice</p>
+                  <p className="mt-2 text-sm leading-6 text-zinc-400">
+                    <strong className="font-semibold text-zinc-100">About these docs.</strong>{" "}
+                    Large parts of this documentation were drafted with the assistance of an AI
+                    language model (deepseek-flash-v4.1) and reviewed by the developer. The AI was
+                    used for the wording, the structure and the examples only. The KodaHosting
+                    Android application itself, its server hosting logic, the networking
+                    infrastructure and all executable code are written entirely by the developer and
+                    are not AI-generated; where this documentation describes code, the code is the
+                    source of truth. Legal responsibility for all content, including the AI-assisted
+                    sections, rests with the developer and their legal guardians, as set out in the
+                    Impressum.
                   </p>
                 </section>
               </>

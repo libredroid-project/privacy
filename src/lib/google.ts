@@ -91,11 +91,11 @@ export function useGoogleButton(
         containerRef.current.innerHTML = "";
         window.google.accounts.id.renderButton(containerRef.current, {
           type: "standard",
-          shape: "rectangular",
+          shape: "pill",
           theme: "filled_black",
           text: "signin_with",
           size: "large",
-          logo_alignment: "left",
+          logo_alignment: "center",
           width: 320,
         });
       })

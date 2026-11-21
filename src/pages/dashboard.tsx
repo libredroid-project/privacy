@@ -11,6 +11,7 @@ import {
   Puzzle,
   Scale,
   Server,
+  Terminal,
   UserRound,
 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -24,14 +25,12 @@ import {
   SidebarGroupLabel,
   SidebarHeader,
   SidebarInset,
-  SidebarMenu,
-  SidebarMenuButton,
-  SidebarMenuItem,
   SidebarProvider,
   SidebarTrigger,
   useSidebar,
 } from "@/components/ui/sidebar";
 import { Toaster } from "@/components/ui/sonner";
+import { AnimatedSidebarNav, type AnimatedSidebarItem } from "@/components/animated-sidebar-nav";
 import { OverloadDialog } from "@/components/overload-dialog";
 import { SiteFooter } from "@/components/site-footer";
 import { api, setRateLimitHandler } from "@/lib/api";
@@ -168,6 +167,7 @@ function DashboardShell(props: ShellProps) {
             mine={props.mineExt}
             loading={props.extLoading}
             error={props.extError}
+            onRetry={() => void props.loadExtensions()}
           />
         );
       case "account":
@@ -192,92 +192,114 @@ function DashboardShell(props: ShellProps) {
     }
   }
 
+  const manageItems: AnimatedSidebarItem[] = useMemo(
+    () => [
+      ...MANAGE.map((item) => ({
+        id: item.id,
+        label: item.label,
+        icon: item.icon,
+        onClick: () => switchTab(item.id),
+      })),
+      {
+        id: "mcp",
+        label: "KodaDash MCP",
+        icon: Terminal,
+        href: "/mcp",
+      },
+    ],
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [],
+  );
+
+  const infoItems: AnimatedSidebarItem[] = useMemo(
+    () =>
+      INFO.map((item) => ({
+        id: item.id,
+        label: item.label,
+        icon: item.icon,
+        onClick: () => switchTab(item.id),
+      })),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [],
+  );
+
   return (
     <>
-      <Sidebar>
-        <SidebarHeader>
-          <a href="/" className="flex items-center gap-2.5 px-2 py-1.5">
-            <img src="/assets/logo.png" alt="" className="size-7 rounded-md" />
-            <span className="text-sm font-semibold">
+      <Sidebar className="border-r border-white/[0.06] bg-black">
+        <SidebarHeader className="border-b border-white/[0.06] px-4 py-4">
+          <a href="/" className="flex items-center gap-2.5">
+            <img src="/assets/logo.png" alt="" className="size-6 rounded-md" />
+            <span className="font-display text-[15px] font-semibold tracking-[-0.025em] text-white">
               Koda<span className="text-brand-ink">Hosting</span>
             </span>
           </a>
         </SidebarHeader>
 
-        <SidebarContent>
-          <SidebarGroup>
-            <SidebarGroupLabel>Manage</SidebarGroupLabel>
+        <SidebarContent className="px-2.5 py-4">
+          <SidebarGroup className="p-0">
+            <SidebarGroupLabel className="mb-1 h-6 px-2.5 font-mono text-[10.5px] font-medium tracking-[0.08em] text-zinc-600 uppercase">
+              Manage
+            </SidebarGroupLabel>
             <SidebarGroupContent>
-              <SidebarMenu>
-                {MANAGE.map((item) => (
-                  <SidebarMenuItem key={item.id}>
-                    <SidebarMenuButton isActive={tab === item.id} onClick={() => switchTab(item.id)}>
-                      <item.icon />
-                      <span>{item.label}</span>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                ))}
-              </SidebarMenu>
+              <AnimatedSidebarNav items={manageItems} activeId={tab} />
             </SidebarGroupContent>
           </SidebarGroup>
 
-          <SidebarGroup>
-            <SidebarGroupLabel>Info</SidebarGroupLabel>
+          <SidebarGroup className="mt-6 p-0">
+            <SidebarGroupLabel className="mb-1 h-6 px-2.5 font-mono text-[10.5px] font-medium tracking-[0.08em] text-zinc-600 uppercase">
+              Info
+            </SidebarGroupLabel>
             <SidebarGroupContent>
-              <SidebarMenu>
-                {INFO.map((item) => (
-                  <SidebarMenuItem key={item.id}>
-                    <SidebarMenuButton isActive={tab === item.id} onClick={() => switchTab(item.id)}>
-                      <item.icon />
-                      <span>{item.label}</span>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                ))}
-              </SidebarMenu>
+              <AnimatedSidebarNav items={infoItems} activeId={tab} />
             </SidebarGroupContent>
           </SidebarGroup>
 
-          <SidebarGroup>
-            <SidebarGroupLabel>This device</SidebarGroupLabel>
-            <SidebarGroupContent className="px-2">
+          <SidebarGroup className="mt-6 p-0">
+            <SidebarGroupLabel className="mb-1 h-6 px-2.5 font-mono text-[10.5px] font-medium tracking-[0.08em] text-zinc-600 uppercase">
+              This device
+            </SidebarGroupLabel>
+            <SidebarGroupContent className="px-1">
               <AppStatusCard status={props.appStatus} />
             </SidebarGroupContent>
           </SidebarGroup>
         </SidebarContent>
 
-        <SidebarFooter>
-          <div className="flex items-center gap-2 px-1">
-            <Avatar className="size-8">
+        <SidebarFooter className="border-t border-white/[0.06] p-2.5">
+          <div className="flex items-center gap-2.5 rounded-lg px-2 py-1.5">
+            <Avatar className="size-7 rounded-lg">
               <AvatarImage src={avatarUrl(props.me) || undefined} alt="" />
-              <AvatarFallback className="text-xs">{avatarInitial(props.me)}</AvatarFallback>
+              <AvatarFallback className="rounded-lg bg-white/[0.08] font-mono text-[11px] text-white">
+                {avatarInitial(props.me)}
+              </AvatarFallback>
             </Avatar>
             <div className="min-w-0 flex-1">
-              <div className="truncate text-xs font-medium">{props.me?.nickname || "Account"}</div>
-              <div className="truncate text-[11px] text-muted-foreground">{props.me?.email}</div>
+              <div className="truncate font-display text-xs font-medium text-white">
+                {props.me?.nickname || "Account"}
+              </div>
+              <div className="truncate text-[11px] text-zinc-500">{props.me?.email || "Signed in"}</div>
             </div>
             <Button
               variant="ghost"
               size="icon-sm"
               onClick={() => void props.signOut()}
               aria-label="Sign out"
+              className="rounded-lg text-zinc-500 hover:bg-white/[0.06] hover:text-white"
             >
-              <LogOut className="size-4" />
+              <LogOut className="size-3.5" />
             </Button>
           </div>
         </SidebarFooter>
       </Sidebar>
 
-      <SidebarInset>
-        <header className="sticky top-0 z-30 flex h-14 items-center gap-3 bg-card px-4 md:px-6">
-          <SidebarTrigger />
-          <span className="text-sm font-medium">Dashboard</span>
+      <SidebarInset className="bg-black">
+        <header className="sticky top-0 z-30 flex h-16 items-center gap-3 border-b border-white/[0.06] bg-black/80 px-4 backdrop-blur-md md:px-6">
+          <SidebarTrigger className="rounded-lg text-zinc-400 hover:bg-white/[0.06] hover:text-white" />
+          <span className="font-display text-sm font-medium text-white">Dashboard</span>
           <div className="flex-1" />
-          <Button asChild variant="ghost" size="sm">
-            <a href="/">
-              Website
-              <ArrowUpRight className="size-4" />
-            </a>
-          </Button>
+          <a href="/" className="koda-btn-pill h-8 px-3.5 text-xs whitespace-nowrap shrink-0">
+            Website
+            <ArrowUpRight className="size-3.5 text-zinc-400" />
+          </a>
         </header>
 
         <div className="p-4 md:p-8">
@@ -437,7 +459,9 @@ export function DashboardPage() {
   }
 
   function openKodaDash(row: ServerRow) {
-    window.open(kodadashUrl(row, dashHttps), "_blank", "noopener");
+    const url = kodadashUrl(row, dashHttps);
+    if (!url) return;
+    window.open(url, "_blank", "noopener,noreferrer");
   }
 
   if (!ready) {

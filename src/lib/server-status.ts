@@ -1,3 +1,11 @@
+import {
+  safeImageUrl,
+  validateKodaBaseDomain,
+  validateKodaPort,
+  validateKodaSubdomain,
+  validateMinecraftUuid,
+} from "./security.ts";
+
 /** A row of rpc_get_servers_for_auth(). Databases come from the same call. */
 export interface ServerRow {
   id?: string;
@@ -67,12 +75,16 @@ export function isDatabase(row: ServerRow): boolean {
 }
 
 export function kodadashUrl(row: ServerRow, httpsEnabled: boolean): string {
-  const baseDomain = row.base_domain || "kodanetwork.eu";
+  const host = validateKodaSubdomain(row.host);
+  if (!host) return "";
+  const baseDomain = validateKodaBaseDomain(row.base_domain);
   const token = row.kodadash_token ? "?token=" + encodeURIComponent(row.kodadash_token) : "";
-  if (httpsEnabled && row.host) {
-    return `https://${row.host}.${baseDomain}/${token}`;
+  if (httpsEnabled) {
+    return `https://${host}.${baseDomain}/${token}`;
   }
-  return `http://${row.host}.${baseDomain}:${row.kodadash_port}${token}`;
+  const port = validateKodaPort(row.kodadash_port);
+  if (!port) return "";
+  return `http://${host}.${baseDomain}:${port}${token}`;
 }
 
 export interface AppStateDetails {
@@ -154,8 +166,10 @@ export interface Me {
 
 export function avatarUrl(me: Me | null): string | null {
   if (!me) return null;
-  if (me.avatar_url) return me.avatar_url;
-  if (me.mc_uuid) return `https://crafatar.com/avatars/${me.mc_uuid}?size=80&overlay`;
+  const safeAvatar = safeImageUrl(me.avatar_url);
+  if (safeAvatar) return safeAvatar;
+  const safeUuid = validateMinecraftUuid(me.mc_uuid);
+  if (safeUuid) return `https://crafatar.com/avatars/${encodeURIComponent(safeUuid)}?size=80&overlay`;
   return null;
 }
 

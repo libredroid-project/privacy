@@ -2,12 +2,15 @@ import { Download, ExternalLink, Puzzle } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { ErrorState } from "@/components/error-state";
 import type { ExtensionItem, MyExtensionItem } from "@/dashboard/types";
 import { submissionTone } from "@/dashboard/types";
+import { safeImageUrl } from "@/lib/security";
 import { cn } from "@/lib/utils";
 
 function ExtensionIcon({ url, name }: { url?: string; name: string }) {
-  if (url) return <img src={url} alt="" className="size-10 shrink-0 rounded-lg border object-cover" />;
+  const safeUrl = safeImageUrl(url);
+  if (safeUrl) return <img src={safeUrl} alt="" className="size-10 shrink-0 rounded-lg border object-cover" />;
   return (
     <div className="flex size-10 shrink-0 items-center justify-center rounded-lg border bg-muted text-sm font-medium">
       {(name || "?").trim().charAt(0).toUpperCase()}
@@ -20,11 +23,13 @@ export function ExtensionsView({
   mine,
   loading,
   error,
+  onRetry,
 }: {
   all: ExtensionItem[];
   mine: MyExtensionItem[];
   loading: boolean;
   error: string;
+  onRetry?: () => void;
 }) {
   return (
     <div className="space-y-8">
@@ -44,7 +49,15 @@ export function ExtensionsView({
         </Button>
       </div>
 
-      {error ? <p className="text-sm text-destructive">{error}</p> : null}
+      {error ? (
+        <ErrorState
+          compact
+          title="Could not load extensions"
+          description="We could not reach the KodaHosting store API."
+          detail={error}
+          onRetry={onRetry}
+        />
+      ) : null}
 
       <section>
         <div className="flex items-baseline justify-between gap-3">
@@ -111,7 +124,11 @@ export function ExtensionsView({
         <h2 className="text-sm font-semibold">My submissions</h2>
         {mine.length === 0 ? (
           <p className="mt-3 rounded-xl bg-card p-8 text-center text-sm text-muted-foreground">
-            You have not submitted anything yet. Use the store to send an extension to review.
+            You have not submitted anything yet. Submit extensions for review in the{" "}
+            <a href="/developer?new=1" className="font-medium text-foreground underline underline-offset-4">
+              Developer Console
+            </a>
+            .
           </p>
         ) : (
           <div className="mt-3 grid gap-4 sm:grid-cols-2 xl:grid-cols-3">

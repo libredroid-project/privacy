@@ -1,150 +1,131 @@
-import { useEffect, useState } from "react";
-import { Menu } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Sheet, SheetContent, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
+import { useState } from "react";
+import { Menu, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-const PLAY_URL = "https://play.google.com/store/apps/details?id=eu.kodanetwork.mchost";
+export type NavSection = "overview" | "store" | "docs" | "developer" | "dashboard";
 
-const NAV = [
-  { href: "/", label: "Overview" },
-  { href: "/store", label: "Store" },
-  { href: "/docs", label: "Docs" },
-  { href: "/developer", label: "Developers" },
-];
-
-function isActive(href: string) {
-  const path = window.location.pathname.replace(/\.html$/, "").replace(/\/$/, "") || "/";
-  if (href === "/") return path === "/" || path === "/index";
-  return path === href || path.startsWith(href + "/");
+interface HeaderAuth {
+  signedIn: boolean;
+  onSignIn: () => void;
+  onSignOut: () => void;
 }
 
-export function Brand({ className }: { className?: string }) {
+interface Props {
+  active?: NavSection;
+  auth?: HeaderAuth;
+}
+
+const NAV: { id: NavSection; label: string; href: string }[] = [
+  { id: "overview", label: "Overview", href: "/" },
+  { id: "store", label: "Store", href: "/store" },
+  { id: "docs", label: "Docs", href: "/docs" },
+  { id: "developer", label: "Developers", href: "/developer" },
+];
+
+export function Brand({ size = "md" }: { size?: "sm" | "md" }) {
   return (
-    <a href="/" className={cn("flex items-center gap-2.5 text-base font-semibold tracking-tight", className)}>
-      <img src="/assets/logo.png" alt="" className="size-8 rounded-md" />
-      <span>
+    <a
+      href="/"
+      className="inline-flex shrink-0 items-center gap-2.5 whitespace-nowrap focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white/40"
+    >
+      <img
+        src="/assets/logo.png"
+        alt=""
+        aria-hidden="true"
+        className={cn(
+          "rounded-lg object-cover",
+          size === "sm" ? "size-6" : "size-7",
+        )}
+      />
+      <span
+        className={cn(
+          "font-display font-semibold tracking-[-0.03em] text-zinc-950 dark:text-white",
+          size === "sm" ? "text-[15px]" : "text-[17px]",
+        )}
+      >
         Koda<span className="text-brand-ink">Hosting</span>
       </span>
     </a>
   );
 }
 
-export function SiteHeader({
-  auth,
-}: {
-  auth?: { signedIn: boolean; onSignIn: () => void; onSignOut: () => void };
-}) {
+export function SiteHeader({ active, auth }: Props) {
   const [open, setOpen] = useState(false);
-  const [docked, setDocked] = useState(false);
-
-  useEffect(() => {
-    let frame = 0;
-    const update = () => {
-      frame = 0;
-      setDocked(window.scrollY > 64);
-    };
-    const onScroll = () => {
-      if (!frame) frame = window.requestAnimationFrame(update);
-    };
-    window.addEventListener("scroll", onScroll, { passive: true });
-    update();
-    return () => {
-      window.removeEventListener("scroll", onScroll);
-      if (frame) window.cancelAnimationFrame(frame);
-    };
-  }, []);
-
-  const signInLabel = auth?.signedIn ? "Sign out" : "Sign in";
-  const signInAction = auth ? (auth.signedIn ? auth.onSignOut : auth.onSignIn) : null;
 
   return (
-    <header
-      className={cn(
-        "fixed z-50 transition-[top,right,left,border-radius,box-shadow,background-color] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)]",
-        docked
-          ? "top-0 right-0 left-0 rounded-none bg-background shadow-[0_18px_45px_rgba(0,0,0,0.45)]"
-          : "top-3 right-3 left-3 rounded-2xl bg-card shadow-[0_24px_70px_rgba(0,0,0,0.55)] sm:top-4 sm:right-4 sm:left-4",
-      )}
-    >
-      <div className="mx-auto flex h-16 w-full max-w-6xl items-center justify-between gap-6 px-4 sm:px-6">
+    <header className="fixed inset-x-0 top-0 z-40 bg-black/80 backdrop-blur-md">
+      <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-8 px-4 sm:px-6">
         <Brand />
 
-        <nav className="hidden items-center gap-7 text-sm text-muted-foreground md:flex">
-          {NAV.map((item) => (
-            <a
-              key={item.href}
-              href={item.href}
-              className={cn(
-                "transition-colors duration-200 hover:text-foreground",
-                isActive(item.href) && "text-foreground",
-              )}
-            >
-              {item.label}
-            </a>
-          ))}
+        <nav aria-label="Main navigation" className="hidden items-center gap-8 md:flex">
+          {NAV.map((item) => {
+            const isActive = active === item.id;
+            return (
+              <a
+                key={item.id}
+                href={item.href}
+                aria-current={isActive ? "page" : undefined}
+                className={cn(
+                  "whitespace-nowrap shrink-0 font-display text-[14px] font-medium transition-colors duration-150",
+                  isActive ? "text-white" : "text-zinc-400 hover:text-white",
+                )}
+              >
+                {item.label}
+              </a>
+            );
+          })}
         </nav>
 
-        <div className="hidden items-center gap-2 md:flex">
-          {signInAction ? (
-            <Button variant="ghost" size="sm" className="rounded-full" onClick={signInAction}>
-              {signInLabel}
-            </Button>
+        <div className="flex shrink-0 items-center gap-2.5">
+          {auth ? (
+            <button
+              type="button"
+              onClick={auth.signedIn ? auth.onSignOut : auth.onSignIn}
+              className="koda-btn-pill h-9 px-4 text-[13.5px] whitespace-nowrap shrink-0"
+            >
+              {auth.signedIn ? "Sign out" : "Sign in"}
+            </button>
           ) : (
-            <Button asChild variant="ghost" size="sm" className="rounded-full">
-              <a href="/dashboard">Sign in</a>
-            </Button>
+            <a
+              href="/dashboard"
+              className="koda-btn-pill h-9 px-4 text-[13.5px] whitespace-nowrap shrink-0"
+            >
+              Dashboard
+            </a>
           )}
-          <Button asChild size="sm" className="rounded-full px-4">
-            <a href={PLAY_URL}>Get the app</a>
-          </Button>
+          <button
+            type="button"
+            className="inline-flex size-9 items-center justify-center rounded-full bg-white/[0.06] text-zinc-300 transition-colors hover:bg-white/[0.12] hover:text-white md:hidden"
+            aria-label={open ? "Close navigation menu" : "Open navigation menu"}
+            aria-expanded={open}
+            onClick={() => setOpen((v) => !v)}
+          >
+            {open ? <X className="size-4" /> : <Menu className="size-4" />}
+          </button>
         </div>
-
-        <Sheet open={open} onOpenChange={setOpen}>
-          <SheetTrigger asChild>
-            <Button variant="ghost" size="icon" className="rounded-full md:hidden" aria-label="Open menu">
-              <Menu />
-            </Button>
-          </SheetTrigger>
-          <SheetContent side="right" className="w-[300px]">
-            <SheetTitle className="sr-only">Menu</SheetTitle>
-            <div className="mt-2 flex flex-col gap-1">
-              <Brand className="mb-4" />
-              {NAV.map((item) => (
-                <a
-                  key={item.href}
-                  href={item.href}
-                  className="rounded-lg px-3 py-2.5 text-sm font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
-                >
-                  {item.label}
-                </a>
-              ))}
-              {signInAction ? (
-                <button
-                  type="button"
-                  onClick={() => {
-                    setOpen(false);
-                    signInAction();
-                  }}
-                  className="rounded-lg px-3 py-2.5 text-left text-sm font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
-                >
-                  {signInLabel}
-                </button>
-              ) : (
-                <a
-                  href="/dashboard"
-                  className="rounded-lg px-3 py-2.5 text-sm font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
-                >
-                  Dashboard
-                </a>
-              )}
-              <Button asChild className="mt-4 rounded-full">
-                <a href={PLAY_URL}>Get it on Google Play</a>
-              </Button>
-            </div>
-          </SheetContent>
-        </Sheet>
       </div>
+
+      {open && (
+        <div className="bg-[#060608] px-4 py-4 md:hidden">
+          <div className="flex flex-col gap-1">
+            {NAV.map((item) => (
+              <a
+                key={item.id}
+                href={item.href}
+                onClick={() => setOpen(false)}
+                className={cn(
+                  "rounded-xl px-3.5 py-2.5 font-display text-sm font-medium transition-colors",
+                  active === item.id
+                    ? "bg-white/[0.08] text-white"
+                    : "text-zinc-400 hover:bg-white/[0.04] hover:text-white",
+                )}
+              >
+                {item.label}
+              </a>
+            ))}
+          </div>
+        </div>
+      )}
     </header>
   );
 }

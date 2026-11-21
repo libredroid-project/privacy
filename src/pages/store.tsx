@@ -3,32 +3,40 @@ import { Download, FileText, Plus, RefreshCw, Search } from "lucide-react";
 import { toast } from "sonner";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
-import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { Toaster } from "@/components/ui/sonner";
+import { AnimatedSwitch } from "@/components/animated-switch";
+import { ErrorState } from "@/components/error-state";
 import { OverloadDialog } from "@/components/overload-dialog";
 import { Reveal } from "@/components/reveal";
 import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
 import { api, publicApi, setRateLimitHandler } from "@/lib/api";
 import { plural } from "@/lib/format";
+import { safeImageUrl } from "@/lib/security";
+import { applyDocumentSeo, SEO_PAGES } from "@/lib/seo";
 import { DetailDialog } from "@/store/detail-dialog";
 import { LoginDialog } from "@/store/login-dialog";
 import { MyExtensions } from "@/store/my-extensions";
-import { SubmitDialog } from "@/store/submit-dialog";
 import { useSession } from "@/store/use-session";
 import type { CatalogItem, MyExtension, StoreStatus } from "@/store/types";
 import { CATEGORIES } from "@/store/types";
 import { cn } from "@/lib/utils";
 
 function StoreIcon({ url, name }: { url?: string; name: string }) {
-  if (url) {
-    return <img src={url} alt="" className="size-11 shrink-0 rounded-lg object-cover" />;
+  const safeUrl = safeImageUrl(url);
+  if (safeUrl) {
+    return (
+      <img
+        src={safeUrl}
+        alt=""
+        className="size-11 shrink-0 rounded-xl object-cover"
+      />
+    );
   }
   return (
-    <div className="flex size-11 shrink-0 items-center justify-center rounded-lg bg-muted text-sm font-medium">
+    <div className="flex size-11 shrink-0 items-center justify-center rounded-xl bg-white/[0.07] font-display text-sm font-semibold text-white">
       {(name || "?").trim().charAt(0).toUpperCase()}
     </div>
   );
@@ -58,8 +66,7 @@ export function StorePage() {
 
   const [detailId, setDetailId] = useState<string | null>(() => params.get("ext"));
   const [loginOpen, setLoginOpen] = useState(false);
-  const [submitOpen, setSubmitOpen] = useState(false);
-  const [afterLogin, setAfterLogin] = useState<"submit" | "mine" | null>(null);
+  const [afterLogin, setAfterLogin] = useState<"mine" | null>(null);
 
   const [mine, setMine] = useState<MyExtension[]>([]);
   const [mineLoading, setMineLoading] = useState(false);
@@ -138,13 +145,22 @@ export function StorePage() {
   }, [ready, session?.user.id, mineNonce]);
 
   useEffect(() => {
-    if (!session) setSubmitOpen(false);
-  }, [session]);
-
-  useEffect(() => {
-    document.title = publisher
-      ? `${publisher} | KodaHosting Extension Store`
-      : "KodaHosting | Extension Store";
+    const baseSeo = SEO_PAGES["store.html"];
+    if (publisher) {
+      applyDocumentSeo({
+        title: `${publisher} | KodaHosting Extension Store`,
+        description: `Browse verified KodaHosting extensions published by ${publisher}.`,
+      });
+    } else {
+      applyDocumentSeo({
+        title: baseSeo.title,
+        description: baseSeo.description,
+        ogTitle: baseSeo.ogTitle,
+        ogDescription: baseSeo.ogDescription,
+        twitterTitle: baseSeo.twitterTitle,
+        twitterDescription: baseSeo.twitterDescription,
+      });
+    }
   }, [publisher]);
 
   const refreshMine = useCallback(() => setMineNonce((value) => value + 1), []);
@@ -164,19 +180,9 @@ export function StorePage() {
     updateQuery({ author: author || null });
   }
 
-  function requestSubmit() {
-    if (session) {
-      setSubmitOpen(true);
-      return;
-    }
-    setAfterLogin("submit");
-    setLoginOpen(true);
-  }
-
   function loginSuccess() {
     const intent = afterLogin;
     setAfterLogin(null);
-    if (intent === "submit") setSubmitOpen(true);
     if (intent === "mine") {
       window.setTimeout(() => {
         document.getElementById("mine")?.scrollIntoView({ behavior: "smooth" });
@@ -214,14 +220,15 @@ export function StorePage() {
       : "Nothing here yet. The first extensions will appear after review.";
 
   const statusLine = status
-    ? `API online · ${status.servers?.total ?? 0} servers, ${status.servers?.players_online ?? 0} players · ${plural(status.extensions?.published ?? 0, "extension")}`
+    ? `API online · ${status.servers?.total ?? 0} servers · ${status.servers?.players_online ?? 0} players · ${plural(status.extensions?.published ?? 0, "extension")}`
     : statusError
       ? "API status unavailable"
       : null;
 
   return (
-    <div className="flex min-h-screen flex-col">
+    <div className="flex min-h-screen flex-col bg-black text-zinc-100">
       <SiteHeader
+        active="store"
         auth={{
           signedIn: Boolean(session),
           onSignIn: () => setLoginOpen(true),
@@ -233,43 +240,47 @@ export function StorePage() {
       />
 
       <main className="flex-1">
-        <div className="mx-auto w-full max-w-6xl px-4 pt-28 pb-12 sm:px-6">
-          <div className="flex flex-col justify-between gap-5 sm:flex-row sm:items-end">
+        <div className="mx-auto w-full max-w-6xl px-4 pt-28 pb-16 sm:px-6">
+          <div className="flex flex-col justify-between gap-6 pb-8 sm:flex-row sm:items-end">
             <div>
-              <h1 className="text-4xl font-medium tracking-[-0.035em] sm:text-5xl lg:text-6xl">
-                {publisher ? "Publisher" : "Extension Store"}
+              <p className="font-mono text-xs text-brand-ink">Verified .kodaext registry</p>
+              <h1 className="resend-title mt-2 font-display text-3xl font-medium tracking-[-0.035em] sm:text-4xl lg:text-5xl">
+                {publisher ? publisher : "Extension Store"}
               </h1>
               {publisher ? null : (
-                <p className="mt-2 max-w-xl text-base leading-7 text-muted-foreground sm:text-lg">
-                  Language packs, themes, tools and interface add-ons for the Minecraft server on
-                  your phone. Every version is checked by hand.
+                <p className="mt-3 max-w-xl text-[15px] leading-7 text-zinc-400">
+                  Language packs, themes, tools, and interface add-ons for KodaHosting. Every
+                  package release is checked manually before listing.
                 </p>
               )}
             </div>
-            <div className="flex flex-wrap gap-2">
-              <Button
-                variant="outline"
-                size="sm"
+            <div className="flex flex-wrap gap-2.5">
+              <button
+                type="button"
                 onClick={() => setReloadNonce((value) => value + 1)}
                 disabled={loading}
+                className="koda-btn-pill h-9 px-3.5 text-xs whitespace-nowrap shrink-0 disabled:opacity-50"
               >
-                <RefreshCw className={cn("size-4", loading && "animate-spin")} />
+                <RefreshCw className={cn("size-3.5", loading && "animate-spin")} />
                 Refresh
-              </Button>
-              <Button size="sm" onClick={requestSubmit}>
-                <Plus className="size-4" />
+              </button>
+              <a
+                href="/developer?new=1"
+                className="koda-btn-black h-9 px-4 text-xs whitespace-nowrap shrink-0"
+              >
+                <Plus className="size-3.5 text-brand-ink" />
                 Submit extension
-              </Button>
+              </a>
             </div>
           </div>
 
           {publisher ? (
-            <div className="mt-6 flex flex-wrap items-center justify-between gap-3 rounded-xl bg-muted/40 px-4 py-3">
+            <div className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-2xl bg-[#09090b] px-4 py-3">
               <div className="text-sm">
-                <span className="font-medium">{publisher}</span>
-                <span className="text-muted-foreground">
+                <span className="font-medium text-white">{publisher}</span>
+                <span className="text-zinc-400">
                   {" · "}
-                  {publisherCount} {publisherCount === 1 ? "published extension" : "published extensions"} in the store
+                  {publisherCount} {publisherCount === 1 ? "published extension" : "published extensions"}
                 </span>
               </div>
               <Button variant="ghost" size="sm" onClick={() => applyPublisher("")}>
@@ -285,57 +296,47 @@ export function StorePage() {
             </Alert>
           ) : null}
 
-          <div className="mt-8 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+          <div className="mt-6 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
             <div className="relative w-full lg:max-w-sm">
-              <Search className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
+              <Search className="pointer-events-none absolute top-1/2 left-3.5 size-4 -translate-y-1/2 text-zinc-500" />
               <Input
                 value={search}
                 onChange={(event) => setSearch(event.target.value)}
                 placeholder="Search by name, summary or author"
-                className="pl-9"
+                className="h-10 rounded-full border-0 bg-white/[0.06] pl-10 text-sm text-white placeholder:text-zinc-500 focus-visible:ring-1 focus-visible:ring-white/20"
                 aria-label="Search extensions"
               />
             </div>
-            <ToggleGroup
-              type="single"
+
+            <AnimatedSwitch<string>
+              role="group"
+              ariaLabel="Extension categories"
+              size="sm"
               value={category}
-              onValueChange={(value) => value && setCategory(value)}
-              className="flex flex-wrap justify-start gap-1.5"
-            >
-              {CATEGORIES.map(([value, label]) => (
-                <ToggleGroupItem
-                  key={value}
-                  value={value}
-                  size="sm"
-                  className="rounded-full border px-3 text-sm font-normal data-[state=on]:border-primary data-[state=on]:bg-primary data-[state=on]:text-primary-foreground"
-                >
-                  {label}
-                </ToggleGroupItem>
-              ))}
-            </ToggleGroup>
+              onChange={setCategory}
+              options={CATEGORIES.map(([value, label]) => ({ id: value, label }))}
+            />
           </div>
 
-          <div className="mt-4 text-sm text-muted-foreground">
-            {loading ? "Loading the store…" : `${visible.length} ${visible.length === 1 ? "extension" : "extensions"}`}
+          <div className="mt-6 font-mono text-xs text-zinc-500 tabular">
+            {loading ? "Loading registry…" : `${visible.length} ${visible.length === 1 ? "extension" : "extensions"}`}
           </div>
 
           <div className="mt-4">
             {error ? (
-              <Alert variant="destructive">
-                <AlertTitle>The store could not be loaded</AlertTitle>
-                <AlertDescription className="flex items-center gap-3">
-                  {error}
-                  <Button size="sm" variant="outline" onClick={() => setReloadNonce((value) => value + 1)}>
-                    Try again
-                  </Button>
-                </AlertDescription>
-              </Alert>
+              <ErrorState
+                code="REGISTRY UNAVAILABLE"
+                title="The store could not be loaded"
+                description="We could not reach the KodaHosting extension catalog right now."
+                detail={error}
+                onRetry={() => setReloadNonce((value) => value + 1)}
+              />
             ) : loading ? (
               <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
                 {Array.from({ length: 6 }).map((_, index) => (
-                  <Card key={index} className="gap-0 p-5">
+                  <div key={index} className="rounded-2xl bg-[#09090b] p-5">
                     <div className="flex gap-3">
-                      <Skeleton className="size-11 rounded-lg" />
+                      <Skeleton className="size-11 rounded-xl" />
                       <div className="flex-1 space-y-2">
                         <Skeleton className="h-4 w-2/3" />
                         <Skeleton className="h-3 w-1/2" />
@@ -343,71 +344,76 @@ export function StorePage() {
                     </div>
                     <Skeleton className="mt-4 h-3 w-full" />
                     <Skeleton className="mt-2 h-3 w-4/5" />
-                  </Card>
+                  </div>
                 ))}
               </div>
             ) : visible.length === 0 ? (
-              <p className="rounded-xl bg-card p-12 text-center text-base text-muted-foreground">
+              <div className="rounded-2xl bg-[#09090b] p-12 text-center text-sm text-zinc-400">
                 {emptyText}
-              </p>
+              </div>
             ) : (
               <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
                 {visible.map((item, index) => (
-                  <Reveal key={item.ext_id} delay={Math.min(index * 40, 240)} className="h-full">
-                  <Card
-                    role="button"
-                    tabIndex={0}
-                    onClick={() => openDetail(item.ext_id)}
-                    onKeyDown={(event) => {
-                      if (event.key === "Enter" || event.key === " ") {
-                        event.preventDefault();
-                        openDetail(item.ext_id);
-                      }
-                    }}
-                    className="group h-full cursor-pointer gap-0 p-5 transition-colors hover:bg-accent/30 focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:outline-none"
-                  >
-                    <div className="flex items-start gap-3">
-                      <StoreIcon url={item.icon_url} name={item.name} />
-                      <div className="min-w-0 flex-1">
-                        <div className="truncate text-base font-medium group-hover:underline group-hover:decoration-border group-hover:underline-offset-4">
-                          {item.name}
+                  <Reveal key={item.ext_id} delay={Math.min(index * 35, 210)} className="h-full">
+                    <button
+                      type="button"
+                      onClick={() => openDetail(item.ext_id)}
+                      className="group flex h-full w-full flex-col justify-between rounded-2xl bg-[#09090b] p-5 text-left transition-colors duration-150 hover:bg-white/[0.05] focus-visible:outline-2 focus-visible:outline-white/40"
+                    >
+                      <div>
+                        <div className="flex items-start gap-3">
+                          <StoreIcon url={item.icon_url} name={item.name} />
+                          <div className="min-w-0 flex-1">
+                            <div className="truncate font-display text-base font-medium text-white">
+                              {item.name}
+                            </div>
+                            <div className="mt-0.5 truncate text-xs text-zinc-500">
+                              {item.author ? (
+                                <span
+                                  role="link"
+                                  tabIndex={0}
+                                  onClick={(event) => {
+                                    event.stopPropagation();
+                                    applyPublisher(item.author || "");
+                                  }}
+                                  onKeyDown={(event) => {
+                                    if (event.key === "Enter") {
+                                      event.stopPropagation();
+                                      applyPublisher(item.author || "");
+                                    }
+                                  }}
+                                  className="underline decoration-transparent underline-offset-2 transition-colors hover:text-zinc-200 hover:decoration-white/25"
+                                >
+                                  {item.author}
+                                </span>
+                              ) : (
+                                "unknown author"
+                              )}
+                              {item.latest_version ? ` · v${item.latest_version.version}` : ""}
+                            </div>
+                          </div>
                         </div>
-                        <div className="truncate text-sm text-muted-foreground">
-                          {item.author ? (
-                            <a
-                              href={`/store?author=${encodeURIComponent(item.author)}`}
-                              onClick={(event) => {
-                                event.stopPropagation();
-                                event.preventDefault();
-                                applyPublisher(item.author || "");
-                              }}
-                              className="underline decoration-transparent underline-offset-2 transition-colors hover:text-foreground hover:decoration-border"
-                            >
-                              {item.author}
-                            </a>
-                          ) : (
-                            "unknown author"
-                          )}
-                          {item.latest_version ? ` · v${item.latest_version.version}` : ""}
-                        </div>
+                        <p className="mt-4 line-clamp-2 min-h-[2.75rem] text-sm leading-6 text-zinc-400">
+                          {item.summary || ""}
+                        </p>
                       </div>
-                    </div>
-                    <p className="mt-4 line-clamp-2 min-h-12 text-base leading-6 text-muted-foreground">
-                      {item.summary || ""}
-                    </p>
-                    <div className="mt-4 flex items-center gap-4 text-sm text-muted-foreground">
-                      <span className="inline-flex items-center gap-1.5">
-                        <Download className="size-3.5" />
-                        {item.downloads || 0}
-                      </span>
-                      {item.license ? (
-                        <span className="inline-flex min-w-0 items-center gap-1.5">
-                          <FileText className="size-3.5 shrink-0" />
-                          <span className="truncate">{item.license}</span>
+
+                      <div className="mt-5 flex items-center gap-3 pt-3 font-mono text-xs text-zinc-500 tabular">
+                        <span className="inline-flex items-center gap-1.5">
+                          <Download className="size-3.5" />
+                          {(item.downloads || 0).toLocaleString()}
                         </span>
-                      ) : null}
-                    </div>
-                  </Card>
+                        {item.license ? (
+                          <>
+                            <span aria-hidden="true">·</span>
+                            <span className="inline-flex min-w-0 items-center gap-1.5">
+                              <FileText className="size-3.5 shrink-0" />
+                              <span className="truncate">{item.license}</span>
+                            </span>
+                          </>
+                        ) : null}
+                      </div>
+                    </button>
                   </Reveal>
                 ))}
               </div>
@@ -415,18 +421,23 @@ export function StorePage() {
           </div>
 
           {session ? (
-            <section id="mine" className="mt-16 scroll-mt-20">
+            <section id="mine" className="mt-16 scroll-mt-20 pt-10">
               <div className="flex items-center justify-between gap-4">
                 <div>
-                  <h2 className="text-xl font-semibold tracking-tight">My submissions</h2>
-                  <p className="mt-1 text-base text-muted-foreground">
-                    What you sent to review, and what the store shows.
+                  <h2 className="font-display text-xl font-medium tracking-tight text-white">
+                    My submissions
+                  </h2>
+                  <p className="mt-1 text-sm text-zinc-400">
+                    Packages submitted for review and currently listed under your account.
                   </p>
                 </div>
-                <Button variant="outline" size="sm" onClick={requestSubmit}>
-                  <Plus className="size-4" />
-                  Submit
-                </Button>
+                <a
+                  href="/developer?new=1"
+                  className="koda-btn-pill h-9 px-4 text-xs whitespace-nowrap shrink-0"
+                >
+                  <Plus className="size-3.5" />
+                  Submit in console
+                </a>
               </div>
               <div className="mt-5">
                 <MyExtensions
@@ -447,12 +458,6 @@ export function StorePage() {
         open={loginOpen}
         onOpenChange={setLoginOpen}
         onSuccess={loginSuccess}
-      />
-      <SubmitDialog
-        open={submitOpen}
-        onOpenChange={setSubmitOpen}
-        mineItems={mine}
-        onSubmitted={refreshMine}
       />
       <DetailDialog extId={detailId} onClose={closeDetail} />
       <OverloadDialog

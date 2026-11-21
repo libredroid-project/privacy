@@ -26,6 +26,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { ErrorState } from "@/components/error-state";
 import { api, assertSafeUploadUrl } from "@/lib/api";
 import { formatDate, plural, relativeTime } from "@/lib/format";
 import type { Me } from "@/lib/server-status";
@@ -203,7 +204,15 @@ export function AccountView({
   }
 
   if (error) {
-    return <p className="text-sm text-destructive">Could not load the account: {error}</p>;
+    return (
+      <ErrorState
+        code="ACCOUNT UNAVAILABLE"
+        title="Could not load your account"
+        description="We could not fetch your KodaHosting profile from the API."
+        detail={error}
+        onRetry={() => void onReload()}
+      />
+    );
   }
 
   const counts = [
@@ -370,7 +379,13 @@ export function AccountView({
         </p>
 
         {deviceError ? (
-          <p className="mt-3 text-sm text-destructive">Could not load the devices: {deviceError}</p>
+          <ErrorState
+            compact
+            className="mt-4"
+            title="Could not load linked devices"
+            detail={deviceError}
+            onRetry={() => void onReload()}
+          />
         ) : null}
 
         {devices.length === 0 ? (

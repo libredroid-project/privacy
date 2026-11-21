@@ -15,6 +15,7 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { api, assertSafeUploadUrl } from "@/lib/api";
+import { safeExternalUrl, safeImageUrl } from "@/lib/security";
 import type { AssetUpload } from "@/store/types";
 import { CATEGORIES, displayStatus, displayStatusTone, type DevExtension } from "@/developer/types";
 
@@ -136,6 +137,28 @@ export function ListingEditor({
       setError("One field is over its limit.");
       return;
     }
+    const cleanHomepage = form.homepage_url.trim();
+    const cleanSource = form.source_url.trim();
+    const safeHomepage = cleanHomepage ? safeExternalUrl(cleanHomepage) : null;
+    const safeSource = cleanSource ? safeExternalUrl(cleanSource) : null;
+    if (cleanHomepage && !safeHomepage) {
+      setError("Homepage must be a public https:// URL.");
+      return;
+    }
+    if (cleanSource && !safeSource) {
+      setError("Source code link must be a public https:// URL.");
+      return;
+    }
+    const cleanIcon = form.icon_url.trim();
+    const safeIcon = cleanIcon ? safeImageUrl(cleanIcon) : null;
+    if (cleanIcon && !safeIcon) {
+      setError("Store icon must be a public https:// image URL.");
+      return;
+    }
+    const safeShots = form.screenshots
+      .map((shot) => safeImageUrl(shot))
+      .filter((shot): shot is string => Boolean(shot));
+
     setBusy(true);
     setError("");
     try {
@@ -149,10 +172,10 @@ export function ListingEditor({
           category: form.category,
           license: form.license.trim() || null,
           author: form.author.trim() || null,
-          homepage_url: form.homepage_url.trim() || null,
-          source_url: form.source_url.trim() || null,
-          icon_url: form.icon_url.trim() || null,
-          screenshots: form.screenshots,
+          homepage_url: safeHomepage,
+          source_url: safeSource,
+          icon_url: safeIcon,
+          screenshots: safeShots,
         }),
       });
       setSavedAt(Date.now());
@@ -289,8 +312,8 @@ export function ListingEditor({
 
           <div className="mt-5 flex flex-wrap items-center gap-4">
             <div className="flex size-16 items-center justify-center overflow-hidden rounded-xl border bg-muted">
-              {form.icon_url ? (
-                <img src={form.icon_url} alt="" className="size-full object-cover" />
+              {safeImageUrl(form.icon_url) ? (
+                <img src={safeImageUrl(form.icon_url)!} alt="" className="size-full object-cover" />
               ) : (
                 <ImagePlus className="size-6 text-muted-foreground" />
               )}
@@ -356,9 +379,17 @@ export function ListingEditor({
               </p>
             ) : (
               <div className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-3">
-                {form.screenshots.map((url, index) => (
+                {form.screenshots.map((url, index) => {
+                  const safeShot = safeImageUrl(url);
+                  return (
                   <div key={`${url}-${index}`} className="group relative overflow-hidden rounded-lg border">
-                    <img src={url} alt="" className="aspect-video w-full object-cover" />
+                    {safeShot ? (
+                      <img src={safeShot} alt="" className="aspect-video w-full object-cover" />
+                    ) : (
+                      <div className="flex aspect-video w-full items-center justify-center bg-muted text-xs text-muted-foreground">
+                        Invalid URL
+                      </div>
+                    )}
                     <button
                       type="button"
                       onClick={() =>
@@ -373,7 +404,8 @@ export function ListingEditor({
                       <Trash2 className="size-3.5" />
                     </button>
                   </div>
-                ))}
+                  );
+                })}
               </div>
             )}
           </div>
@@ -391,8 +423,8 @@ export function ListingEditor({
           <p className="text-xs font-medium tracking-wide text-muted-foreground uppercase">Preview</p>
           <div className="mt-3 flex items-start gap-3">
             <div className="flex size-12 shrink-0 items-center justify-center overflow-hidden rounded-lg border bg-muted text-sm font-medium">
-              {form.icon_url ? (
-                <img src={form.icon_url} alt="" className="size-full object-cover" />
+              {safeImageUrl(form.icon_url) ? (
+                <img src={safeImageUrl(form.icon_url)!} alt="" className="size-full object-cover" />
               ) : (
                 (form.name || "?").trim().charAt(0).toUpperCase()
               )}
@@ -413,9 +445,9 @@ export function ListingEditor({
               {displayStatus(ext)}
             </Badge>
           </div>
-          {form.screenshots.length > 0 ? (
+          {safeImageUrl(form.screenshots[0]) ? (
             <img
-              src={form.screenshots[0]}
+              src={safeImageUrl(form.screenshots[0])!}
               alt=""
               className="mt-4 aspect-video w-full rounded-lg border object-cover"
             />

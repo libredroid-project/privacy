@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
+import { AnimatedSidebarNav } from "@/components/animated-sidebar-nav";
+import { AnimatedSwitch } from "@/components/animated-switch";
 import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
-import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
-import { cn } from "@/lib/utils";
 import legal from "@/generated/legal.json";
 
 type PageKey = "privacy" | "tos" | "impressum";
@@ -45,66 +45,61 @@ export function LegalPage({ page }: { page: PageKey }) {
   }, [document_, language]);
 
   const html = articleBody(document_.html[language]);
-  const updated = document_.updated[language].replace(/^(Last updated|Letzte Aktualisierung|Zuletzt aktualisiert|Stand):\s*/i, "");
+  const updated = document_.updated[language].replace(
+    /^(Last updated|Letzte Aktualisierung|Zuletzt aktualisiert|Stand):\s*/i,
+    "",
+  );
 
   return (
-    <div className="flex min-h-screen flex-col">
+    <div className="flex min-h-screen flex-col bg-black text-zinc-100">
       <SiteHeader />
 
       <main className="flex-1">
-        <div className="mx-auto w-full max-w-6xl px-4 pt-28 pb-10 sm:px-6">
-          <div className="grid gap-12 lg:grid-cols-[220px_minmax(0,1fr)]">
-            <aside className="hidden lg:block">
+        <div className="mx-auto w-full max-w-6xl px-4 pt-28 pb-16 sm:px-6">
+          <div className="grid gap-12 lg:grid-cols-[230px_minmax(0,1fr)]">
+            <aside className="hidden lg:block lg:border-r lg:border-white/[0.06] lg:pr-6">
               <div className="sticky top-24">
-                <div className="mb-3 px-2 text-sm font-medium text-muted-foreground">
-                  Legal
+                <div className="mb-1.5 px-2.5 font-mono text-[10.5px] font-medium tracking-[0.08em] text-zinc-600 uppercase">
+                  Legal documents
                 </div>
                 <nav aria-label="Legal documents">
-                  <ul className="space-y-0.5">
-                    {NAV.map((item) => (
-                      <li key={item.href}>
-                        <a
-                          href={item.href}
-                          className={cn(
-                            "block border-l-2 py-1.5 pl-3 text-sm transition-colors",
-                            item.href === `/${page}`
-                              ? "border-brand font-medium text-foreground"
-                              : "border-transparent text-muted-foreground hover:border-border hover:text-foreground",
-                          )}
-                        >
-                          {item.label}
-                        </a>
-                      </li>
-                    ))}
-                  </ul>
+                  <AnimatedSidebarNav
+                    activeId={`/${page}`}
+                    items={NAV.map((item) => ({
+                      id: item.href,
+                      label: item.label,
+                      href: item.href,
+                    }))}
+                  />
                 </nav>
               </div>
             </aside>
 
             <article className="min-w-0 max-w-3xl">
               <div className="pb-8">
-                <h1 className="text-3xl font-medium tracking-[-0.035em] sm:text-4xl">                  {document_.title[language]}
+                <h1 className="resend-title font-display text-3xl font-medium tracking-[-0.035em] sm:text-4xl">
+                  {document_.title[language]}
                 </h1>
-                {updated ? <p className="mt-2 text-sm text-muted-foreground">Last updated {updated}</p> : null}
+                {updated ? (
+                  <p className="mt-2 font-mono text-xs text-zinc-500">Last updated {updated}</p>
+                ) : null}
 
-                <ToggleGroup
-                  type="single"
-                  value={language}
-                  onValueChange={(value) => value && setLanguage(value as Language)}
-                  className="mt-6 w-fit gap-1 rounded-lg border p-1"
-                  aria-label="Language"
-                >
-                  <ToggleGroupItem value="en" size="sm" className="rounded-md px-3 text-xs">
-                    English
-                  </ToggleGroupItem>
-                  <ToggleGroupItem value="de" size="sm" className="rounded-md px-3 text-xs">
-                    Deutsch
-                  </ToggleGroupItem>
-                </ToggleGroup>
+                <div className="mt-6">
+                  <AnimatedSwitch<Language>
+                    ariaLabel="Language"
+                    size="sm"
+                    value={language}
+                    onChange={setLanguage}
+                    options={[
+                      { id: "en", label: "English" },
+                      { id: "de", label: "Deutsch" },
+                    ]}
+                  />
+                </div>
               </div>
 
               {/* Trusted html rendered from the app's legal texts by tools/sync_website_legal.py. */}
-              <div className="legal-prose mt-8" dangerouslySetInnerHTML={{ __html: html }} />
+              <div className="legal-prose mt-4" dangerouslySetInnerHTML={{ __html: html }} />
             </article>
           </div>
         </div>

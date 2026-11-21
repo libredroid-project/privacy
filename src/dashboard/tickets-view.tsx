@@ -5,8 +5,10 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Textarea } from "@/components/ui/textarea";
+import { ErrorState } from "@/components/error-state";
 import { api } from "@/lib/api";
 import { relativeTime } from "@/lib/format";
+import { safeExternalUrl } from "@/lib/security";
 import type { TicketDetail, TicketSummary } from "@/dashboard/types";
 import { ticketTone } from "@/dashboard/types";
 import { cn } from "@/lib/utils";
@@ -94,7 +96,15 @@ export function TicketsView() {
         </p>
       </div>
 
-      {error ? <p className="text-sm text-destructive">Could not load the tickets: {error}</p> : null}
+      {error ? (
+        <ErrorState
+          code="TICKETS UNAVAILABLE"
+          title="Could not load support tickets"
+          description="We could not reach the KodaHosting support API right now."
+          detail={error}
+          onRetry={() => void loadList()}
+        />
+      ) : null}
 
       {loading ? (
         <p className="flex items-center gap-2 text-sm text-muted-foreground">
@@ -173,11 +183,18 @@ export function TicketsView() {
                 <Loader2 className="size-4 animate-spin" /> Loading the conversation…
               </p>
             ) : detailError ? (
-              <p className="text-sm text-destructive">Could not load this ticket: {detailError}</p>
+              <ErrorState
+                compact
+                title="Could not load this ticket"
+                detail={detailError}
+                onRetry={selectedId !== null ? () => void openTicket(selectedId) : undefined}
+              />
             ) : detail ? (
               <>
                 <div className="space-y-3">
-                  {(detail.messages || []).map((message, index) => (
+                  {(detail.messages || []).map((message, index) => {
+                    const safeAttachmentUrl = safeExternalUrl(message.attachment_url);
+                    return (
                     <div
                       key={index}
                       className={cn("flex", message.is_admin ? "justify-start" : "justify-end")}
@@ -196,9 +213,9 @@ export function TicketsView() {
                           </div>
                         ) : null}
                         <p className="whitespace-pre-wrap">{message.message}</p>
-                        {message.attachment_url ? (
+                        {safeAttachmentUrl ? (
                           <a
-                            href={message.attachment_url}
+                            href={safeAttachmentUrl}
                             target="_blank"
                             rel="noopener noreferrer"
                             className="mt-2 inline-flex items-center gap-1.5 text-xs underline underline-offset-2"
@@ -217,7 +234,8 @@ export function TicketsView() {
                         </div>
                       </div>
                     </div>
-                  ))}
+                    );
+                  })}
                 </div>
 
                 {closed ? (

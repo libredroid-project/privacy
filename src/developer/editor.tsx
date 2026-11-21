@@ -49,6 +49,11 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { api, assertSafeUploadUrl } from "@/lib/api";
+import {
+  isSafeArchiveEntryPath,
+  MAX_ARCHIVE_COMPRESSED_BYTES,
+  sanitizeUnpackedArchive,
+} from "@/lib/security";
 import type { DevExtension, SourcePackage } from "@/developer/types";
 import { formatBytes, pendingVersion, PERMISSIONS } from "@/developer/types";
 import { publishErrorText, publishVersion } from "@/developer/publish";
@@ -241,11 +246,11 @@ export function CodeEditor({ ext, onPublished }: { ext: DevExtension; onPublishe
       const res = await fetch(src.url);
       if (!res.ok) throw new Error(`Package download failed (${res.status}).`);
       const bytes = new Uint8Array(await res.arrayBuffer());
+      if (bytes.byteLength > MAX_ARCHIVE_COMPRESSED_BYTES) {
+        throw new Error("Package exceeds maximum allowed compressed size (20 MB).");
+      }
       const unpacked = unzipSync(bytes);
-      // zip directory entries ("ui/") are not files and would show up as empty rows
-      const unzipped = Object.fromEntries(
-        Object.entries(unpacked).filter(([path]) => !path.endsWith("/")),
-      );
+      const unzipped = sanitizeUnpackedArchive(unpacked);
       setFiles(unzipped);
       setBaseline(unzipped);
       setSource(src);
@@ -282,15 +287,11 @@ export function CodeEditor({ ext, onPublished }: { ext: DevExtension; onPublishe
   function addFile(path: string, bytes: Uint8Array) {
     const clean = path.replace(/^\/+/, "").trim();
     if (!clean) return;
-    if (!/^[A-Za-z0-9._\-/]+$/.test(clean)) {
-      setError("Paths may use letters, numbers, dots, dashes and slashes.");
+    if (!/^[A-Za-z0-9._\-/]+$/.test(clean) || !isSafeArchiveEntryPath(clean)) {
+      setError("Paths must stay inside the package using letters, numbers, dots, dashes and slashes.");
       return;
     }
-    if (clean.includes("..")) {
-      setError("The path must stay inside the package.");
-      return;
-    }
-    if (files[clean]) {
+    if (Object.prototype.hasOwnProperty.call(files, clean)) {
       setError(`${clean} already exists.`);
       return;
     }
@@ -318,7 +319,11 @@ export function CodeEditor({ ext, onPublished }: { ext: DevExtension; onPublishe
       setRenameOpen(false);
       return;
     }
-    if (files[clean]) {
+    if (!/^[A-Za-z0-9._\-/]+$/.test(clean) || !isSafeArchiveEntryPath(clean)) {
+      setError("Paths must stay inside the package using letters, numbers, dots, dashes and slashes.");
+      return;
+    }
+    if (Object.prototype.hasOwnProperty.call(files, clean)) {
       setError(`${clean} already exists.`);
       return;
     }

@@ -8,9 +8,11 @@ import {
   RotateCw,
   Server,
   Square,
+  Terminal,
 } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
+import { ErrorState } from "@/components/error-state";
 import { Reveal } from "@/components/reveal";
 import { copyText, relativeTime } from "@/lib/format";
 import type { AppStateDetails, ServerRow, StatusDetails } from "@/lib/server-status";
@@ -87,15 +89,17 @@ function Metric({ label, children }: { label: string; children: ReactNode }) {
 export function AppStatusCard({ status }: { status: AppStateDetails | null }) {
   const tone = status?.tone ?? "offline";
   const color =
-    tone === "online" ? "bg-emerald-500" : tone === "warn" ? "bg-amber-500" : "bg-zinc-400";
+    tone === "online" ? "bg-emerald-400" : tone === "warn" ? "bg-amber-400" : "bg-zinc-600";
 
   return (
-    <div className="rounded-xl bg-muted/40 p-3">
+    <div className="rounded-xl bg-[#09090b] p-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.06)]">
       <div className="flex items-center gap-2">
         <span className={cn("size-1.5 rounded-full", color)} />
-        <span className="text-[13px] font-medium">{status?.badge ?? "OFFLINE"}</span>
+        <span className="font-mono text-[11px] font-medium tracking-[0.04em] text-zinc-200 uppercase">
+          {status?.badge ?? "OFFLINE"}
+        </span>
       </div>
-      <p className="mt-1 text-[13px] leading-5 text-muted-foreground">
+      <p className="mt-1 text-xs leading-5 text-zinc-500">
         {status?.description ?? "Not connected"}
       </p>
     </div>
@@ -122,7 +126,7 @@ function ServerCard({
   const address = row.base_domain ? `${row.host}.${row.base_domain}` : row.host;
 
   return (
-    <div className="flex h-full flex-col overflow-hidden rounded-2xl border border-white/[0.06] bg-[#0b0b0d] transition-colors hover:border-white/[0.12] hover:bg-[#0e0e11]">
+    <div className="flex h-full flex-col overflow-hidden rounded-2xl bg-[#09090b] transition-colors hover:bg-white/[0.04]">
       <div className="flex-1 p-4 sm:p-5">
         <div className="flex items-start justify-between gap-3">
           <div className="flex min-w-0 items-center gap-3">
@@ -130,8 +134,8 @@ function ServerCard({
               className={cn(
                 "flex size-9 shrink-0 items-center justify-center rounded-lg border",
                 database
-                  ? "border-white/[0.06] bg-white/[0.03] text-zinc-500"
-                  : "border-brand/15 bg-brand/[0.08] text-brand-ink",
+                  ? "border-border bg-secondary text-muted-foreground"
+                  : "border-brand/20 bg-brand/[0.08] text-brand-ink",
               )}
             >
               {database ? (
@@ -142,16 +146,16 @@ function ServerCard({
             </div>
             <div className="min-w-0">
               <div className="flex items-center gap-2">
-                <h3 className="truncate text-[15px] font-semibold tracking-[-0.01em] text-zinc-100">
+                <h3 className="truncate text-[15px] font-semibold tracking-[-0.01em] text-foreground">
                   {row.host}
                 </h3>
                 {row.is_guest === true ? (
-                  <span className="shrink-0 rounded bg-white/[0.06] px-1.5 py-0.5 text-[10px] font-medium text-zinc-400">
+                  <span className="shrink-0 rounded bg-secondary px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground">
                     Shared
                   </span>
                 ) : null}
               </div>
-              <div className="mt-0.5 flex min-w-0 items-center gap-1 text-[13px] text-zinc-500">
+              <div className="mt-0.5 flex min-w-0 items-center gap-1 text-[13px] text-muted-foreground">
                 <span className="truncate">{address}</span>
                 <CopyAddress value={address} />
               </div>
@@ -163,8 +167,8 @@ function ServerCard({
         <div className={cn("mt-5 grid gap-4", database ? "grid-cols-2" : "grid-cols-3")}>
           {database ? null : (
             <Metric label="Players">
-              <span className="text-zinc-100">{row.online_players ?? 0}</span>
-              <span className="text-zinc-500"> / {row.max_players || 0}</span>
+              <span className="text-foreground">{row.online_players ?? 0}</span>
+              <span className="text-muted-foreground"> / {row.max_players || 0}</span>
             </Metric>
           )}
           <Metric label="Memory">{memoryLabel(row.ram_mb)}</Metric>
@@ -177,7 +181,7 @@ function ServerCard({
           <p
             className={cn(
               "mt-3.5 text-xs",
-              feedback.tone === "ok" ? "text-emerald-400" : "text-red-400",
+              feedback.tone === "ok" ? "text-ok" : "text-danger",
             )}
           >
             {feedback.text}
@@ -185,7 +189,7 @@ function ServerCard({
         ) : null}
       </div>
 
-      <div className="flex flex-wrap items-center justify-between gap-2 border-t border-white/[0.05] bg-black/20 px-3 py-2 sm:px-4">
+      <div className="flex flex-wrap items-center justify-between gap-2 border-t border-white/[0.06] bg-white/[0.02] px-3 py-2 sm:px-4">
         {database ? (
           <span className="px-1 text-[11px] text-zinc-500">Managed in the KodaHosting app</span>
         ) : (
@@ -197,10 +201,10 @@ function ServerCard({
               disabled={busy}
               onClick={() => onCommand(row, "start")}
               className={cn(
-                "h-7 gap-1.5 rounded-lg px-2 text-[12px]",
+                "h-7 gap-1.5 rounded-full px-2.5 text-[12px]",
                 !online
-                  ? "bg-zinc-100 text-zinc-950 hover:bg-white"
-                  : "text-zinc-500 hover:bg-white/[0.06] hover:text-zinc-200",
+                  ? "bg-white/[0.12] text-white hover:bg-white/[0.18]"
+                  : "text-zinc-400 hover:bg-white/[0.06] hover:text-white",
               )}
             >
               <Play className="size-3.5" /> Start
@@ -211,7 +215,7 @@ function ServerCard({
               variant="ghost"
               disabled={busy}
               onClick={() => onCommand(row, "restart")}
-              className="h-7 gap-1.5 rounded-lg px-2 text-[12px] text-zinc-500 hover:bg-white/[0.06] hover:text-zinc-200"
+              className="h-7 gap-1.5 rounded-full px-2.5 text-[12px] text-zinc-400 hover:bg-white/[0.06] hover:text-white"
             >
               <RotateCw className="size-3.5" /> Restart
             </Button>
@@ -221,34 +225,48 @@ function ServerCard({
               variant="ghost"
               disabled={busy}
               onClick={() => onCommand(row, "stop")}
-              className="h-7 gap-1.5 rounded-lg px-2 text-[12px] text-red-400/80 hover:bg-red-500/10 hover:text-red-300"
+              className="h-7 gap-1.5 rounded-full px-2.5 text-[12px] text-red-400 hover:bg-red-500/15 hover:text-red-300"
             >
               <Square className="size-3.5" /> Stop
             </Button>
           </div>
         )}
 
-        {database ? null : hasDash && online ? (
-          <Button
-            type="button"
-            size="sm"
-            variant="ghost"
-            disabled={busy}
-            onClick={() => onOpenDash(row)}
-            className="h-7 gap-1 rounded-lg px-2 text-[12px] text-brand-ink hover:bg-brand/10 hover:text-brand"
-          >
-            KodaDash <ArrowUpRight className="size-3.5" />
-          </Button>
+        {database ? null : hasDash ? (
+          <div className="flex items-center gap-1">
+            <a
+              href={`/mcp?server=${encodeURIComponent(row.host)}`}
+              className="inline-flex h-7 items-center gap-1 rounded-full px-2.5 text-[12px] text-zinc-400 transition-colors hover:bg-white/[0.06] hover:text-white"
+              title="Set up KodaDash MCP for this server"
+            >
+              <Terminal className="size-3" /> MCP
+            </a>
+            {online ? (
+              <Button
+                type="button"
+                size="sm"
+                variant="ghost"
+                disabled={busy}
+                onClick={() => onOpenDash(row)}
+                className="h-7 gap-1 rounded-full px-2.5 text-[12px] text-brand-ink hover:bg-brand/10 hover:text-brand"
+              >
+                KodaDash <ArrowUpRight className="size-3.5" />
+              </Button>
+            ) : (
+              <span
+                className="px-1 text-[11px] text-muted-foreground"
+                title="KodaDash is reachable while the server is running"
+              >
+                KodaDash offline
+              </span>
+            )}
+          </div>
         ) : (
           <span
-            className="px-1 text-[11px] text-zinc-600"
-            title={
-              hasDash
-                ? "KodaDash is reachable while the server is running"
-                : "Enable KodaDash in the KodaHosting app"
-            }
+            className="px-1 text-[11px] text-muted-foreground"
+            title="Enable KodaDash in the KodaHosting app"
           >
-            {hasDash ? "KodaDash offline" : "KodaDash not set up"}
+            KodaDash not set up
           </span>
         )}
       </div>
@@ -268,10 +286,10 @@ export function DeviceCard({ rows }: { rows: ServerRow[] }) {
     : Infinity;
 
   return (
-    <div className="rounded-2xl border border-white/[0.06] bg-[#0b0b0d] p-4 sm:p-5">
+    <div className="rounded-2xl border border-border bg-card p-4 sm:p-5">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <div>
-          <h3 className="text-sm font-semibold">This device</h3>
+          <h3 className="text-sm font-semibold text-foreground">This device</h3>
           <p className="mt-0.5 text-xs text-muted-foreground">
             Live values reported by the KodaHosting app on your phone
           </p>
@@ -284,9 +302,9 @@ export function DeviceCard({ rows }: { rows: ServerRow[] }) {
       <div className="mt-5 grid grid-cols-2 gap-5 sm:grid-cols-3 lg:grid-cols-6">
         <div>
           <div className="text-xs text-muted-foreground">Memory</div>
-          <div className="mt-1 text-lg font-semibold">{total ? `${usedPct}%` : "--"}</div>
-          <div className="mt-2 h-1 overflow-hidden rounded-full bg-white/[0.06]">
-            <div className="h-full rounded-full bg-zinc-500" style={{ width: `${usedPct}%` }} />
+          <div className="mt-1 text-lg font-semibold text-foreground">{total ? `${usedPct}%` : "--"}</div>
+          <div className="mt-2 h-1 overflow-hidden rounded-full bg-secondary">
+            <div className="h-full rounded-full bg-brand" style={{ width: `${usedPct}%` }} />
           </div>
           <div className="mt-1.5 text-[11px] text-muted-foreground">
             {total ? `${total - free} MB of ${total} MB` : "not reported"}
@@ -387,15 +405,13 @@ export function ServersView({
       ) : null}
 
       {error ? (
-        <Alert variant="destructive">
-          <AlertTitle>Could not load the servers</AlertTitle>
-          <AlertDescription className="flex items-center gap-3">
-            {error}
-            <Button size="sm" variant="outline" onClick={onRetry}>
-              Try again
-            </Button>
-          </AlertDescription>
-        </Alert>
+        <ErrorState
+          code="SYNC ERROR"
+          title="Could not load your servers"
+          description="We could not reach the KodaHosting backend to refresh your server list."
+          detail={error}
+          onRetry={onRetry}
+        />
       ) : null}
 
       {!error && servers.length === 0 ? (

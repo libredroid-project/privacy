@@ -113,23 +113,23 @@ export const PERMISSIONS = [
 ] as const;
 
 export function formatBytes(bytes?: number | null): string {
-  if (!bytes || bytes <= 0) return "—";
+  if (!bytes || bytes <= 0) return "-";
   if (bytes < 1024) return `${bytes} B`;
   if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
   return `${(bytes / (1024 * 1024)).toFixed(2)} MB`;
 }
 
 export function formatDate(value?: string | null): string {
-  if (!value) return "—";
+  if (!value) return "-";
   const date = new Date(value.includes("T") ? value : value.replace(" ", "T"));
-  if (Number.isNaN(date.getTime())) return "—";
+  if (Number.isNaN(date.getTime())) return "-";
   return date.toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric" });
 }
 
 export function formatDateTime(value?: string | null): string {
-  if (!value) return "—";
+  if (!value) return "-";
   const date = new Date(value.includes("T") ? value : value.replace(" ", "T"));
-  if (Number.isNaN(date.getTime())) return "—";
+  if (Number.isNaN(date.getTime())) return "-";
   return date.toLocaleString(undefined, {
     year: "numeric",
     month: "short",

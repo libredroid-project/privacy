@@ -2,9 +2,11 @@ import { useEffect, useState } from "react";
 import { Activity, Boxes, Loader2, Server, ShieldCheck, Wrench } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
+import { ErrorState } from "@/components/error-state";
 import { Reveal } from "@/components/reveal";
 import { publicApi } from "@/lib/api";
 import { plural, relativeTime } from "@/lib/format";
+import { safeMinecraftFavicon } from "@/lib/security";
 import type { CommunityServer, PlatformStatus } from "@/dashboard/types";
 import { cn } from "@/lib/utils";
 
@@ -46,12 +48,14 @@ function StatCard({
 export function StatusView() {
   const [status, setStatus] = useState<PlatformStatus | null>(null);
   const [error, setError] = useState("");
+  const [retryNonce, setRetryNonce] = useState(0);
   const [community, setCommunity] = useState<CommunityServer[]>([]);
   const [communityLoading, setCommunityLoading] = useState(true);
   const [communityError, setCommunityError] = useState("");
 
   useEffect(() => {
     let cancelled = false;
+    setError("");
     publicApi<PlatformStatus>("/v1/status")
       .then((data) => {
         if (!cancelled) setStatus(data);
@@ -62,7 +66,7 @@ export function StatusView() {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [retryNonce]);
 
   useEffect(() => {
     let cancelled = false;
@@ -112,13 +116,24 @@ export function StatusView() {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [retryNonce]);
 
   if (error) {
     return (
-      <div className="space-y-2">
-        <h1 className="text-2xl font-semibold tracking-tight">Status</h1>
-        <p className="text-sm text-destructive">Status unavailable: {error}</p>
+      <div className="space-y-6">
+        <div>
+          <h1 className="text-2xl font-semibold tracking-tight">Status</h1>
+          <p className="mt-1 max-w-2xl text-sm text-muted-foreground">
+            Live values from api.kodanetwork.eu and the tunnel server.
+          </p>
+        </div>
+        <ErrorState
+          code="STATUS UNAVAILABLE"
+          title="Live telemetry could not be loaded"
+          description="We could not reach api.kodanetwork.eu right now."
+          detail={error}
+          onRetry={() => setRetryNonce((n) => n + 1)}
+        />
       </div>
     );
   }
@@ -149,7 +164,7 @@ export function StatusView() {
           icon={Activity}
           label="API"
           value={status.ok ? "Online" : "Down"}
-          foot={`api.kodanetwork.eu · v${status.api?.version ?? "–"}`}
+          foot={`api.kodanetwork.eu · v${status.api?.version ?? "-"}`}
           tone={status.ok ? "text-ok" : "text-destructive"}
         />
         <StatCard
@@ -170,7 +185,7 @@ export function StatusView() {
           value={vps ? (vps.stale ? "No fresh data" : "Online") : "No data"}
           foot={
             vps
-              ? `load ${vps.load1 ?? "–"} · RAM ${vps.ram_used_pct ?? "–"}% · ${vps.open_tunnels ?? 0} tunnels · up ${Math.floor((vps.uptime_seconds || 0) / 86400)} d`
+              ? `load ${vps.load1 ?? "-"} · RAM ${vps.ram_used_pct ?? "-"}% · ${vps.open_tunnels ?? 0} tunnels · up ${Math.floor((vps.uptime_seconds || 0) / 86400)} d`
               : "not reported"
           }
           tone={vps && !vps.stale ? "text-ok" : undefined}
@@ -178,7 +193,7 @@ export function StatusView() {
         <StatCard
           icon={Activity}
           label="Latest release"
-          value={release?.version_name || "–"}
+          value={release?.version_name || "-"}
           foot={release ? `${release.channel} · ${relativeTime(release.published_at)}` : "no release yet"}
         />
         <StatCard
@@ -236,7 +251,13 @@ export function StatusView() {
         </div>
 
         {communityError ? (
-          <p className="mt-4 text-sm text-destructive">Could not load the community servers: {communityError}</p>
+          <ErrorState
+            compact
+            className="mt-4"
+            title="Could not load community servers"
+            detail={communityError}
+            onRetry={() => setRetryNonce((n) => n + 1)}
+          />
         ) : communityLoading ? (
           <p className="mt-4 flex items-center gap-2 text-sm text-muted-foreground">
             <Loader2 className="size-4 animate-spin" /> Loading the public servers…
@@ -249,12 +270,13 @@ export function StatusView() {
           <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {community.map((item, index) => {
               const motd = stripColors(item.motd);
+              const favicon = safeMinecraftFavicon(item.live?.favicon);
               return (
                 <Reveal key={item.host} delay={Math.min(index * 40, 240)} className="h-full">
                 <Card className="h-full gap-0 p-4 shadow-none">
                   <div className="flex items-start gap-3">
-                    {item.live?.favicon ? (
-                      <img src={item.live.favicon} alt="" className="size-10 shrink-0 rounded-md border" />
+                    {favicon ? (
+                      <img src={favicon} alt="" className="size-10 shrink-0 rounded-md border" />
                     ) : (
                       <div className="flex size-10 shrink-0 items-center justify-center rounded-md border bg-muted">
                         <Server className="size-4 text-muted-foreground" />

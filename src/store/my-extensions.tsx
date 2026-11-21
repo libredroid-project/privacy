@@ -13,6 +13,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { ErrorState } from "@/components/error-state";
 import { Reveal } from "@/components/reveal";
 import { relativeDate } from "@/lib/format";
 import type { MyExtension } from "@/store/types";
@@ -47,12 +48,22 @@ export function MyExtensions({
     return <p className="text-sm text-muted-foreground">Loading your submissions…</p>;
   }
   if (error) {
-    return <p className="text-sm text-destructive">Could not load your extensions: {error}</p>;
+    return (
+      <ErrorState
+        compact
+        title="Could not load your extensions"
+        detail={error}
+      />
+    );
   }
   if (items.length === 0) {
     return (
-      <p className="rounded-lg border border-dashed p-8 text-center text-sm text-muted-foreground">
-        You have not submitted anything yet. Use “Submit extension” above.
+      <p className="rounded-2xl bg-[#09090b] p-8 text-center text-sm text-zinc-400">
+        You have not submitted anything yet. Extensions are submitted through the{" "}
+        <a href="/developer?new=1" className="font-medium text-white underline underline-offset-4">
+          Developer Console
+        </a>
+        .
       </p>
     );
   }

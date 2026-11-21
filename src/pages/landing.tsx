@@ -1,785 +1,1000 @@
-import { useEffect, useRef, useState, type CSSProperties, type ReactNode } from "react";
-import { ArrowDown, ArrowRight, ArrowUpRight, Check, Copy, Play, Plus } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Reveal } from "@/components/reveal";
-import { SiteFooter } from "@/components/site-footer";
+import { useState } from "react";
+import {
+  Check,
+  ChevronDown,
+  ChevronRight,
+  Copy,
+  Cpu,
+  Globe,
+  Lock,
+  ShieldCheck,
+  Terminal,
+} from "lucide-react";
+import { AnimatedSwitch } from "@/components/animated-switch";
+import { EngineIcon } from "@/components/engine-icon";
+import { KodaResendCube } from "@/components/koda-resend-cube";
 import { SiteHeader } from "@/components/site-header";
-import { copyText } from "@/lib/format";
+import { SiteFooter } from "@/components/site-footer";
+import { Koda3DStage } from "@/components/koda-3d-stage";
+import { PlayDownloadFab } from "@/components/play-download-fab";
+import {
+  ENGINES,
+  getEngineSpec,
+  sanitizeSubdomain,
+  type EngineId,
+  type StageViewId,
+} from "@/three/choreography";
 import { cn } from "@/lib/utils";
 
 const PLAY_URL = "https://play.google.com/store/apps/details?id=eu.kodanetwork.mchost";
 
-const FAQ = [
+const TESTED_DEVICES = [
   {
-    q: "How many servers can I host at the same time?",
-    a: "Each account can host a maximum of six (6) servers simultaneously. This limit applies across all server types (Minecraft servers and databases combined) and is in place to ensure fair use of the shared VPS proxy infrastructure. Creating multiple accounts to bypass this limit is not allowed and may result in a permanent ban.",
+    name: "Xiaomi 17 Ultra",
+    role: "Primary reference device",
+    src: "/assets/devices/xiaomi-17-ultra.jpg",
+    pos: "object-center",
   },
   {
-    q: "Does my phone need to be on 24/7?",
-    a: "Your server runs only while the KodaHosting app is active on your device. When the app is in the foreground, players can join freely. In the background, the server stays alive with reduced priority. When you close the app, the server stops. You can also hibernate servers to free up resources without deleting them.",
+    name: "Pixel 10 Pro",
+    role: "Tensor ARM64 testbed",
+    src: "/assets/devices/pixel-10-pro.jpg",
+    pos: "object-center",
   },
   {
-    q: "Can players join when my phone is asleep?",
-    a: "When your phone's screen is off, Android may put the app into a deep sleep state depending on your battery settings. To keep the server accessible, disable battery optimization for KodaHosting in your Android settings, or keep the device plugged in. Players connecting through our VPS proxy will automatically reconnect once your device wakes up.",
+    name: "OPPO Find X9",
+    role: "Background persistence check",
+    src: "/assets/devices/oppo-find-x9.jpg",
+    pos: "object-[50%_18%]",
   },
   {
-    q: "How much RAM do I need?",
-    a: "For a small survival server with 5–10 players, 1–2 GB of RAM is sufficient. For larger communities or heavy mod packs, allocate 3–4 GB. The app automatically caps your RAM allocation based on your device's available memory to prevent system instability. You can adjust the allocation at any time from the server management panel.",
-  },
-  {
-    q: "Is my home IP really hidden?",
-    a: "Yes. All player connections are routed through our central VPS infrastructure using secure reverse proxy tunnels (Bore / FRP). Players only ever see the IP address of our proxy server, never your home IP. This means your network remains completely private and protected from DDoS attacks or targeted harassment.",
-  },
-  {
-    q: "What happens if my internet disconnects?",
-    a: "If your internet connection drops, players will be disconnected from the server. The server itself continues running on your device, and once your connection is restored, the proxy tunnel reconnects automatically and players can rejoin. World data is always saved locally on your device, so no progress is lost during disconnects.",
-  },
-  {
-    q: "Can I manage my server from a computer?",
-    a: "Yes. The web dashboard at host.kodanetwork.eu lets you manage all your servers from any browser. The Server Manager gives you access to the live console (where you can execute commands and see server output in real-time) and the file management view (where you can upload worlds, install maps, and edit configuration files). Start, stop, restart, and other server lifecycle actions happen in the app directly. The dashboard communicates with your device through Supabase realtime updates.",
-  },
-  {
-    q: "Will hosting damage my phone?",
-    a: "Running a Minecraft server is computationally intensive and will generate heat and consume battery. We recommend keeping your device plugged in while hosting, placing it on a cool surface, and avoiding prolonged use in direct sunlight. The app includes a live performance monitor so you can track CPU and RAM usage. We are not liable for hardware damage, overheating, or battery degradation resulting from intensive use, as outlined in our Terms of Service.",
-  },
-  {
-    q: "Do I need to pay anything?",
-    a: "No. KodaHosting is completely free, with no purchase, no subscription and no premium features. The entire app, all engines, the VPS proxy infrastructure and the web dashboard are available to everyone at no cost. If you want to support development, there is an optional Ko-fi link in the app, but it is entirely voluntary and unlocks nothing.",
-  },
-  {
-    q: "How is this sustainable without charging users?",
-    a: "KodaHosting is a hobby project by a single developer. Server infrastructure costs are kept low through efficient use of resources, and voluntary Ko-fi donations from supporters help cover ongoing hosting costs. There is no business model that requires charging users.",
+    name: "Xiaomi 14T Pro",
+    role: "Thermal & battery baseline",
+    src: "/assets/devices/xiaomi-14t-pro.jpg",
+    pos: "object-center",
   },
 ];
 
-const DEVICES = [
-  { src: "/assets/devices/xiaomi-17-ultra.jpg", alt: "Xiaomi 17 Ultra", caption: "Xiaomi 17 Ultra", note: "the phone the network runs on" },
-  { src: "/assets/devices/pixel-10-pro.jpg", alt: "Pixel 10 Pro", caption: "Pixel 10 Pro" },
-  { src: "/assets/devices/oppo-find-x9.jpg", alt: "OPPO Find X9", caption: "OPPO Find X9" },
-  { src: "/assets/devices/xiaomi-14t-pro.jpg", alt: "Xiaomi 14T Pro", caption: "Xiaomi 14T Pro" },
-];
-
-const ENGINES = [
-  {
-    name: "Paper",
-    note: "Plugins and a stable API. The default for most worlds.",
-    href: "https://papermc.io/",
-    logo: "/assets/engines/paper.png",
-  },
-  {
-    name: "Fabric",
-    note: "Light mods and quick updates.",
-    href: "https://fabricmc.net/",
-    logo: "/assets/engines/fabric-big.png",
-  },
-  {
-    name: "Forge",
-    note: "The classic loader for big modpacks.",
-    href: "https://minecraftforge.net/",
-    logo: "/assets/engines/forge.png",
-  },
-  {
-    name: "NeoForge",
-    note: "The newer fork for modern modpacks.",
-    href: "https://neoforged.net/",
-    logo: "/assets/engines/neoforge.png",
-  },
-  {
-    name: "Vanilla",
-    note: "The original server, no mods.",
-    href: "https://www.minecraft.net/",
-    logo: "/assets/engines/vanilla.png",
-  },
-  {
-    name: "Pumpkin",
-    note: "A fast server written in Rust.",
-    href: "https://pumpkinmc.org/",
-    logo: "/assets/engines/pumpkin.png",
-  },
-];
-
-const SCREENS = [
+const APP_SCREENS: {
+  id: StageViewId;
+  title: string;
+  meta: string;
+  src: string;
+  alt: string;
+}[] = [
   {
     id: "dashboard",
-    label: "Dashboard",
+    title: "Server Dashboard",
+    meta: "Uptime · Join address · Start, stop & restart · Network meter",
     src: "/assets/app/dashboard.webp",
-    alt: "The KodaHosting app showing a server dashboard with uptime, join address and the start, stop and restart controls",
+    alt: "KodaHosting Android app dashboard showing uptime, Forge 1.12.2, OpenJDK 8, join address halloween.kodaserv.eu, and start/stop/restart controls",
   },
   {
     id: "console",
-    label: "Console",
+    title: "Live Console",
+    meta: "Real-time stdout · One-tap copy log · Direct command input",
     src: "/assets/app/console.webp",
-    alt: "The KodaHosting app showing the live Minecraft console and the command field",
+    alt: "KodaHosting Android app live Minecraft console showing Forge server output, copy log, clear, and command bar",
   },
   {
     id: "files",
-    label: "Files",
+    title: "Local File Manager",
+    meta: "~/servers// · Edit server.properties · Import & trash recovery",
     src: "/assets/app/files.webp",
-    alt: "The KodaHosting app showing the server file browser",
+    alt: "KodaHosting Android app file manager showing ~/servers// with world, plugins, server.properties, and jar files",
   },
 ];
 
-function Surface({
-  children,
-  className,
-  ui,
-}: {
-  children: ReactNode;
-  className?: string;
-  ui?: boolean;
-}) {
+const FAQS = [
+  {
+    q: "How many servers can I host at the same time?",
+    a: "Each account can host a maximum of six (6) servers simultaneously across all server types to ensure fair use of the shared German VPS proxy infrastructure.",
+  },
+  {
+    q: "Does my phone need to be on 24/7?",
+    a: "Your server runs while the KodaHosting app is active on your device. Disable battery optimization for KodaHosting so Android permits background execution, or hibernate idle worlds to save battery without losing your join address.",
+  },
+  {
+    q: "What is KodaDash MCP and can an AI restart my server?",
+    a: "KodaDash MCP connects AI coding tools like Claude Code, Codex, or ZCode using a dedicated token with read-only mode and granular capability switches (logs, Modrinth SHA-512 installs, MOTD & settings). AI clients can never start, stop, or restart your server.",
+  },
+  {
+    q: "Is my home IP really hidden?",
+    a: "Yes. All player traffic flows through our German reverse-proxy tunnel (Bore / FRP). Friends join via your *.kodaserv.eu or *.kodanetwork.eu subdomain and never see your residential or mobile IP.",
+  },
+  {
+    q: "What about Bedrock crossplay?",
+    a: "Bedrock crossplay is temporarily unavailable while Geyser transitions to NetherNet. Java Edition servers are completely unaffected and work out of the box.",
+  },
+  {
+    q: "Can I manage my server from a computer?",
+    a: "Yes. Sign in to the web dashboard on this site to follow the live console, browse and edit files, manage extensions, and configure KodaDash from any desktop browser.",
+  },
+  {
+    q: "Do I need to pay anything?",
+    a: "No. KodaHosting is completely free, with no subscriptions, no paywalled engines, and no premium tiers. Voluntary Ko-fi support helps cover German relay infrastructure and unlocks nothing.",
+  },
+];
+
+type WorkbenchTab = "tunnel" | "mcp" | "engines" | "extensions";
+
+const WORKBENCH_TABS: { id: WorkbenchTab; label: string }[] = [
+  { id: "tunnel", label: "Subdomain & Tunnel" },
+  { id: "mcp", label: "KodaDash MCP" },
+  { id: "engines", label: "Nine Server Cores" },
+  { id: "extensions", label: "Extension SDK" },
+];
+
+export function LandingPage() {
+  const [activeEngine, setActiveEngine] = useState<EngineId>("paper");
+  const [activeView, setActiveView] = useState<StageViewId>("dashboard");
+
   return (
-    <div data-ui={ui || undefined} className={cn("rounded-2xl bg-card", className)}>
-      {children}
+    <div className="min-h-svh overflow-x-clip bg-black text-zinc-100">
+      <SiteHeader active="overview" />
+      <main>
+        <Koda3DStage
+          activeEngine={activeEngine}
+          activeView={activeView}
+          onViewChange={setActiveView}
+        />
+        <EngineStripSection
+          activeEngine={activeEngine}
+          onSelectEngine={(engine) => setActiveEngine(engine)}
+        />
+        <ResendCoreShowcaseSection activeEngine={activeEngine} />
+        <DeveloperWorkbenchSection
+          activeEngine={activeEngine}
+          onEngineChange={setActiveEngine}
+          onInspectCutaway={() => {
+            setActiveView("cutaway");
+            window.scrollTo({ top: 0, behavior: "smooth" });
+          }}
+        />
+        <RealAppSection
+          activeView={activeView}
+          onSelectScreen={(view) => {
+            setActiveView(view);
+            window.scrollTo({ top: 0, behavior: "smooth" });
+          }}
+        />
+        <HardwareProofSection />
+        <FaqSection />
+        <ClosingPosterSection />
+      </main>
+      <SiteFooter />
+      <PlayDownloadFab />
     </div>
   );
 }
 
-function SectionIntro({
-  title,
-  children,
-  align = "center",
+/* 1. Proprietary Engine Strip */
+
+function EngineStripSection({
+  activeEngine,
+  onSelectEngine,
 }: {
-  title: string;
-  children: ReactNode;
-  align?: "center" | "left";
+  activeEngine: EngineId;
+  onSelectEngine: (engine: EngineId) => void;
 }) {
   return (
-    <div className={cn("max-w-2xl", align === "center" ? "mx-auto text-center" : "")}>
-      <h2 className="text-4xl font-medium tracking-[-0.035em] text-balance sm:text-5xl lg:text-6xl">
-        {title}
-      </h2>
-      <p className={cn("mt-5 text-lg leading-8 text-muted-foreground", align === "center" ? "mx-auto max-w-xl" : "max-w-xl")}>
-        {children}
-      </p>
-    </div>
+    <section className="mx-auto max-w-6xl px-4 pb-20 sm:px-6 sm:pb-28">
+      <div className="resend-arch px-4 pt-16 pb-6 sm:px-10">
+        <p className="mx-auto max-w-md text-center text-[15px] leading-6 text-zinc-400">
+          Nine real server cores running natively on Android ARM64.
+          <br />
+          OpenJDK 8 to 25 and Rust, zero rented servers.
+        </p>
+
+        <div className="mx-auto mt-10 grid max-w-5xl grid-cols-3 gap-2.5 sm:grid-cols-5 lg:grid-cols-9">
+          {ENGINES.map((engine) => {
+            const active = engine.id === activeEngine;
+            return (
+              <button
+                key={engine.id}
+                type="button"
+                onClick={() => onSelectEngine(engine.id)}
+                aria-pressed={active}
+                className={cn(
+                  "flex flex-col items-center justify-center rounded-2xl px-3 py-3.5 text-center transition-colors duration-150",
+                  active
+                    ? "bg-white/[0.08] text-white"
+                    : "bg-transparent text-zinc-500 hover:bg-white/[0.04] hover:text-zinc-200",
+                )}
+              >
+                <EngineIcon
+                  id={engine.id}
+                  name={engine.name}
+                  size="md"
+                  className={cn(
+                    "transition-opacity duration-150",
+                    active ? "opacity-100" : "opacity-80",
+                  )}
+                />
+                <span className="mt-2.5 font-display text-[13px] font-medium whitespace-nowrap">
+                  {engine.name}
+                </span>
+                <span
+                  className={cn(
+                    "mt-0.5 font-mono text-[10.5px] whitespace-nowrap",
+                    active ? "text-brand-ink" : "text-zinc-600",
+                  )}
+                >
+                  {engine.runtimeKind}
+                </span>
+              </button>
+            );
+          })}
+        </div>
+
+        <div className="mt-10 text-center">
+          <a
+            href="#workbench"
+            className="inline-flex items-center gap-1 font-display text-[13.5px] font-medium text-zinc-400 transition-colors hover:text-white"
+          >
+            Inspect runtime &amp; MCP configuration
+            <ChevronRight className="size-3.5 text-brand-ink" />
+          </a>
+        </div>
+      </div>
+    </section>
   );
 }
 
-function CopyValue({ value }: { value: string }) {
-  const [copied, setCopied] = useState(false);
+/* 1.5 Resend-Style 3D Obsidian Server Core & Developer Experience Highlights */
 
-  async function copy() {
-    if (!(await copyText(value))) return;
-    setCopied(true);
-    window.setTimeout(() => setCopied(false), 1400);
+function ResendCoreShowcaseSection({ activeEngine }: { activeEngine: EngineId }) {
+  const spec = getEngineSpec(activeEngine);
+
+  return (
+    <section className="relative overflow-hidden py-16 sm:py-24">
+      <div
+        aria-hidden="true"
+        className="resend-dot-grid pointer-events-none absolute inset-0 opacity-40"
+      />
+      <div className="relative mx-auto max-w-6xl px-4 sm:px-6">
+        <div className="grid items-center gap-12 lg:grid-cols-12">
+          {/* Interactive Resend-inspired 3D machined obsidian 3x3x3 server cube */}
+          <div className="flex flex-col items-center lg:col-span-5">
+            <div className="relative h-[320px] w-full max-w-[380px] sm:h-[370px]">
+              <KodaResendCube pulseKey={activeEngine} className="h-full w-full" />
+            </div>
+            <p className="mt-2 font-mono text-[11px] text-zinc-500">
+              {spec.socLabel} · Drag obsidian core to inspect
+            </p>
+          </div>
+
+          {/* Resend-grade clean monochrome developer experience architecture column */}
+          <div className="lg:col-span-7">
+            <p className="text-sm font-medium text-brand-ink">Pocket-scale infrastructure</p>
+            <h2 className="resend-title mt-2 font-display text-4xl font-medium tracking-[-0.035em] sm:text-5xl">
+              Engineered like cloud silicon,
+              <br />
+              owned by you.
+            </h2>
+            <p className="mt-4 max-w-xl text-[15.5px] leading-7 text-zinc-400">
+              Every world, plugin, and configuration file stays on your local Android flash storage.
+              KodaHosting pairs native ARM64 runtimes with a zero-configuration German reverse
+              relay so hosting feels as effortless as deploying an API.
+            </p>
+
+            <div className="mt-10 grid gap-8 sm:grid-cols-3">
+              <div>
+                <Cpu className="size-4 text-brand-ink" />
+                <h3 className="mt-3 font-display text-[15px] font-medium text-white">
+                  Native ARM64 execution
+                </h3>
+                <p className="mt-1.5 text-[13.5px] leading-6 text-zinc-400">
+                  Direct OpenJDK 8 to 25 and native Rust binaries with zero virtualization overhead.
+                </p>
+              </div>
+
+              <div>
+                <Globe className="size-4 text-brand-ink" />
+                <h3 className="mt-3 font-display text-[15px] font-medium text-white">
+                  Zero port-forwarding
+                </h3>
+                <p className="mt-1.5 text-[13.5px] leading-6 text-zinc-400">
+                  Outbound Bore and FRP tunnels through Frankfurt mask your residential IP
+                  automatically.
+                </p>
+              </div>
+
+              <div>
+                <ShieldCheck className="size-4 text-brand-ink" />
+                <h3 className="mt-3 font-display text-[15px] font-medium text-white">
+                  Scoped AI control
+                </h3>
+                <p className="mt-1.5 text-[13.5px] leading-6 text-zinc-400">
+                  Connect coding agents via KodaDash MCP with SHA-512 verification and human-only
+                  power controls.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/* 2. Interactive Developer Workbench */
+
+function DeveloperWorkbenchSection({
+  activeEngine,
+  onEngineChange,
+  onInspectCutaway,
+}: {
+  activeEngine: EngineId;
+  onEngineChange: (engine: EngineId) => void;
+  onInspectCutaway: () => void;
+}) {
+  const [tab, setTab] = useState<WorkbenchTab>("tunnel");
+  const [rawName, setRawName] = useState("halloween");
+  const [copiedKey, setCopiedKey] = useState<string | null>(null);
+
+  const cleanSubdomain = sanitizeSubdomain(rawName);
+  const fullAddress = `${cleanSubdomain}.kodaserv.eu`;
+  const spec = getEngineSpec(activeEngine);
+
+  const mcpJson = JSON.stringify(
+    {
+      mcpServers: {
+        [`kodahosting-${cleanSubdomain}`]: {
+          type: "http",
+          url: `https://${fullAddress}/mcp`,
+          headers: {
+            Authorization: "Bearer ${KODA_MCP_TOKEN}",
+          },
+        },
+      },
+    },
+    null,
+    2,
+  );
+
+  function copyText(key: string, value: string) {
+    navigator.clipboard?.writeText(value).catch(() => {});
+    setCopiedKey(key);
+    window.setTimeout(() => setCopiedKey((curr) => (curr === key ? null : curr)), 1600);
   }
 
   return (
-    <div className="flex items-center gap-3">
-      <span className="min-w-0 text-[clamp(1.35rem,2.4vw,2rem)] leading-tight font-medium tracking-[-0.03em] break-all">
-        {value}
-      </span>
-      <Button
-        type="button"
-        variant="outline"
-        size="icon"
-        className="shrink-0 rounded-full"
-        onClick={copy}
-        aria-label={`Copy ${value}`}
-      >
-        {copied ? <Check className="size-4 text-emerald-400" /> : <Copy className="size-4" />}
-      </Button>
-    </div>
-  );
-}
-
-function Tilt({ children }: { children: ReactNode }) {
-  const ref = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    const el = ref.current;
-    if (!el) return;
-    if (!window.matchMedia("(hover: hover) and (pointer: fine)").matches) return;
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-
-    let frame = 0;
-    let x = 0;
-    let y = 0;
-    const apply = () => {
-      frame = 0;
-      el.style.transform = `perspective(1400px) rotateX(${y.toFixed(2)}deg) rotateY(${x.toFixed(2)}deg)`;
-    };
-    const move = (event: PointerEvent) => {
-      const rect = el.getBoundingClientRect();
-      x = ((event.clientX - rect.left) / rect.width - 0.5) * 2.5;
-      y = -((event.clientY - rect.top) / rect.height - 0.5) * 2.5;
-      if (!frame) frame = window.requestAnimationFrame(apply);
-    };
-    const leave = () => {
-      x = 0;
-      y = 0;
-      el.style.transform = "perspective(1400px) rotateX(0deg) rotateY(0deg)";
-    };
-    el.addEventListener("pointermove", move);
-    el.addEventListener("pointerleave", leave);
-    return () => {
-      el.removeEventListener("pointermove", move);
-      el.removeEventListener("pointerleave", leave);
-      if (frame) window.cancelAnimationFrame(frame);
-    };
-  }, []);
-
-  return (
-    <div ref={ref} className="will-change-transform">
-      {children}
-    </div>
-  );
-}
-
-function Phone({
-  src,
-  alt,
-  className,
-}: {
-  src: string;
-  alt: string;
-  className?: string;
-}) {
-  return (
-    <img
-      src={src}
-      alt={alt}
-      className={cn("block rounded-[2.25rem]", className)}
-    />
-  );
-}
-
-function PhoneGallery() {
-  const [active, setActive] = useState(0);
-  const screen = SCREENS[active];
-
-  return (
-    <div className="flex flex-col items-center">
-      <Tilt>
-        <div className="w-[280px] sm:w-[360px] lg:w-[400px]">
-          <Phone key={screen.id} src={screen.src} alt={screen.alt} className="phone-in w-full" />
-        </div>
-      </Tilt>
-
-      <div className="mt-7 flex gap-1 rounded-full bg-card p-1">
-        {SCREENS.map((item, index) => (
-          <button
-            key={item.id}
-            type="button"
-            onClick={() => setActive(index)}
-            aria-pressed={index === active}
-            className={cn(
-              "rounded-full px-4 py-2 text-sm transition-colors duration-200",
-              index === active
-                ? "bg-background text-foreground"
-                : "text-muted-foreground hover:text-foreground",
-            )}
-          >
-            {item.label}
-          </button>
-        ))}
-      </div>
-    </div>
-  );
-}
-
-function ScrollHero() {
-  const sectionRef = useRef<HTMLElement>(null);
-  const stageRef = useRef<HTMLDivElement>(null);
-  const [split, setSplit] = useState(false);
-  const [reduced, setReduced] = useState(false);
-  const showSplit = split || reduced;
-
-  useEffect(() => {
-    const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    setReduced(reducedMotion);
-    if (reducedMotion) return;
-
-    const section = sectionRef.current;
-    const stage = stageRef.current;
-    if (!section || !stage) return;
-
-    let frame = 0;
-    let active = false;
-    const update = () => {
-      frame = 0;
-      const rect = section.getBoundingClientRect();
-      const total = rect.height - window.innerHeight;
-      const progress = total > 0 ? Math.min(1, Math.max(0, -rect.top / total)) : 0;
-      stage.style.setProperty("--p", progress.toFixed(4));
-      const next = progress > 0.28;
-      if (next !== active) {
-        active = next;
-        setSplit(next);
-      }
-    };
-    const onScroll = () => {
-      if (!frame) frame = window.requestAnimationFrame(update);
-    };
-    window.addEventListener("scroll", onScroll, { passive: true });
-    update();
-    return () => {
-      window.removeEventListener("scroll", onScroll);
-      if (frame) window.cancelAnimationFrame(frame);
-    };
-  }, []);
-
-  return (
-    <section ref={sectionRef} className={cn("relative", reduced ? "hero-reduced" : "h-[210svh]")}>
-      <div ref={stageRef} className="hero-stage sticky top-0 h-svh overflow-hidden">
-        {!showSplit ? (
-        <div
-          className="hero-center absolute inset-0 flex flex-col items-center justify-center px-4 text-center"
-        >
-          <h1 className="text-[clamp(2.9rem,9vw,8.5rem)] leading-[0.9] font-semibold tracking-[-0.045em] text-balance">
-            <span className="hero-line">
-              <span style={{ "--delay": "120ms" } as CSSProperties}>Host Minecraft</span>
-            </span>
-            <span className="hero-line">
-              <span style={{ "--delay": "240ms" } as CSSProperties}>from your phone.</span>
-            </span>
-          </h1>
-
-          <p
-            className="fade-up mx-auto mt-8 max-w-xl text-lg leading-8 text-muted-foreground"
-            style={{ "--delay": "360ms" } as CSSProperties}
-          >
-            A real Minecraft server on the device in your pocket. Friends join with an address, the
-            console lives in the browser.
+    <section id="workbench" className="scroll-mt-20 py-16 sm:py-24">
+      <div className="mx-auto max-w-6xl px-4 sm:px-6">
+        <div className="mx-auto max-w-2xl text-center">
+          <h2 className="resend-title font-display text-4xl font-medium tracking-[-0.035em] sm:text-5xl">
+            First-class server control.
+          </h2>
+          <p className="mt-4 text-[16px] leading-7 text-zinc-400">
+            Configure instant subdomains without port-forwarding, issue scoped KodaDash MCP tokens
+            for AI coding agents, or package{" "}
+            <span className="font-mono text-[0.9em] text-zinc-200">.kodaext</span> extensions.
           </p>
-
-          <div
-            className="fade-up mt-9 flex flex-col items-center justify-center gap-5 sm:flex-row sm:gap-7"
-            style={{ "--delay": "480ms" } as CSSProperties}
-          >
-            <Button asChild size="lg" className="h-12 rounded-full px-7">
-              <a href={PLAY_URL}>
-                <Play className="size-4" />
-                Get it on Google Play
-              </a>
-            </Button>
-            <a href="#how" className="link-arrow inline-flex items-center gap-2 text-base font-medium">
-              How it works
-              <ArrowRight className="size-4" />
-            </a>
-          </div>
-
-          <a
-            href="#engines"
-            className="hero-cue absolute bottom-8 inline-flex items-center gap-2 text-sm text-muted-foreground transition-colors hover:text-foreground"
-          >
-            Scroll
-            <ArrowDown className="size-4" />
-          </a>
         </div>
-        ) : (
-        <div
-          className="hero-split absolute inset-0 mx-auto flex max-w-6xl flex-col items-center justify-center gap-6 px-4 lg:flex-row lg:justify-between lg:gap-10"
-        >
-          <div className="hero-left w-full text-center lg:w-[48%] lg:text-left">
-            <p className="text-[clamp(2rem,4.2vw,4rem)] leading-[0.95] font-semibold tracking-[-0.04em]">
-              Host Minecraft
-              <br />
-              from your phone.
-            </p>
-            <p className="mx-auto mt-5 max-w-md text-base leading-7 text-muted-foreground sm:text-lg sm:leading-8 lg:mx-0">
-              A real Minecraft server on the device in your pocket. Friends join with an address, the
-              console lives in the browser.
-            </p>
-            <div className="mt-6 flex flex-wrap items-center justify-center gap-4 lg:justify-start">
-              <Button asChild size="lg" className="h-11 rounded-full px-6">
-                <a href={PLAY_URL}>
-                  <Play className="size-4" />
-                  Get it on Google Play
-                </a>
-              </Button>
-              <a href="#how" className="link-arrow inline-flex items-center gap-2 text-sm font-medium">
-                How it works
-                <ArrowRight className="size-4" />
-              </a>
-            </div>
-          </div>
 
-          <div className="hero-video w-[190px] shrink-0 sm:w-[240px] lg:w-[40%] lg:max-w-[360px]">
-            <video
-              src="/assets/app/terminal.mp4"
-              poster="/assets/app/terminal-poster.webp"
-              autoPlay={!reduced}
-              muted
-              loop
-              playsInline
-              preload="metadata"
-              controls={reduced}
-              aria-label="A screen recording of the KodaHosting console starting a Minecraft server"
-              className="w-full rounded-[2rem] bg-black"
-            />
-          </div>
-        </div>
-        )}
-      </div>
-    </section>
-  );
-}
-
-function HowItWorks() {
-  return (
-    <section id="how" className="scroll-mt-24 px-4 py-20 sm:py-28">
-      <div className="mx-auto max-w-6xl">
-        <Reveal>
-          <SectionIntro title="Built the way you actually play">
-            Install the app, open a world, send the address. Everything else happens on the phone.
-          </SectionIntro>
-        </Reveal>
-
-        <div className="mt-16 grid gap-5 lg:grid-cols-12">
-          <Reveal delay={0} className="lg:col-span-7">
-            <Surface className="h-full p-8 sm:p-10">
-              <h3 className="text-3xl font-medium tracking-[-0.03em] sm:text-4xl">Six engines, one installer</h3>
-              <p className="mt-4 max-w-lg text-base leading-7 text-muted-foreground">
-                Paper, Fabric, Forge, NeoForge, vanilla and Pumpkin. The app fetches the build and the
-                matching Java runtime, on the device, without a PC.
-              </p>
-              <div className="mt-9 grid grid-cols-2 gap-x-8 gap-y-6">
-                {ENGINES.map((engine) => (
-                  <div key={engine.name}>
-                    <div className="text-2xl font-medium tracking-tight">{engine.name}</div>
-                    <div className="mt-1 text-sm text-muted-foreground">{engine.note}</div>
-                  </div>
-                ))}
-              </div>
-            </Surface>
-          </Reveal>
-
-          <Reveal delay={90} className="lg:col-span-5">
-            <Surface className="h-full p-8 sm:p-10" ui>
-              <h3 className="text-3xl font-medium tracking-[-0.03em] sm:text-4xl">It sleeps when nobody plays</h3>
-              <p className="mt-4 text-base leading-7 text-muted-foreground">
-                Servers hibernate instead of running the battery empty. The address stays, the world is
-                put away, and the next player wakes it in about twenty seconds.
-              </p>
-              <div className="mt-10">
-                <div className="flex items-end justify-between">
-                  <span className="text-6xl font-medium tracking-[-0.04em]">82%</span>
-                  <span className="pb-1 text-sm text-muted-foreground">charging</span>
-                </div>
-                <div className="mt-5 h-2 overflow-hidden rounded-full bg-muted">
-                  <div className="h-full w-[82%] rounded-full bg-emerald-500" />
-                </div>
-                <p className="mt-3 text-sm text-muted-foreground">battery, one world asleep</p>
-              </div>
-            </Surface>
-          </Reveal>
-
-          <Reveal delay={120} className="lg:col-span-12">
-            <Surface className="grid gap-8 p-8 sm:p-10 lg:grid-cols-[5fr_7fr] lg:items-center">
-              <div>
-                <h3 className="text-3xl font-medium tracking-[-0.03em] sm:text-4xl">The console is included</h3>
-                <p className="mt-4 max-w-lg text-base leading-7 text-muted-foreground">
-                  KodaDash opens the live log, players, files and settings in a browser. It ships with
-                  the app, with no plan to buy and no feature held back.
-                </p>
-              </div>
-              <div className="grid gap-3">
-                {[
-                  { title: "Live console", text: "Read the log and send a command from any browser." },
-                  { title: "Players and moderation", text: "See who is online, op, kick or ban from the panel." },
-                  { title: "Files and backups", text: "Browse the server folder, edit configs, pull a backup." },
-                ].map((item) => (
-                  <div key={item.title} className="rounded-xl bg-muted/40 px-5 py-4">
-                    <div className="text-base font-medium">{item.title}</div>
-                    <div className="mt-1 text-sm leading-6 text-muted-foreground">{item.text}</div>
-                  </div>
-                ))}
-              </div>
-            </Surface>
-          </Reveal>
-        </div>
-      </div>
-    </section>
-  );
-}
-
-function AddressSection() {
-  return (
-    <section className="px-4 py-16 sm:py-24">
-      <div className="mx-auto grid max-w-6xl items-end gap-10 lg:grid-cols-[5fr_7fr]">
-        <Reveal>
-          <div>
-            <h2 className="text-4xl font-medium tracking-[-0.035em] text-balance sm:text-5xl lg:text-6xl">
-              The address is the product.
-            </h2>
-            <p className="mt-5 max-w-md text-lg leading-8 text-muted-foreground">
-              Create a server, pick a name, and it answers under a normal subdomain in the vanilla
-              server list. No port to remember, no mod on the client, no account needed to join.
-            </p>
-            <ul className="mt-7 space-y-3 text-base">
-              {[
-                "A normal address friends can type",
-                "Bedrock players get a port",
-                "No client mod, no account to join",
-              ].map((item) => (
-                <li key={item} className="flex items-center gap-3 text-muted-foreground">
-                  <Check className="size-4 text-brand" />
-                  {item}
-                </li>
-              ))}
-            </ul>
-          </div>
-        </Reveal>
-
-        <Reveal variant="scale" delay={90}>
-          <Surface ui className="p-8 sm:p-10">
-            <div className="text-sm text-muted-foreground">Join address</div>
-            <div className="mt-2">
-              <CopyValue value="koda-world.kodanetwork.eu" />
-            </div>
-            <div className="mt-10 grid grid-cols-2 gap-x-8 gap-y-6">
-              <div>
-                <div className="text-sm text-muted-foreground">Server name</div>
-                <div className="mt-1 text-lg font-medium">Koda World</div>
-              </div>
-              <div>
-                <div className="text-sm text-muted-foreground">Bedrock port</div>
-                <div className="mt-1 text-lg font-medium">41230</div>
-              </div>
-              <div>
-                <div className="text-sm text-muted-foreground">Version</div>
-                <div className="mt-1 text-lg font-medium">1.21.11</div>
-              </div>
-              <div>
-                <div className="text-sm text-muted-foreground">Engine</div>
-                <div className="mt-1 text-lg font-medium">Paper</div>
-              </div>
-            </div>
-          </Surface>
-        </Reveal>
-      </div>
-    </section>
-  );
-}
-
-function ControlSection() {
-  return (
-    <section className="px-4 py-16 sm:py-24">
-      <div className="mx-auto grid max-w-6xl items-center gap-12 lg:grid-cols-[5fr_7fr]">
-        <Reveal>
-          <div>
-            <h2 className="text-4xl font-medium tracking-[-0.035em] text-balance sm:text-5xl lg:text-6xl">
-              Read it, or take it over.
-            </h2>
-            <p className="mt-5 max-w-lg text-lg leading-8 text-muted-foreground">
-              Restart it, send a command, kick a player or pull a backup. Guests can be handed the
-              same controls with an expiring invite that asks them to sign in first.
-            </p>
-            <p className="mt-6 max-w-lg text-base leading-7 text-muted-foreground">
-              The console and the file browser are the same screens you use on the phone. Nothing in
-              this picture is a mock-up.
-            </p>
-            <div className="mt-8 flex flex-wrap items-center gap-6">
-              <Button asChild size="lg" className="h-12 rounded-full px-7">
-                <a href="/dashboard">Open the dashboard</a>
-              </Button>
-              <a href="/docs" className="link-arrow inline-flex items-center gap-2 text-base font-medium">
-                Read the docs
-                <ArrowRight className="size-4" />
-              </a>
-            </div>
-          </div>
-        </Reveal>
-
-        <Reveal variant="scale" delay={100}>
-          <Phone
-            src="/assets/app/console.webp"
-            alt="The live console in the KodaHosting app, with the command field and the server output"
-            className="mx-auto w-[280px] sm:w-[360px]"
+        {/* Animated horizontal multi-switch */}
+        <div className="mt-10 flex justify-center">
+          <AnimatedSwitch<WorkbenchTab>
+            role="tablist"
+            ariaLabel="Developer architecture workbench"
+            value={tab}
+            onChange={setTab}
+            options={WORKBENCH_TABS}
+            className="justify-center"
           />
-        </Reveal>
-      </div>
-    </section>
-  );
-}
+        </div>
 
-function EngineMarquee() {
-  return (
-    <section id="engines" className="overflow-hidden py-14 sm:py-20" aria-label="Server engines">
-      <h2 className="sr-only">Server engines</h2>
-      <div className="marquee-mask">
-        <div className="marquee-track gap-4">
-          {[0, 1].map((group) => (
-            <div key={group} className="flex shrink-0 gap-4 pr-4" aria-hidden={group === 1}>
-              {ENGINES.map((engine) => (
-                <a
-                  key={engine.name}
-                  href={engine.href}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  tabIndex={group === 1 ? -1 : undefined}
-                  className="group flex w-[300px] shrink-0 items-start gap-4 px-2 py-2 transition-opacity hover:opacity-80"
-                >
-                  <img src={engine.logo} alt="" className="size-12 shrink-0 object-contain" />
-                  <div className="min-w-0 flex-1">
-                    <div className="flex items-center gap-2 text-lg font-medium">
-                      {engine.name}
-                      <ArrowUpRight className="size-4 text-muted-foreground transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
-                    </div>
-                    <p className="mt-1 text-sm leading-6 text-muted-foreground">{engine.note}</p>
-                  </div>
-                </a>
-              ))}
+        {/* Resend specular studio panel (no noisy gray wireframe box) */}
+        <div className="resend-glass-panel mx-auto mt-8 max-w-5xl overflow-hidden rounded-3xl">
+          <div className="flex flex-wrap items-center justify-between gap-3 bg-white/[0.025] px-5 py-3.5 sm:px-7">
+            <div className="flex items-center gap-2 font-mono text-xs text-zinc-400">
+              <span className="text-zinc-200">kodahosting</span>
+              <span aria-hidden="true" className="text-zinc-600">
+                /
+              </span>
+              <span className="text-brand-ink">
+                {WORKBENCH_TABS.find((t) => t.id === tab)?.label}
+              </span>
             </div>
-          ))}
-        </div>
-      </div>
-    </section>
-  );
-}
+            <button
+              type="button"
+              onClick={onInspectCutaway}
+              className="koda-btn-pill h-8 px-3.5 text-xs whitespace-nowrap shrink-0"
+            >
+              Inspect 3D cutaway
+            </button>
+          </div>
 
-function AboutSection() {
-  return (
-    <section className="px-4 py-16 sm:py-24">
-      <div className="mx-auto max-w-6xl">
-        <Reveal>
-          <SectionIntro title="Plainly, a phone in a room">
-            One developer, in school, building this around a phone instead of around a server room.
-            Parts of the site were drafted with an AI language model and reviewed by hand; the app,
-            the networking and everything that executes are not.
-          </SectionIntro>
-        </Reveal>
+          <div className="min-w-0 p-6 sm:p-9">
+            {tab === "tunnel" && (
+              <div className="space-y-8">
+                <div className="max-w-xl">
+                  <h3 className="font-display text-xl font-medium tracking-[-0.02em] text-white">
+                    Claim a clean subdomain. Never touch your router.
+                  </h3>
+                  <p className="mt-2 text-[14.5px] leading-7 text-zinc-400">
+                    Type any server name to preview your Java Edition join address. Your Android
+                    device dials an encrypted outbound Bore / FRP tunnel to our German relay so
+                    your home IP stays strictly hidden.
+                  </p>
+                </div>
 
-        <div className="mt-10 grid grid-cols-2 gap-4 lg:grid-cols-4">
-          {DEVICES.map((device) => (
-            <figure key={device.src} className="group">
-              <div className="overflow-hidden rounded-xl bg-card">
-                <img
-                  src={device.src}
-                  alt={device.alt}
-                  loading="lazy"
-                  className="photo-drift aspect-[3/4] w-full object-cover grayscale transition-[filter] duration-700 group-hover:grayscale-0"
-                />
-              </div>
-              <figcaption className="mt-3 text-sm font-medium">{device.caption}</figcaption>
-              {device.note ? <div className="mt-0.5 text-sm text-muted-foreground">{device.note}</div> : null}
-            </figure>
-          ))}
-        </div>
-        <p className="mt-8 max-w-2xl text-sm leading-6 text-muted-foreground">
-          Device photographs from Wikimedia Commons, shown for identification only; all rights belong
-          to the respective manufacturers. The database, the tunnel server and the law texts sit in
-          Germany.
-        </p>
-      </div>
-    </section>
-  );
-}
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-end">
+                  <div className="min-w-0 flex-1">
+                    <label
+                      htmlFor="koda-subdomain-input"
+                      className="block text-xs font-medium text-zinc-400"
+                    >
+                      Server subdomain
+                    </label>
+                    <div className="mt-2 flex items-center overflow-hidden rounded-xl bg-black/80 ring-1 ring-white/[0.08] transition-colors focus-within:ring-white/25">
+                      <input
+                        id="koda-subdomain-input"
+                        type="text"
+                        value={rawName}
+                        onChange={(e) => setRawName(e.target.value)}
+                        placeholder="survival"
+                        maxLength={24}
+                        className="min-w-0 flex-1 bg-transparent px-4 py-2.5 font-mono text-sm text-white outline-none placeholder:text-zinc-600"
+                      />
+                      <span className="bg-white/[0.04] px-4 py-2.5 font-mono text-sm text-brand-ink whitespace-nowrap">
+                        .kodaserv.eu
+                      </span>
+                    </div>
+                  </div>
 
-function FaqSection() {
-  const [open, setOpen] = useState<string | null>(FAQ[0]?.q ?? null);
-
-  return (
-    <section className="px-4 py-16 sm:py-24">
-      <div className="mx-auto max-w-3xl">
-        <Reveal>
-          <SectionIntro title="Common questions">
-            Short answers to what people ask before they install. Everything else is in the
-            documentation.
-          </SectionIntro>
-        </Reveal>
-        <Reveal delay={80} className="mt-8">
-          <div className="space-y-3">
-            {FAQ.map((item) => {
-              const isOpen = open === item.q;
-              return (
-                <div key={item.q} className="rounded-xl bg-card">
                   <button
                     type="button"
-                    onClick={() => setOpen(isOpen ? null : item.q)}
-                    aria-expanded={isOpen}
-                    className="flex w-full items-center justify-between gap-6 p-5 text-left text-lg font-medium"
+                    onClick={() => copyText("address", fullAddress)}
+                    className="koda-btn-black h-[42px] px-5 text-sm whitespace-nowrap shrink-0"
                   >
-                    {item.q}
-                    <Plus
-                      className={cn(
-                        "size-4 shrink-0 text-muted-foreground transition-transform duration-300",
-                        isOpen && "rotate-45",
-                      )}
-                    />
-                  </button>
-                  <div
-                    className={cn(
-                      "grid transition-[grid-template-rows] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]",
-                      isOpen ? "grid-rows-[1fr]" : "grid-rows-[0fr]",
+                    {copiedKey === "address" ? (
+                      <>
+                        <Check className="size-4 text-brand-ink" />
+                        Copied
+                      </>
+                    ) : (
+                      <>
+                        <Copy className="size-4 text-zinc-400" />
+                        Copy address
+                      </>
                     )}
-                  >
-                    <div className="overflow-hidden">
-                      <p className="max-w-[62ch] px-5 pb-5 text-base leading-7 text-muted-foreground">{item.a}</p>
+                  </button>
+                </div>
+
+                <div className="grid gap-3 sm:grid-cols-3">
+                  <div className="rounded-2xl bg-black/70 p-4">
+                    <div className="font-mono text-[11px] text-zinc-500">1. Local Device</div>
+                    <div className="mt-1 font-display text-sm font-medium text-white">
+                      Android Phone
+                    </div>
+                    <div className="mt-1.5 font-mono text-xs text-zinc-400">
+                      ~/servers/{cleanSubdomain}
+                    </div>
+                  </div>
+
+                  <div className="rounded-2xl bg-white/[0.04] p-4">
+                    <div className="font-mono text-[11px] text-brand-ink">2. DE Frankfurt VPS</div>
+                    <div className="mt-1 font-display text-sm font-medium text-white">
+                      Bore / FRP Reverse Relay
+                    </div>
+                    <div className="mt-1.5 font-mono text-xs text-zinc-400">
+                      Home IP masked · P.R.A.E.T.O.R.
+                    </div>
+                  </div>
+
+                  <div className="rounded-2xl bg-black/70 p-4">
+                    <div className="font-mono text-[11px] text-zinc-500">
+                      3. Java Edition Players
+                    </div>
+                    <div className="mt-1 font-display text-sm font-medium text-white">
+                      Direct Join
+                    </div>
+                    <div className="mt-1.5 truncate font-mono text-xs text-brand-ink">
+                      {fullAddress}
                     </div>
                   </div>
                 </div>
+              </div>
+            )}
+
+            {tab === "mcp" && (
+              <div className="space-y-6">
+                <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
+                  <div className="max-w-xl">
+                    <h3 className="font-display text-xl font-medium tracking-[-0.02em] text-white">
+                      Connect Claude Code, Cursor, Codex, or ZCode safely.
+                    </h3>
+                    <p className="mt-2 text-[14.5px] leading-7 text-zinc-400">
+                      Enable MCP and choose granular permissions inside the KodaHosting Android app,
+                      then open the MCP setup page to pick a server, inspect active permissions, and
+                      copy your pre-filled client config.
+                    </p>
+                  </div>
+                  <a
+                    href="/mcp"
+                    className="koda-btn-black h-10 px-5 text-sm whitespace-nowrap shrink-0"
+                  >
+                    Open KodaDash MCP
+                    <ChevronRight className="size-4 text-brand-ink" />
+                  </a>
+                </div>
+
+                <div className="grid gap-3 sm:grid-cols-2">
+                  <div className="flex items-center justify-between rounded-2xl bg-black/70 px-4 py-3.5">
+                    <div>
+                      <div className="text-sm font-medium text-zinc-100">App-controlled scopes</div>
+                      <div className="text-xs text-zinc-500">
+                        Read-only mode, console, files, settings, and Modrinth SHA-512
+                      </div>
+                    </div>
+                    <span className="font-mono text-xs text-zinc-400">ANDROID APP</span>
+                  </div>
+
+                  <div className="flex items-center justify-between rounded-2xl bg-white/[0.025] px-4 py-3.5">
+                    <div className="flex items-center gap-2.5">
+                      <Lock className="size-3.5 text-brand-ink" />
+                      <div>
+                        <div className="text-sm font-medium text-zinc-300">
+                          Start / Stop / Restart
+                        </div>
+                        <div className="text-xs text-zinc-500">Hard-blocked from AI clients</div>
+                      </div>
+                    </div>
+                    <span className="font-mono text-xs text-brand-ink">LOCKED</span>
+                  </div>
+                </div>
+
+                <div className="overflow-hidden rounded-2xl bg-black/80">
+                  <div className="flex items-center justify-between bg-white/[0.03] px-4 py-2.5">
+                    <span className="font-mono text-xs text-zinc-400">
+                      .mcp.json · Preview for {fullAddress}
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => copyText("mcp", mcpJson)}
+                      className="inline-flex items-center gap-1.5 font-mono text-xs text-zinc-300 transition-colors hover:text-white"
+                    >
+                      {copiedKey === "mcp" ? (
+                        <>
+                          <Check className="size-3.5 text-brand-ink" />
+                          Copied
+                        </>
+                      ) : (
+                        <>
+                          <Copy className="size-3.5" />
+                          Copy example
+                        </>
+                      )}
+                    </button>
+                  </div>
+                  <pre className="overflow-x-auto p-4 font-mono text-xs leading-6 text-zinc-200">
+                    <code>{mcpJson}</code>
+                  </pre>
+                </div>
+              </div>
+            )}
+
+            {tab === "engines" && (
+              <div className="space-y-6">
+                <div className="max-w-xl">
+                  <h3 className="font-display text-xl font-medium tracking-[-0.02em] text-white">
+                    Nine engines. OpenJDK 8 to 25 and native Rust.
+                  </h3>
+                  <p className="mt-2 text-[14.5px] leading-7 text-zinc-400">
+                    Select any server core below to inspect its runtime profile and update the
+                    laser-etched ARM64 SoC inside the 3D phone cutaway above.
+                  </p>
+                </div>
+
+                <AnimatedSwitch<EngineId>
+                  role="group"
+                  ariaLabel="Select Minecraft server engine"
+                  value={activeEngine}
+                  onChange={onEngineChange}
+                  size="sm"
+                  options={ENGINES.map((engine) => ({
+                    id: engine.id,
+                    label: engine.name,
+                    icon: <EngineIcon id={engine.id} name={engine.name} size="sm" />,
+                  }))}
+                />
+
+                <div className="grid gap-4 rounded-2xl bg-black/70 p-5 sm:grid-cols-3">
+                  <div className="flex items-start gap-3">
+                    <EngineIcon id={spec.id} name={spec.name} size="lg" className="mt-0.5" />
+                    <div>
+                      <div className="text-xs text-zinc-500">Selected engine</div>
+                      <div className="mt-0.5 font-display text-base font-medium text-white">
+                        {spec.name}
+                      </div>
+                      <div className="mt-0.5 text-xs text-zinc-500">{spec.ecosystem}</div>
+                    </div>
+                  </div>
+                  <div>
+                    <div className="text-xs text-zinc-500">Runtime</div>
+                    <div className="mt-1 font-mono text-sm text-brand-ink">{spec.runtime}</div>
+                    <div className="mt-0.5 font-mono text-xs text-zinc-500">{spec.socLabel}</div>
+                  </div>
+                  <div>
+                    <div className="text-xs text-zinc-500">Typical memory</div>
+                    <div className="mt-1 font-mono text-sm text-zinc-200 tabular">
+                      {spec.ramBaseline}
+                    </div>
+                    <div className="mt-0.5 text-xs text-zinc-500">Adjustable in-app RAM cap</div>
+                  </div>
+                </div>
+
+                <div className="rounded-2xl bg-black/80 p-4 font-mono text-xs leading-6 text-zinc-300">
+                  {spec.bootLines.map((line) => (
+                    <div key={line}>{line}</div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {tab === "extensions" && (
+              <div className="space-y-6">
+                <div className="max-w-xl">
+                  <h3 className="font-display text-xl font-medium tracking-[-0.02em] text-white">
+                    Build &amp; publish KodaHosting extensions.
+                  </h3>
+                  <p className="mt-2 text-[14.5px] leading-7 text-zinc-400">
+                    Package custom screens, automations, and server workflows as signed{" "}
+                    <code className="rounded bg-white/[0.07] px-1.5 py-0.5 font-mono text-xs text-zinc-100">
+                      .kodaext
+                    </code>{" "}
+                    bundles. Edit directly in our browser CodeMirror IDE and submit to the
+                    Extension Store.
+                  </p>
+                </div>
+
+                <div className="overflow-hidden rounded-2xl bg-black/80">
+                  <div className="bg-white/[0.03] px-4 py-2.5 font-mono text-xs text-zinc-400">
+                    manifest.json · .kodaext bundle
+                  </div>
+                  <pre className="overflow-x-auto p-4 font-mono text-xs leading-6 text-zinc-200">
+                    <code>{`{
+  "id": "eu.kodanetwork.backup-guard",
+  "name": "Empty-Server Backup Guard",
+  "version": "1.2.0",
+  "permissions": ["server.status", "files.backup"],
+  "entry": "src/main.js"
+}`}</code>
+                  </pre>
+                </div>
+
+                <div className="flex flex-wrap items-center gap-3">
+                  <a
+                    href="/developer"
+                    className="koda-btn-black h-10 px-5 text-sm whitespace-nowrap shrink-0"
+                  >
+                    Open Developer Console
+                    <ChevronRight className="size-4 text-brand-ink" />
+                  </a>
+                  <a
+                    href="/store"
+                    className="koda-btn-pill h-10 px-5 text-sm whitespace-nowrap shrink-0"
+                  >
+                    Browse Extension Store
+                  </a>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/* 3. Real Unedited Android App Capture & Screens (borderless tonal showcase) */
+
+function RealAppSection({
+  activeView,
+  onSelectScreen,
+}: {
+  activeView: StageViewId;
+  onSelectScreen: (view: StageViewId) => void;
+}) {
+  return (
+    <section id="app" className="scroll-mt-20 py-20 sm:py-28">
+      <div className="mx-auto max-w-6xl px-4 sm:px-6">
+        <div className="resend-arch pt-16">
+          <div className="flex flex-col justify-between gap-6 md:flex-row md:items-end">
+            <div className="max-w-xl">
+              <p className="text-sm font-medium text-brand-ink">Unedited Android capture</p>
+              <h2 className="resend-title mt-2 font-display text-4xl font-medium tracking-[-0.035em] sm:text-5xl">
+                Nothing mocked. The real app on real silicon.
+              </h2>
+            </div>
+            <div className="flex items-center gap-4">
+              <a
+                href="/dashboard"
+                className="koda-btn-pill h-10 px-5 text-sm whitespace-nowrap shrink-0"
+              >
+                Open Web Dashboard
+              </a>
+              <a
+                href="/docs"
+                className="inline-flex items-center gap-1 font-display text-sm font-medium text-zinc-400 transition-colors hover:text-white whitespace-nowrap shrink-0"
+              >
+                Read the docs
+                <ChevronRight className="size-3.5" />
+              </a>
+            </div>
+          </div>
+
+          {/* Pure-black editorial showcase: zero extra colored boxes behind the phone captures */}
+          <div className="mt-14 grid grid-cols-2 items-start gap-x-6 gap-y-12 sm:gap-x-10 lg:grid-cols-4">
+            {/* 1. Unedited live boot video floating directly on pure black */}
+            <div className="flex flex-col items-center text-center">
+              <div className="relative w-full max-w-[232px] rounded-[2.1rem] bg-gradient-to-b from-zinc-500/60 via-zinc-800/50 to-zinc-600/60 p-[3px] shadow-[0_28px_64px_rgba(0,0,0,0.92)]">
+                <div className="overflow-hidden rounded-[1.95rem] bg-black">
+                  <video
+                    src="/assets/app/terminal.mp4"
+                    poster="/assets/app/terminal-poster.webp"
+                    autoPlay
+                    loop
+                    muted
+                    playsInline
+                    preload="metadata"
+                    aria-label="Screen recording of the KodaHosting console starting a real Minecraft server on Android"
+                    className="block w-full bg-black"
+                  />
+                </div>
+              </div>
+              <div className="mt-5 max-w-[232px]">
+                <div className="inline-flex items-center gap-1.5 font-display text-[15px] font-medium text-white">
+                  <Terminal className="size-3.5 text-brand-ink" />
+                  Live Boot Recording
+                </div>
+                <p className="mt-1 text-xs leading-5 text-zinc-500">
+                  Unedited Forge boot on Android 15 flash storage
+                </p>
+              </div>
+            </div>
+
+            {/* 2-4. Real Android screenshots floating directly on pure black */}
+            {APP_SCREENS.map((screen) => {
+              const selected = activeView === screen.id;
+              return (
+                <button
+                  key={screen.id}
+                  type="button"
+                  onClick={() => onSelectScreen(screen.id)}
+                  aria-pressed={selected}
+                  className="group flex flex-col items-center bg-transparent text-center focus-visible:outline-none"
+                >
+                  <img
+                    src={screen.src}
+                    alt={screen.alt}
+                    loading="lazy"
+                    className="w-full max-w-[232px] drop-shadow-[0_28px_48px_rgba(0,0,0,0.95)] transition-transform duration-300 group-hover:-translate-y-1.5"
+                  />
+                  <div className="mt-5 max-w-[232px]">
+                    <div className="font-display text-[15px] font-medium text-white transition-colors group-hover:text-brand-ink">
+                      {screen.title}
+                    </div>
+                    <p className="mt-1 text-xs leading-5 text-zinc-500">{screen.meta}</p>
+                    {selected && (
+                      <div className="mt-2 font-mono text-[11px] text-brand-ink">
+                        Active in 3D view
+                      </div>
+                    )}
+                  </div>
+                </button>
               );
             })}
           </div>
-        </Reveal>
+        </div>
       </div>
     </section>
   );
 }
 
-function CtaBand() {
+/* 4. Verified Pocket Hardware Strip */
+
+function HardwareProofSection() {
   return (
-    <section className="px-4 py-20 text-center sm:py-28">
-      <Reveal>
-        <h2 className="mx-auto max-w-4xl text-4xl font-medium tracking-[-0.04em] text-balance sm:text-5xl lg:text-6xl">
-          Have a phone? You have a server.
-        </h2>
-        <p className="mx-auto mt-5 max-w-lg text-lg leading-8 text-muted-foreground">
-          Install the app, open a world and send the address. The console is in the browser.
-        </p>
-        <div className="mt-9 flex flex-wrap items-center justify-center gap-7">
-          <Button asChild size="lg" className="h-12 rounded-full px-7">
-            <a href={PLAY_URL}>
-              <Play className="size-4" />
-              Get it on Google Play
+    <section id="hardware" className="bg-black py-20 sm:py-28">
+      <div className="mx-auto max-w-6xl px-4 sm:px-6">
+        <div className="flex flex-col justify-between gap-4 md:flex-row md:items-end">
+          <div className="max-w-xl">
+            <p className="text-sm font-medium text-brand-ink">Independent German engineering</p>
+            <h2 className="resend-title mt-2 font-display text-4xl font-medium tracking-[-0.035em] sm:text-5xl">
+              Plainly, a phone in a room.
+            </h2>
+          </div>
+          <p className="max-w-md text-[15px] leading-7 text-zinc-400">
+            Built by one independent developer around real pocket hardware instead of rented racks.
+            Database, reverse-proxy relay, and GDPR jurisdiction sit in Germany.
+          </p>
+        </div>
+
+        {/* Full-color 3:4 portrait photographs so every tested phone is unmistakably clear */}
+        <div className="mt-12 grid grid-cols-2 gap-5 sm:gap-7 md:grid-cols-4">
+          {TESTED_DEVICES.map((device) => (
+            <figure key={device.name} className="group">
+              <div className="overflow-hidden rounded-2xl bg-zinc-950">
+                <img
+                  src={device.src}
+                  alt={device.name}
+                  loading="lazy"
+                  className={cn(
+                    "aspect-[3/4] w-full object-cover transition-transform duration-300 group-hover:scale-[1.03]",
+                    device.pos,
+                  )}
+                />
+              </div>
+              <figcaption className="mt-3.5">
+                <div className="font-display text-[15px] font-medium text-zinc-100">
+                  {device.name}
+                </div>
+                <div className="mt-0.5 text-xs text-zinc-500">{device.role}</div>
+              </figcaption>
+            </figure>
+          ))}
+        </div>
+
+        <div className="mt-6 flex flex-wrap items-center justify-between gap-4 text-xs text-zinc-500">
+          <div className="space-y-1">
+            <p>
+              Device photographs from Wikimedia Commons, shown for identification only; all rights
+              belong to the respective manufacturers.
+            </p>
+            <p>
+              3D smartphone model{" "}
+              <a
+                href="https://sketchfab.com/3d-models/free-xiaomi-17-pro-max-014f9880c8764d18b3f4f00aac165a5d"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-zinc-300 underline decoration-white/20 underline-offset-4 hover:text-white"
+              >
+                &quot;(Free) Xiaomi 17 pro max&quot;
+              </a>{" "}
+              by{" "}
+              <a
+                href="https://sketchfab.com/TahmidTauz"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-zinc-300 underline decoration-white/20 underline-offset-4 hover:text-white"
+              >
+                TahmidTauz
+              </a>{" "}
+              licensed under{" "}
+              <a
+                href="https://creativecommons.org/licenses/by/4.0/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-zinc-300 underline decoration-white/20 underline-offset-4 hover:text-white"
+              >
+                CC BY 4.0
+              </a>{" "}
+              (see{" "}
+              <a
+                href="/licenses"
+                className="text-zinc-300 underline decoration-white/20 underline-offset-4 hover:text-white"
+              >
+                Licenses
+              </a>
+              ).
+            </p>
+          </div>
+          <span className="inline-flex items-center gap-1.5 font-medium text-zinc-300">
+            <ShieldCheck className="size-3.5 text-brand-ink" />
+            P.R.A.E.T.O.R. verified security
+          </span>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/* 5. Calm Technical FAQ */
+
+function FaqSection() {
+  const [openIndex, setOpenIndex] = useState<number | null>(0);
+
+  return (
+    <section id="faq" className="scroll-mt-20 bg-black py-20 sm:py-28">
+      <div className="mx-auto grid max-w-6xl gap-12 px-4 sm:px-6 lg:grid-cols-12">
+        <div className="lg:col-span-4">
+          <p className="text-sm font-medium text-brand-ink">Technical FAQ</p>
+          <h2 className="resend-title mt-2 font-display text-4xl font-medium tracking-[-0.035em]">
+            Direct answers.
+          </h2>
+          <p className="mt-3 text-[15px] leading-7 text-zinc-400">
+            Hardware limits, networking, KodaDash MCP, Bedrock status, and zero-cost
+            sustainability. Read the complete manual in the{" "}
+            <a
+              href="/docs"
+              className="font-medium text-zinc-200 underline decoration-white/25 underline-offset-4 transition-colors hover:text-white"
+            >
+              documentation
             </a>
-          </Button>
-          <a href="/dashboard" className="link-arrow inline-flex items-center gap-2 text-base font-medium">
-            Open the dashboard
-            <ArrowRight className="size-4" />
+            .
+          </p>
+        </div>
+
+        <div className="divide-y divide-white/[0.06] lg:col-span-8">
+          {FAQS.map((item, idx) => {
+            const isOpen = openIndex === idx;
+            return (
+              <div key={item.q}>
+                <button
+                  type="button"
+                  onClick={() => setOpenIndex(isOpen ? null : idx)}
+                  aria-expanded={isOpen}
+                  className="flex w-full items-center justify-between gap-6 py-5 text-left"
+                >
+                  <span className="font-display text-[15.5px] font-medium text-zinc-100">
+                    {item.q}
+                  </span>
+                  <ChevronDown
+                    className={cn(
+                      "size-4 shrink-0 text-zinc-500 transition-transform duration-200",
+                      isOpen && "rotate-180 text-brand-ink",
+                    )}
+                  />
+                </button>
+                <div
+                  className={cn(
+                    "grid transition-[grid-template-rows] duration-200 ease-out",
+                    isOpen ? "grid-rows-[1fr]" : "grid-rows-[0fr]",
+                  )}
+                >
+                  <div className="overflow-hidden">
+                    <p className="pb-5 pr-8 text-[14.5px] leading-7 text-zinc-400">{item.a}</p>
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/* 6. Closing Poster */
+
+function ClosingPosterSection() {
+  return (
+    <section className="mx-auto max-w-6xl px-4 pb-24 sm:px-6 sm:pb-32">
+      <div className="resend-arch px-6 pt-20 pb-8 text-center sm:px-10 sm:pt-24">
+        <p className="text-sm font-medium text-brand-ink">Free on Android · No credit card</p>
+        <h2 className="resend-title mx-auto mt-3 max-w-2xl font-display text-4xl font-medium tracking-[-0.04em] sm:text-6xl">
+          Hosting reimagined.
+          <br />
+          Available today.
+        </h2>
+        <p className="mx-auto mt-5 max-w-md text-[15.5px] leading-7 text-zinc-400">
+          Install KodaHosting from Google Play or F-Droid, initialize a world on local storage, and
+          share your <span className="font-mono text-zinc-200">.kodaserv.eu</span> address in
+          minutes.
+        </p>
+
+        <div className="mt-9 flex flex-wrap items-center justify-center gap-4">
+          <a
+            href={PLAY_URL}
+            target="_blank"
+            rel="noopener"
+            className="koda-btn-black h-11 px-6 text-[14px] whitespace-nowrap shrink-0"
+          >
+            Get started
+            <ChevronRight className="size-4 text-brand-ink" />
+          </a>
+          <a
+            href="/fdroid/"
+            className="inline-flex h-11 items-center gap-1.5 px-2 font-display text-[14px] font-medium text-zinc-400 transition-colors hover:text-white whitespace-nowrap shrink-0"
+          >
+            F-Droid repository
+            <ChevronRight className="size-3.5 opacity-70" />
           </a>
         </div>
-      </Reveal>
-    </section>
-  );
-}
-
-function ScreensSection() {
-  return (
-    <section className="px-4 py-16 sm:py-24">
-      <div className="mx-auto max-w-6xl">
-        <Reveal>
-          <SectionIntro title="Every screen, in the app">
-            Dashboard, console and files, the same three screens you use on the phone.
-          </SectionIntro>
-        </Reveal>
-        <div className="mt-12">
-          <PhoneGallery />
-        </div>
       </div>
     </section>
-  );
-}
-
-export function LandingPage() {
-  return (
-    <div className="min-h-screen overflow-clip">
-      <SiteHeader />
-      <main>
-        <ScrollHero />
-        <EngineMarquee />
-        <HowItWorks />
-        <AddressSection />
-        <ControlSection />
-        <ScreensSection />
-        <AboutSection />
-        <FaqSection />
-        <CtaBand />
-      </main>
-      <SiteFooter />
-    </div>
   );
 }

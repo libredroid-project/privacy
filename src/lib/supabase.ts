@@ -15,6 +15,7 @@ export const API_BASE = import.meta.env.VITE_API_BASE || "https://api.kodanetwor
 
 export const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
   auth: {
+    flowType: "pkce",
     persistSession: true,
     autoRefreshToken: true,
     detectSessionInUrl: true,

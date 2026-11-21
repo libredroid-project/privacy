@@ -389,7 +389,7 @@ export function DeveloperAnalytics({ extensions }: { extensions: DevExtension[] 
                 Approval rate
               </p>
               <p className="mt-2 text-2xl font-semibold tracking-tight">
-                {approvalRate == null ? "—" : `${approvalRate}%`}
+                {approvalRate == null ? "-" : `${approvalRate}%`}
               </p>
               <p className="mt-1 text-xs text-muted-foreground">
                 {approved} approved · {rejected} rejected · {pending} pending
@@ -406,7 +406,7 @@ export function DeveloperAnalytics({ extensions }: { extensions: DevExtension[] 
               </p>
               <p className="mt-2 text-2xl font-semibold tracking-tight">
                 {reviewHours == null
-                  ? "—"
+                  ? "-"
                   : reviewHours < 24
                     ? `${reviewHours.toFixed(1)} h`
                     : `${(reviewHours / 24).toFixed(1)} d`}
@@ -579,7 +579,7 @@ export function DeveloperAnalytics({ extensions }: { extensions: DevExtension[] 
                   ))}
                 </ul>
               ) : (
-                <p className="mt-2 text-xs text-muted-foreground">—</p>
+                <p className="mt-2 text-xs text-muted-foreground">-</p>
               )}
             </div>
             <div>
@@ -596,7 +596,7 @@ export function DeveloperAnalytics({ extensions }: { extensions: DevExtension[] 
                   ))}
                 </ul>
               ) : (
-                <p className="mt-2 text-xs text-muted-foreground">—</p>
+                <p className="mt-2 text-xs text-muted-foreground">-</p>
               )}
             </div>
           </div>

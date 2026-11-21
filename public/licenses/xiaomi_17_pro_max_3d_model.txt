@@ -1,0 +1,19 @@
+3D Smartphone Model: (Free) Xiaomi 17 pro max
+Author: TahmidTauz (https://sketchfab.com/TahmidTauz)
+Source: https://sketchfab.com/3d-models/free-xiaomi-17-pro-max-014f9880c8764d18b3f4f00aac165a5d
+License: Creative Commons Attribution 4.0 International (CC BY 4.0)
+License URL: https://creativecommons.org/licenses/by/4.0/
+
+Attribution Notice:
+"(Free) Xiaomi 17 pro max" (https://skfb.ly/pCF6r) by TahmidTauz is licensed
+under Creative Commons Attribution 4.0 International (http://creativecommons.org/licenses/by/4.0/).
+
+Modifications Made:
+Normalized scale and orientation for WebGL / Three.js rendering, applied studio
+PBR lighting, and projected authentic KodaHosting Android application interface
+screenshots onto the device display surface.
+
+Trademark Notice:
+Xiaomi and Xiaomi 17 Pro Max are trademarks of Xiaomi Inc. This 3D hardware
+model is used solely to illustrate the KodaHosting Android application running
+on mobile hardware and implies no affiliation with or endorsement by Xiaomi Inc.

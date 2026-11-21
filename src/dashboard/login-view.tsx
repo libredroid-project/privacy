@@ -1,127 +1,199 @@
 import { useState, type FormEvent } from "react";
-import { Loader2, LogIn } from "lucide-react";
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
+import { ArrowLeft, Loader2, LogIn } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Separator } from "@/components/ui/separator";
+import { ErrorState } from "@/components/error-state";
 import { GoogleButton } from "@/components/google-button";
-import { Brand } from "@/components/site-header";
 import { supabase } from "@/lib/supabase";
 
-export function LoginView({ intent = "dashboard" }: { intent?: "dashboard" | "developer" }) {
+interface Props {
+  intent?: "dashboard" | "developer";
+}
+
+export function LoginView({ intent = "dashboard" }: Props) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  async function submit(event: FormEvent) {
-    event.preventDefault();
-    setError("");
+  const isDev = intent === "developer";
+
+  async function onSubmit(e: FormEvent) {
+    e.preventDefault();
+    if (!email.trim() || !password) return;
+    setError(null);
     setBusy(true);
-    const { error: authError } = await supabase.auth.signInWithPassword({ email, password });
-    setBusy(false);
-    if (authError) setError(authError.message);
+    try {
+      const { error: authErr } = await supabase.auth.signInWithPassword({
+        email: email.trim(),
+        password,
+      });
+      if (authErr) throw authErr;
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Sign-in failed.");
+    } finally {
+      setBusy(false);
+    }
   }
 
-  async function google(credential: string) {
-    setError("");
+  async function handleGoogle(credential: string) {
+    setError(null);
     setBusy(true);
-    const { error: authError } = await supabase.auth.signInWithIdToken({
-      provider: "google",
-      token: credential,
-    });
-    setBusy(false);
-    if (authError) setError("Google sign-in failed: " + authError.message);
+    try {
+      const { error: authErr } = await supabase.auth.signInWithIdToken({
+        provider: "google",
+        token: credential,
+      });
+      if (authErr) throw authErr;
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Google sign-in failed.");
+    } finally {
+      setBusy(false);
+    }
   }
 
   return (
-    <div className="relative min-h-svh overflow-hidden bg-background">
-      <div
-        className="absolute inset-0 bg-cover bg-center"
-        style={{ backgroundImage: "url('/assets/app/login-bg.webp')" }}
+    <div className="dark relative flex min-h-svh flex-col justify-between overflow-hidden bg-black text-zinc-100">
+      {/* Preserved original KodaHosting sign-in artwork */}
+      <img
+        src="/assets/app/login-bg.webp"
+        alt=""
+        aria-hidden="true"
+        className="pointer-events-none fixed inset-0 h-full w-full scale-[1.01] object-cover object-center opacity-70"
       />
-      <div className="absolute inset-0 bg-black/35" />
+      <div
+        aria-hidden="true"
+        className="pointer-events-none fixed inset-0 bg-[radial-gradient(ellipse_at_70%_45%,rgba(0,0,0,0.32),rgba(0,0,0,0.82)_76%),linear-gradient(to_bottom,rgba(0,0,0,0.72),rgba(0,0,0,0.42)_45%,rgba(0,0,0,0.92))]"
+      />
 
-      <div className="relative z-10 mx-auto flex min-h-svh w-full max-w-6xl items-center px-4 py-16 sm:px-6">
-        <div className="w-full max-w-sm">
-          <Brand className="mb-6 w-fit rounded-lg bg-black/30 px-2.5 py-1.5" />
+      {/* Minimal top bar */}
+      <div className="relative z-10 mx-auto flex w-full max-w-6xl items-center justify-between px-4 py-5 sm:px-6">
+        <a
+          href="/"
+          className="inline-flex items-center gap-2.5 text-white focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-brand"
+        >
+          <img
+            src="/assets/logo.png"
+            alt=""
+            aria-hidden="true"
+            className="size-7 rounded-lg object-cover ring-1 ring-white/15"
+          />
+          <span className="font-sans text-[17px] font-semibold tracking-[-0.025em]">
+            Koda<span className="text-brand-ink">Hosting</span>
+          </span>
+        </a>
+        <a
+          href="/"
+          className="inline-flex h-9 items-center gap-1.5 rounded-full border border-white/15 bg-black/70 px-4 text-xs font-medium text-zinc-100 whitespace-nowrap shrink-0 backdrop-blur-md transition-colors hover:bg-white/10"
+        >
+          <ArrowLeft className="size-3.5" />
+          Back to website
+        </a>
+      </div>
 
-          <Card className="w-full border-0 bg-background/95 shadow-[0_30px_90px_rgba(0,0,0,0.55)]">
-            <CardContent className="space-y-5 p-6">
-              <div>
-                <div className="mb-4 flex size-10 items-center justify-center rounded-lg bg-muted">
-                  <LogIn className="size-5" />
+      {/* Main split sign-in */}
+      <main className="relative z-10 mx-auto flex w-full max-w-6xl flex-1 items-center px-4 py-10 sm:px-6">
+        <div className="grid w-full items-center gap-12 lg:grid-cols-12">
+          <div className="hidden lg:col-span-6 lg:block">
+            <p className="text-sm font-medium text-brand-ink">
+              {isDev ? "KodaHosting Developer Console" : "KodaHosting Web Dashboard"}
+            </p>
+            <h1 className="mt-3 font-display text-5xl leading-[1.04] font-normal tracking-[-0.03em] text-white sm:text-[3.5rem]">
+              {isDev ? "Build & ship .kodaext extensions." : "Control your pocket servers."}
+            </h1>
+            <p className="mt-5 max-w-md text-[15.5px] leading-7 text-zinc-300">
+              {isDev
+                ? "Edit source files in the browser CodeMirror IDE, run preflight checks, and submit releases directly to the Extension Store."
+                : "Follow the live console, browse and edit local world files, manage extensions, and configure KodaDash MCP from any desktop browser."}
+            </p>
+            <p className="mt-8 border-t border-white/15 pt-5 text-xs text-zinc-400">
+              Sign in with the same account created inside the KodaHosting Android app.
+            </p>
+          </div>
+
+          <div className="lg:col-span-6">
+            <div className="mx-auto w-full max-w-md rounded-3xl border border-white/[0.13] bg-[#070709]/88 p-6 shadow-[0_32px_90px_rgba(0,0,0,0.75)] backdrop-blur-xl sm:p-8">
+              <div className="mb-6">
+                <div className="mb-4 flex size-10 items-center justify-center rounded-full border border-white/12 bg-white/[0.04]">
+                  <LogIn className="size-4 text-brand-ink" />
                 </div>
-                <h1 className="text-2xl font-medium tracking-tight">Sign in</h1>
-                <p className="mt-2 text-base leading-6 text-muted-foreground">
-                  {intent === "developer"
-                    ? "Sign in to manage your extensions, releases and store listings. Use the account from the app."
-                    : "The dashboard shows your servers, devices and tickets. Use the account from the app."}
+                <h2 className="font-display text-2xl font-normal tracking-[-0.02em] text-white">
+                  Sign in
+                </h2>
+                <p className="mt-1.5 text-sm leading-6 text-zinc-400">
+                  {isDev
+                    ? "Sign in with your KodaHosting account to access the Developer Console."
+                    : "Sign in to view your servers, devices, and support tickets."}
                 </p>
               </div>
 
-              <form onSubmit={submit} className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="dash-email">Email</Label>
+              <form onSubmit={onSubmit} className="space-y-4">
+                <div className="space-y-1.5">
+                  <Label htmlFor="dash-email" className="text-zinc-300">
+                    Email
+                  </Label>
                   <Input
                     id="dash-email"
                     type="email"
                     autoComplete="email"
-                    value={email}
-                    onChange={(event) => setEmail(event.target.value)}
                     required
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    disabled={busy}
+                    className="h-11 rounded-xl border-white/12 bg-black/75 text-white focus-visible:border-brand-ink"
                   />
                 </div>
-                <div className="space-y-2">
-                  <Label htmlFor="dash-password">Password</Label>
+                <div className="space-y-1.5">
+                  <Label htmlFor="dash-password" className="text-zinc-300">
+                    Password
+                  </Label>
                   <Input
                     id="dash-password"
                     type="password"
                     autoComplete="current-password"
-                    value={password}
-                    onChange={(event) => setPassword(event.target.value)}
                     required
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    disabled={busy}
+                    className="h-11 rounded-xl border-white/12 bg-black/75 text-white focus-visible:border-brand-ink"
                   />
                 </div>
+
                 {error ? (
-                  <Alert variant="destructive">
-                    <AlertDescription>{error}</AlertDescription>
-                  </Alert>
+                  <ErrorState compact title="Sign-in failed" detail={error} />
                 ) : null}
-                <Button type="submit" className="w-full rounded-lg" disabled={busy}>
-                  {busy ? <Loader2 className="size-4 animate-spin" /> : null}
+
+                <button
+                  type="submit"
+                  disabled={busy}
+                  className="koda-btn-black h-11 w-full text-sm disabled:opacity-50"
+                >
+                  {busy && <Loader2 className="size-4 animate-spin" />}
                   Sign in with email
-                </Button>
+                </button>
               </form>
 
-              <div className="flex items-center gap-3">
-                <Separator className="flex-1" />
-                <span className="text-sm text-muted-foreground">or</span>
-                <Separator className="flex-1" />
+              <div className="my-5 flex items-center gap-3">
+                <div className="h-px flex-1 bg-white/10" />
+                <span className="text-xs text-zinc-500">or</span>
+                <div className="h-px flex-1 bg-white/10" />
               </div>
 
-              <GoogleButton onCredential={google} />
+              <GoogleButton onCredential={handleGoogle} />
 
-              <p className="text-center text-sm leading-6 text-muted-foreground">
-                No account yet? Create one in the KodaHosting app (Settings, Account).
+              <p className="mt-5 text-center text-xs leading-5 text-zinc-400">
+                No account yet? Create one inside the KodaHosting app under{" "}
+                <span className="font-medium text-zinc-200">Settings → Account</span>.
               </p>
-            </CardContent>
-          </Card>
-
-          <a
-            href="/"
-            className="mt-6 inline-flex text-sm text-white/70 underline underline-offset-4 transition-colors hover:text-white"
-          >
-            Back to the website
-          </a>
+            </div>
+          </div>
         </div>
-      </div>
+      </main>
 
-      <p className="pointer-events-none absolute right-4 bottom-3 z-10 text-[13px] text-white/45">
-        Minecraft Live 2026, image: IGN
-      </p>
+      <div className="relative z-10 mx-auto flex w-full max-w-6xl items-center justify-between px-4 py-5 text-xs text-zinc-400 sm:px-6">
+        <span>© {new Date().getFullYear()} KodaHosting</span>
+        <span>DE Infrastructure · GDPR</span>
+      </div>
     </div>
   );
 }

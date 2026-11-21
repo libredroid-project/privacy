@@ -1,10 +1,8 @@
 import { useEffect, useState, type FormEvent } from "react";
-import { KeyRound, Loader2 } from "lucide-react";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { ArrowLeft, CheckCircle2, KeyRound, Loader2 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { ErrorState } from "@/components/error-state";
 import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
 import { supabase } from "@/lib/supabase";
@@ -40,10 +38,17 @@ export function ResetPage() {
     };
   }, []);
 
+  useEffect(() => {
+    if (!hasSession) return;
+    if (window.location.hash || window.location.search) {
+      window.history.replaceState(null, "", window.location.pathname);
+    }
+  }, [hasSession]);
+
   async function submit(event: FormEvent) {
     event.preventDefault();
-    if (password.length < 6) {
-      setStatus({ kind: "err", text: "The password needs at least 6 characters." });
+    if (password.length < 8) {
+      setStatus({ kind: "err", text: "The password needs at least 8 characters." });
       return;
     }
     if (password !== repeat) {
@@ -63,99 +68,111 @@ export function ResetPage() {
   }
 
   return (
-    <div className="flex min-h-screen flex-col">
+    <div className="flex min-h-screen flex-col bg-black text-zinc-100">
       <SiteHeader />
 
-      <main className="flex flex-1 items-center justify-center px-4 pt-28 pb-16 sm:px-6">
-        <Card className="w-full max-w-md shadow-[0_30px_80px_rgba(0,0,0,0.45)]">
-          <CardHeader>
-            <div className="mb-2 flex size-10 items-center justify-center rounded-lg bg-muted">
-              <KeyRound className="size-5" />
+      <main className="relative flex flex-1 items-center justify-center overflow-hidden px-4 pt-28 pb-16 sm:px-6">
+        <div
+          aria-hidden="true"
+          className="resend-dot-grid pointer-events-none absolute inset-0 opacity-60"
+        />
+
+        <div className="relative w-full max-w-md">
+          {!ready ? (
+            <div className="resend-glass-panel flex items-center justify-center gap-2.5 rounded-3xl p-10 text-sm text-zinc-400">
+              <Loader2 className="size-4 animate-spin text-brand-ink" />
+              Checking reset link…
             </div>
-            <CardTitle className="text-xl">Set a new password</CardTitle>
-            <CardDescription>
-              This page opens from the password reset email. Enter your new password below.
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-5">
-            {!ready ? (
-              <p className="flex items-center gap-2 text-sm text-muted-foreground">
-                <Loader2 className="size-4 animate-spin" /> Checking the link…
+          ) : done ? (
+            <div className="resend-glass-panel rounded-3xl p-7 sm:p-8">
+              <div className="flex size-10 items-center justify-center rounded-xl bg-emerald-500/12 text-emerald-400">
+                <CheckCircle2 className="size-5" />
+              </div>
+              <h1 className="mt-4 font-display text-xl font-medium tracking-[-0.025em] text-white">
+                Password updated
+              </h1>
+              <p className="mt-2 text-sm leading-6 text-zinc-400">
+                Your new password is active. You can sign in to the dashboard and the Android app
+                with it right away.
               </p>
-            ) : done ? (
-              <>
-                <Alert>
-                  <AlertTitle>Password saved</AlertTitle>
-                  <AlertDescription>You can now sign in with the new password.</AlertDescription>
-                </Alert>
-                <Button asChild className="w-full">
-                  <a href="/dashboard">Open the dashboard</a>
-                </Button>
-              </>
-            ) : !hasSession ? (
-              <>
-                <Alert variant="destructive">
-                  <AlertTitle>No valid reset link</AlertTitle>
-                  <AlertDescription>
-                    Open this page through the link in the email. The link is only valid for a short
-                    time.
-                  </AlertDescription>
-                </Alert>
-                <p className="text-xs leading-5 text-muted-foreground">
-                  If the link expired, request a new email in the KodaHosting app (Settings → Account →
-                  Password forgotten) or{" "}
-                  <a
-                    href="/dashboard"
-                    className="font-medium text-foreground underline decoration-border underline-offset-4 hover:decoration-brand"
-                  >
-                    sign in
-                  </a>{" "}
-                  if your password still works.
-                </p>
-              </>
-            ) : (
-              <form onSubmit={submit} className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="new-password">New password</Label>
+              <a href="/dashboard" className="koda-btn-black mt-6 h-10 w-full px-5 text-sm">
+                Open dashboard
+              </a>
+            </div>
+          ) : !hasSession ? (
+            <ErrorState
+              code="RESET LINK EXPIRED"
+              title="No valid reset link"
+              description="Open this page through the recovery link sent to your email. If the link expired, request a new one inside the KodaHosting app under Settings, Account, Password forgotten."
+              secondaryAction={
+                <a href="/dashboard" className="koda-btn-black h-9 px-4 text-xs">
+                  <ArrowLeft className="size-3.5 text-brand-ink" />
+                  Sign in to dashboard
+                </a>
+              }
+            />
+          ) : (
+            <div className="resend-glass-panel rounded-3xl p-7 sm:p-8">
+              <div className="flex size-10 items-center justify-center rounded-xl bg-white/[0.06] text-brand-ink">
+                <KeyRound className="size-4" />
+              </div>
+              <h1 className="mt-4 font-display text-xl font-medium tracking-[-0.025em] text-white">
+                Set a new password
+              </h1>
+              <p className="mt-1.5 text-sm leading-6 text-zinc-400">
+                Enter your new KodaHosting account password below.
+              </p>
+
+              <form onSubmit={submit} className="mt-6 space-y-4">
+                <div className="space-y-1.5">
+                  <Label htmlFor="new-password" className="text-zinc-300">
+                    New password
+                  </Label>
                   <Input
                     id="new-password"
                     type="password"
                     autoComplete="new-password"
-                    minLength={6}
-                    placeholder="at least 6 characters"
+                    minLength={8}
+                    placeholder="At least 8 characters"
                     value={password}
                     onChange={(event) => setPassword(event.target.value)}
+                    className="h-11 rounded-xl border-white/10 bg-black/80 text-white placeholder:text-zinc-600 focus-visible:border-white/25"
                     required
                   />
                 </div>
-                <div className="space-y-2">
-                  <Label htmlFor="repeat-password">Repeat password</Label>
+                <div className="space-y-1.5">
+                  <Label htmlFor="repeat-password" className="text-zinc-300">
+                    Repeat password
+                  </Label>
                   <Input
                     id="repeat-password"
                     type="password"
                     autoComplete="new-password"
-                    minLength={6}
-                    placeholder="repeat it"
+                    minLength={8}
+                    placeholder="Repeat password"
                     value={repeat}
                     onChange={(event) => setRepeat(event.target.value)}
+                    className="h-11 rounded-xl border-white/10 bg-black/80 text-white placeholder:text-zinc-600 focus-visible:border-white/25"
                     required
                   />
                 </div>
 
                 {status.kind === "err" ? (
-                  <Alert variant="destructive">
-                    <AlertDescription>{status.text}</AlertDescription>
-                  </Alert>
+                  <ErrorState compact title="Could not update password" detail={status.text} />
                 ) : null}
 
-                <Button type="submit" className="w-full" disabled={status.kind === "busy"}>
+                <button
+                  type="submit"
+                  className="koda-btn-black h-11 w-full text-sm disabled:opacity-50"
+                  disabled={status.kind === "busy"}
+                >
                   {status.kind === "busy" ? <Loader2 className="size-4 animate-spin" /> : null}
                   Save password
-                </Button>
+                </button>
               </form>
-            )}
-          </CardContent>
-        </Card>
+            </div>
+          )}
+        </div>
       </main>
 
       <SiteFooter />

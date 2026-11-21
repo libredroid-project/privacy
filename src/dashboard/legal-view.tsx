@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { ExternalLink } from "lucide-react";
 import { Card } from "@/components/ui/card";
-import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
+import { AnimatedSwitch } from "@/components/animated-switch";
 import legal from "@/generated/legal.json";
 
 type Language = "en" | "de";
@@ -46,20 +46,16 @@ export function LegalView() {
             The documents that apply to the app, the dashboard and the network.
           </p>
         </div>
-        <ToggleGroup
-          type="single"
+        <AnimatedSwitch<Language>
+          ariaLabel="Language"
+          size="sm"
           value={language}
-          onValueChange={(value) => value && setLanguage(value as Language)}
-          className="w-fit gap-1 rounded-lg border p-1"
-          aria-label="Language"
-        >
-          <ToggleGroupItem value="en" size="sm" className="rounded-md px-3 text-xs">
-            English
-          </ToggleGroupItem>
-          <ToggleGroupItem value="de" size="sm" className="rounded-md px-3 text-xs">
-            Deutsch
-          </ToggleGroupItem>
-        </ToggleGroup>
+          onChange={setLanguage}
+          options={[
+            { id: "en", label: "English" },
+            { id: "de", label: "Deutsch" },
+          ]}
+        />
       </div>
 
       {ORDER.map((key) => {

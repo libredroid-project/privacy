@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { Mail } from "lucide-react";
 import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
 
@@ -46,21 +47,21 @@ function Section({
 }) {
   return (
     <section>
-      <h2 className="text-xl font-medium tracking-[-0.02em]">{title}</h2>
-      <div className="mt-3 space-y-3 text-sm leading-6 text-muted-foreground">{children}</div>
+      <h2 className="font-display text-xl font-medium tracking-[-0.025em] text-white">{title}</h2>
+      <div className="mt-3 space-y-3 text-sm leading-6 text-zinc-400">{children}</div>
     </section>
   );
 }
 
 function Steps({ items }: { items: ReactNode[] }) {
   return (
-    <ol className="space-y-2">
+    <ol className="space-y-2.5">
       {items.map((item, index) => (
         <li key={index} className="flex gap-3">
-          <span className="mt-0.5 flex size-5 shrink-0 items-center justify-center rounded-full border text-[11px] font-medium text-foreground">
-            {index + 1}
+          <span className="mt-0.5 font-mono text-xs text-brand-ink tabular">
+            0{index + 1}.
           </span>
-          <span>{item}</span>
+          <span className="text-zinc-300">{item}</span>
         </li>
       ))}
     </ol>
@@ -69,11 +70,11 @@ function Steps({ items }: { items: ReactNode[] }) {
 
 function Rows({ rows }: { rows: [string, string][] }) {
   return (
-    <div className="divide-y rounded-xl border">
+    <div className="divide-y divide-white/[0.06] overflow-hidden rounded-2xl bg-[#09090b]">
       {rows.map(([label, value]) => (
-        <div key={label} className="grid gap-1 p-4 sm:grid-cols-[200px_1fr] sm:gap-6">
-          <div className="text-sm font-medium text-foreground">{label}</div>
-          <div className="text-sm leading-6 text-muted-foreground">{value}</div>
+        <div key={label} className="grid gap-1 p-4 sm:grid-cols-[200px_1fr] sm:gap-6 sm:px-5">
+          <div className="font-display text-sm font-medium text-white">{label}</div>
+          <div className="text-sm leading-6 text-zinc-400">{value}</div>
         </div>
       ))}
     </div>
@@ -95,50 +96,56 @@ export function DeletionPage({ kind }: { kind: Kind }) {
   const isAccount = kind === "account";
 
   return (
-    <div className="flex min-h-screen flex-col">
+    <div className="flex min-h-screen flex-col bg-black text-zinc-100">
       <SiteHeader />
 
-      <main className="flex-1">
-        <div className="mx-auto w-full max-w-6xl px-4 pt-28 pb-16 sm:px-6">
+      <main className="relative flex-1 overflow-hidden">
+        <div
+          aria-hidden="true"
+          className="resend-dot-grid pointer-events-none absolute inset-x-0 top-0 h-[380px] opacity-55"
+        />
+
+        <div className="relative mx-auto w-full max-w-6xl px-4 pt-28 pb-16 sm:px-6">
           <div className="max-w-3xl">
-            <p className="text-xs font-medium uppercase tracking-[0.18em] text-brand">
-              Privacy and data
-            </p>
-            <h1 className="mt-3 text-3xl font-medium tracking-[-0.035em] sm:text-4xl">
+            <p className="font-mono text-xs text-brand-ink">Privacy & data control</p>
+            <h1 className="resend-title mt-3 font-display text-3xl font-medium tracking-[-0.035em] sm:text-4xl lg:text-5xl">
               {isAccount
                 ? "Delete your KodaHosting account"
                 : "Delete your KodaHosting data without deleting your account"}
             </h1>
-            <p className="mt-4 text-base leading-7 text-muted-foreground">
+            <p className="mt-4 text-[15px] leading-7 text-zinc-400">
               {isAccount
                 ? "You can remove your KodaHosting account from the app or by email. This page explains what is deleted, what stays on your phone and what we must keep by law."
                 : "You do not have to delete your whole account to remove data. Delete individual items in the app, or ask us to remove specific data while keeping your login."}
             </p>
 
-            <div className="mt-8 rounded-xl border bg-card p-5 sm:p-6">
-              <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <div className="resend-glass-panel mt-8 rounded-3xl p-6 sm:p-7">
+              <div className="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
                 <div>
-                  <p className="text-sm font-medium">Start a deletion request</p>
-                  <p className="mt-1 max-w-xl text-sm leading-6 text-muted-foreground">
+                  <p className="font-display text-base font-medium text-white">
+                    Start a deletion request
+                  </p>
+                  <p className="mt-1.5 max-w-xl text-sm leading-6 text-zinc-400">
                     Send it from the email address linked to your account. If you cannot access that
                     inbox, include your Minecraft username so we can verify the request.
                   </p>
                 </div>
                 <a
                   href={isAccount ? ACCOUNT_MAIL : DATA_MAIL}
-                  className="inline-flex h-10 shrink-0 items-center justify-center rounded-lg bg-foreground px-4 text-sm font-medium text-background transition-opacity hover:opacity-90"
+                  className="koda-btn-black h-10 shrink-0 px-5 text-sm whitespace-nowrap"
                 >
+                  <Mail className="size-4 text-brand-ink" />
                   Request by email
                 </a>
               </div>
-              <p className="mt-4 text-xs text-muted-foreground">
+              <p className="mt-5 border-t border-white/[0.06] pt-4 text-xs leading-5 text-zinc-500">
                 We process requests within 30 days and may ask for proof that you own the account.
                 If you are under 16, your legal guardian can send the request for you.
               </p>
             </div>
           </div>
 
-          <article className="mt-12 max-w-3xl space-y-10">
+          <article className="mt-14 max-w-3xl space-y-12">
             {isAccount ? (
               <>
                 <Section title="Delete your account in the app">
@@ -284,7 +291,7 @@ export function DeletionPage({ kind }: { kind: Kind }) {
                 Write to{" "}
                 <a
                   href={`mailto:${SUPPORT_MAIL}`}
-                  className="text-foreground underline decoration-border underline-offset-4 hover:decoration-brand"
+                  className="font-medium text-white underline decoration-white/25 underline-offset-4 transition-colors hover:decoration-brand"
                 >
                   {SUPPORT_MAIL}
                 </a>
@@ -297,7 +304,7 @@ export function DeletionPage({ kind }: { kind: Kind }) {
                     Only want to remove some data and keep your account?{" "}
                     <a
                       href="/data-deletion"
-                      className="text-foreground underline decoration-border underline-offset-4 hover:decoration-brand"
+                      className="font-medium text-white underline decoration-white/25 underline-offset-4 transition-colors hover:decoration-brand"
                     >
                       Use the data deletion page
                     </a>
@@ -308,7 +315,7 @@ export function DeletionPage({ kind }: { kind: Kind }) {
                     Want to delete the account as well?{" "}
                     <a
                       href="/account-deletion"
-                      className="text-foreground underline decoration-border underline-offset-4 hover:decoration-brand"
+                      className="font-medium text-white underline decoration-white/25 underline-offset-4 transition-colors hover:decoration-brand"
                     >
                       Use the account deletion page
                     </a>
@@ -318,7 +325,7 @@ export function DeletionPage({ kind }: { kind: Kind }) {
               </p>
             </Section>
 
-            <p className="border-t pt-6 text-xs text-muted-foreground">
+            <p className="border-t border-white/[0.06] pt-6 font-mono text-xs text-zinc-500">
               Last updated 14 November 2026. KodaHosting is not an official Minecraft product and is
               not approved by or associated with Mojang or Microsoft.
             </p>

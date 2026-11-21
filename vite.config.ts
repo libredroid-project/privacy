@@ -4,24 +4,33 @@ import { fileURLToPath } from "node:url";
 import { defineConfig, type Plugin, type PreviewServer, type ViteDevServer } from "vite";
 import react from "@vitejs/plugin-react";
 import tailwindcss from "@tailwindcss/vite";
+import {
+  buildSeoHeadTags,
+  HTML_ENTRIES,
+  resolveEntryKey,
+  SEO_PAGES,
+} from "./src/lib/seo.ts";
 
 const rootDir = path.dirname(fileURLToPath(import.meta.url));
 
-const entries = [
-  "index.html",
-  "store.html",
-  "dashboard.html",
-  "developer.html",
-  "docs/index.html",
-  "invite.html",
-  "reset.html",
-  "privacy.html",
-  "tos.html",
-  "licenses.html",
-  "impressum.html",
-  "account-deletion.html",
-  "data-deletion.html",
-];
+/**
+ * Injects standardized title, favicon, canonical, Open Graph, Twitter Card,
+ * robots, JSON-LD, and Google Fonts tags from src/lib/seo.ts into every HTML
+ * entry point during both dev and production builds.
+ */
+function seoMetadata(): Plugin {
+  return {
+    name: "koda-seo-metadata",
+    transformIndexHtml: {
+      order: "pre",
+      handler(_html, ctx) {
+        const key = resolveEntryKey(ctx.filename || ctx.path || "");
+        if (!key) return [];
+        return buildSeoHeadTags(SEO_PAGES[key]);
+      },
+    },
+  };
+}
 
 /**
  * Vercel runs with cleanUrls, so the site is linked as /store, /dashboard and
@@ -44,6 +53,8 @@ function cleanUrls(): Plugin {
     if (pathname.startsWith("/developer/")) candidates.push("developer.html");
     if (pathname.startsWith("/invite/")) candidates.push("invite.html");
     if (pathname === "/docs" || pathname === "/docs/") candidates.push("docs/index.html");
+    if (pathname === "/fdroid" || pathname === "/fdroid/") candidates.push("fdroid/index.html");
+    if (pathname === "/mcp" || pathname === "/mcp/") candidates.push("mcp/index.html");
     candidates.push(pathname.replace(/^\//, "") + ".html");
     candidates.push(path.join(pathname.replace(/^\//, ""), "index.html"));
 
@@ -84,6 +95,7 @@ function cleanUrls(): Plugin {
 function vercelAnalytics(): Plugin {
   return {
     name: "koda-vercel-analytics",
+    apply: "build",
     transformIndexHtml() {
       return [
         {
@@ -102,7 +114,7 @@ function vercelAnalytics(): Plugin {
 }
 
 export default defineConfig({
-  plugins: [react(), tailwindcss(), cleanUrls(), vercelAnalytics()],
+  plugins: [react(), tailwindcss(), seoMetadata(), cleanUrls(), vercelAnalytics()],
   resolve: {
     alias: {
       "@": path.resolve(rootDir, "./src"),
@@ -111,7 +123,7 @@ export default defineConfig({
   build: {
     rollupOptions: {
       input: Object.fromEntries(
-        entries.map((entry) => [
+        HTML_ENTRIES.map((entry) => [
           entry === "index.html" ? "main" : entry.replace(/\.html$/, "").replace(/\//g, "-"),
           path.resolve(rootDir, entry),
         ]),
