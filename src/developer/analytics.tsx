@@ -9,9 +9,7 @@ import {
   Star,
   TrendingUp,
 } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
+import { AnimatedSwitch } from "@/components/animated-switch";
 import { api } from "@/lib/api";
 import type { DevExtension } from "@/developer/types";
 import { formatBytes, formatDate, formatDateTime, latestVersion, pendingVersion } from "@/developer/types";
@@ -130,8 +128,16 @@ function DownloadChart({ days, daily }: { days: string[]; daily: DailyRow[] }) {
         const y = height - pad - fraction * (height - pad * 2);
         return (
           <g key={fraction}>
-            <line x1={pad} x2={width - pad} y1={y} y2={y} stroke="currentColor" className="text-border" strokeDasharray="3 4" />
-            <text x={width - pad + 2} y={y + 3} className="fill-muted-foreground text-[9px]" textAnchor="start">
+            <line
+              x1={pad}
+              x2={width - pad}
+              y1={y}
+              y2={y}
+              stroke="currentColor"
+              className="text-zinc-200 dark:text-white/[0.08]"
+              strokeDasharray="3 4"
+            />
+            <text x={width - pad + 4} y={y + 3} className="fill-zinc-500 font-mono text-[9px]" textAnchor="start">
               {Math.round(max * fraction)}
             </text>
           </g>
@@ -146,7 +152,7 @@ function DownloadChart({ days, daily }: { days: string[]; daily: DailyRow[] }) {
             x={point.x}
             y={height - 6}
             textAnchor="middle"
-            className="fill-muted-foreground text-[9px]"
+            className="fill-zinc-500 font-mono text-[9px]"
           >
             {point.day.slice(5)}
           </text>
@@ -185,14 +191,14 @@ function MonthlyBars({ versions }: { versions: DevExtension["versions"] }) {
         const value = counts.get(month) || 0;
         return (
           <div key={month} className="flex min-w-0 flex-1 flex-col items-center gap-1.5">
-            <span className="text-[10px] text-muted-foreground">{value}</span>
-            <div className="flex h-20 w-full items-end rounded-sm bg-muted/40">
+            <span className="font-mono text-[10px] tabular-nums text-zinc-500">{value}</span>
+            <div className="flex h-20 w-full items-end rounded-md bg-zinc-100 dark:bg-white/[0.04]">
               <div
-                className={cn("w-full rounded-sm bg-brand", value === 0 && "opacity-0")}
+                className={cn("w-full rounded-md bg-brand", value === 0 && "opacity-0")}
                 style={{ height: `${Math.max(4, (value / max) * 100)}%` }}
               />
             </div>
-            <span className="text-[10px] text-muted-foreground">{month.slice(5)}</span>
+            <span className="font-mono text-[10px] text-zinc-500">{month.slice(5)}</span>
           </div>
         );
       })}
@@ -310,147 +316,157 @@ export function DeveloperAnalytics({ extensions }: { extensions: DevExtension[] 
     <div className="space-y-6">
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-semibold tracking-tight">Analytics</h1>
-          <p className="mt-1 text-sm text-muted-foreground">
-            Store downloads, version adoption and review health. App updates inside KodaHosting are not
-            downloads.
+          <h1 className="font-display text-2xl font-medium tracking-[-0.03em] text-zinc-950 dark:text-white">
+            Analytics
+          </h1>
+          <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
+            Store downloads, version adoption, and review health. In-app auto-updates are excluded.
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
-          <div className="flex rounded-lg border p-0.5">
-            {RANGES.map((range) => (
-              <button
-                key={range}
-                type="button"
-                onClick={() => setDays(range)}
-                className={cn(
-                  "rounded-md px-2.5 py-1 text-xs transition-colors",
-                  days === range
-                    ? "bg-foreground text-background"
-                    : "text-muted-foreground hover:text-foreground",
-                )}
-              >
-                {range}d
-              </button>
-            ))}
-          </div>
-          <Button variant="outline" size="sm" onClick={exportCsv} disabled={extensions.length === 0}>
-            <FileDown className="size-4" /> CSV
-          </Button>
+          <AnimatedSwitch<string>
+            ariaLabel="Analytics date range"
+            size="sm"
+            value={String(days)}
+            onChange={(value) => setDays(Number(value) as (typeof RANGES)[number])}
+            options={RANGES.map((range) => ({ id: String(range), label: `${range}d` }))}
+          />
+          <button
+            type="button"
+            onClick={exportCsv}
+            disabled={extensions.length === 0}
+            className="koda-btn-pill h-8 px-3.5 text-xs disabled:opacity-45"
+          >
+            <FileDown className="size-3.5" /> CSV
+          </button>
         </div>
       </div>
 
       {error ? (
-        <Card className="gap-3 p-5 shadow-none">
-          <p className="text-sm text-destructive">{error}</p>
-          <Button size="sm" variant="outline" onClick={() => load(days)}>
+        <div className="resend-glass-panel flex flex-wrap items-center justify-between gap-3 rounded-2xl p-5">
+          <p className="text-sm text-red-600 dark:text-red-400">{error}</p>
+          <button type="button" onClick={() => load(days)} className="koda-btn-pill h-8 px-3.5 text-xs">
             Try again
-          </Button>
-        </Card>
+          </button>
+        </div>
       ) : null}
 
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <Card className="gap-0 p-5 shadow-none">
+      <div className="grid gap-3.5 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="resend-glass-panel rounded-2xl p-5">
           <div className="flex items-start justify-between">
             <div>
-              <p className="text-xs font-medium tracking-wide text-muted-foreground uppercase">
+              <p className="font-mono text-[10.5px] font-medium tracking-[0.06em] text-zinc-500 uppercase">
                 Downloads · {days}d
               </p>
-              <p className="mt-2 text-2xl font-semibold tracking-tight">
-                {loading ? "…" : rangeDownloads.toLocaleString()}
+              <p className="mt-2.5 font-display text-2xl font-medium tracking-[-0.02em] tabular-nums text-zinc-950 dark:text-white">
+                {loading ? "..." : rangeDownloads.toLocaleString()}
               </p>
-              <p className="mt-1 text-xs text-muted-foreground">
+              <p className="mt-1 text-xs text-zinc-500 dark:text-zinc-400">
                 {data?.tracking_since
-                  ? `tracked since ${formatDate(data.tracking_since)}`
-                  : "tracking starts with the next download"}
+                  ? `Tracked since ${formatDate(data.tracking_since)}`
+                  : "Starts with the next download"}
               </p>
             </div>
-            <Download className="size-4 text-sky-500" />
+            <div className="flex size-9 items-center justify-center rounded-xl bg-zinc-100 dark:bg-white/[0.05]">
+              <Download className="size-4 text-sky-600 dark:text-sky-400" />
+            </div>
           </div>
-        </Card>
-        <Card className="gap-0 p-5 shadow-none">
+        </div>
+
+        <div className="resend-glass-panel rounded-2xl p-5">
           <div className="flex items-start justify-between">
             <div>
-              <p className="text-xs font-medium tracking-wide text-muted-foreground uppercase">
+              <p className="font-mono text-[10.5px] font-medium tracking-[0.06em] text-zinc-500 uppercase">
                 Lifetime downloads
               </p>
-              <p className="mt-2 text-2xl font-semibold tracking-tight">
+              <p className="mt-2.5 font-display text-2xl font-medium tracking-[-0.02em] tabular-nums text-zinc-950 dark:text-white">
                 {lifetimeDownloads.toLocaleString()}
               </p>
-              <p className="mt-1 text-xs text-muted-foreground">all time counter</p>
+              <p className="mt-1 text-xs text-zinc-500 dark:text-zinc-400">All-time counter</p>
             </div>
-            <TrendingUp className="size-4 text-violet-500" />
+            <div className="flex size-9 items-center justify-center rounded-xl bg-zinc-100 dark:bg-white/[0.05]">
+              <TrendingUp className="size-4 text-violet-600 dark:text-violet-400" />
+            </div>
           </div>
-        </Card>
-        <Card className="gap-0 p-5 shadow-none">
+        </div>
+
+        <div className="resend-glass-panel rounded-2xl p-5">
           <div className="flex items-start justify-between">
             <div>
-              <p className="text-xs font-medium tracking-wide text-muted-foreground uppercase">
+              <p className="font-mono text-[10.5px] font-medium tracking-[0.06em] text-zinc-500 uppercase">
                 Approval rate
               </p>
-              <p className="mt-2 text-2xl font-semibold tracking-tight">
+              <p className="mt-2.5 font-display text-2xl font-medium tracking-[-0.02em] tabular-nums text-zinc-950 dark:text-white">
                 {approvalRate == null ? "-" : `${approvalRate}%`}
               </p>
-              <p className="mt-1 text-xs text-muted-foreground">
-                {approved} approved · {rejected} rejected · {pending} pending
+              <p className="mt-1 font-mono text-[11px] text-zinc-500">
+                {approved} ok · {rejected} rej · {pending} pending
               </p>
             </div>
-            <ShieldCheck className="size-4 text-emerald-500" />
+            <div className="flex size-9 items-center justify-center rounded-xl bg-zinc-100 dark:bg-white/[0.05]">
+              <ShieldCheck className="size-4 text-emerald-600 dark:text-emerald-400" />
+            </div>
           </div>
-        </Card>
-        <Card className="gap-0 p-5 shadow-none">
+        </div>
+
+        <div className="resend-glass-panel rounded-2xl p-5">
           <div className="flex items-start justify-between">
             <div>
-              <p className="text-xs font-medium tracking-wide text-muted-foreground uppercase">
+              <p className="font-mono text-[10.5px] font-medium tracking-[0.06em] text-zinc-500 uppercase">
                 Median review time
               </p>
-              <p className="mt-2 text-2xl font-semibold tracking-tight">
+              <p className="mt-2.5 font-display text-2xl font-medium tracking-[-0.02em] tabular-nums text-zinc-950 dark:text-white">
                 {reviewHours == null
                   ? "-"
                   : reviewHours < 24
                     ? `${reviewHours.toFixed(1)} h`
                     : `${(reviewHours / 24).toFixed(1)} d`}
               </p>
-              <p className="mt-1 text-xs text-muted-foreground">{allVersions.length} releases total</p>
+              <p className="mt-1 text-xs text-zinc-500 dark:text-zinc-400">
+                {allVersions.length} releases total
+              </p>
             </div>
-            <Star className="size-4 text-amber-500" />
+            <div className="flex size-9 items-center justify-center rounded-xl bg-zinc-100 dark:bg-white/[0.05]">
+              <Star className="size-4 text-amber-600 dark:text-amber-400" />
+            </div>
           </div>
-        </Card>
+        </div>
       </div>
 
-      <Card className="gap-0 p-5 shadow-none">
+      <div className="resend-glass-panel rounded-2xl p-5">
         <div className="flex flex-wrap items-center justify-between gap-2">
           <div>
-            <h2 className="text-sm font-semibold">Downloads per day</h2>
-            <p className="mt-1 text-sm text-muted-foreground">
-              One point per day, summed over all your extensions.
+            <h2 className="font-display text-sm font-medium text-zinc-950 dark:text-white">
+              Downloads per day
+            </h2>
+            <p className="mt-0.5 text-xs text-zinc-600 dark:text-zinc-400">
+              One point per day, summed across all your extensions.
             </p>
           </div>
-          <Badge variant="outline" className="font-normal">
-            {days} days
-          </Badge>
+          <span className="font-mono text-xs text-zinc-500">{days} days</span>
         </div>
-        <div className="mt-5 text-muted-foreground">
+        <div className="mt-5 text-zinc-500">
           {loading ? (
-            <p className="flex items-center gap-2 py-10 text-sm">
-              <Loader2 className="size-4 animate-spin" /> Loading downloads…
+            <p className="flex items-center gap-2 py-10 text-sm text-zinc-500 dark:text-zinc-400">
+              <Loader2 className="size-4 animate-spin" /> Loading downloads...
             </p>
           ) : rangeDownloads === 0 ? (
-            <p className="rounded-lg border border-dashed p-8 text-center text-sm">
-              No downloads recorded in this range yet. The daily curve starts with the next store
-              download.
+            <p className="rounded-xl border border-dashed border-zinc-200 p-8 text-center text-sm text-zinc-500 dark:border-white/[0.1] dark:text-zinc-400">
+              No downloads recorded in this range yet. The daily curve starts with the next store download.
             </p>
           ) : (
             <DownloadChart days={dailyDays} daily={data?.daily || []} />
           )}
         </div>
-      </Card>
+      </div>
 
-      <div className="grid gap-6 lg:grid-cols-2">
-        <Card className="gap-0 p-5 shadow-none">
-          <h2 className="text-sm font-semibold">Downloads per extension</h2>
+      <div className="grid gap-5 lg:grid-cols-2">
+        <div className="resend-glass-panel rounded-2xl p-5">
+          <h2 className="font-display text-sm font-medium text-zinc-950 dark:text-white">
+            Downloads per extension
+          </h2>
           {extensions.length === 0 ? (
-            <p className="mt-3 text-sm text-muted-foreground">No data yet.</p>
+            <p className="mt-3 text-sm text-zinc-500 dark:text-zinc-400">No data yet.</p>
           ) : (
             <ul className="mt-5 space-y-4">
               {[...extensions]
@@ -460,12 +476,12 @@ export function DeveloperAnalytics({ extensions }: { extensions: DevExtension[] 
                   return (
                     <li key={ext.ext_id}>
                       <div className="flex items-baseline justify-between gap-3 text-sm">
-                        <span className="truncate font-medium">{ext.name}</span>
-                        <span className="shrink-0 font-mono text-xs text-muted-foreground">
+                        <span className="truncate font-medium text-zinc-950 dark:text-white">{ext.name}</span>
+                        <span className="shrink-0 font-mono text-xs tabular-nums text-zinc-500">
                           {(ext.downloads || 0).toLocaleString()}
                         </span>
                       </div>
-                      <div className="mt-1.5 h-1.5 overflow-hidden rounded-full bg-muted">
+                      <div className="mt-1.5 h-1.5 overflow-hidden rounded-full bg-zinc-100 dark:bg-white/[0.06]">
                         <div
                           className="h-full rounded-full bg-brand"
                           style={{ width: `${Math.round(((ext.downloads || 0) / max) * 100)}%` }}
@@ -476,17 +492,19 @@ export function DeveloperAnalytics({ extensions }: { extensions: DevExtension[] 
                 })}
             </ul>
           )}
-        </Card>
+        </div>
 
-        <Card className="gap-0 p-5 shadow-none">
-          <h2 className="text-sm font-semibold">Version adoption · {days}d</h2>
-          <p className="mt-1 text-sm text-muted-foreground">Which release users install.</p>
+        <div className="resend-glass-panel rounded-2xl p-5">
+          <h2 className="font-display text-sm font-medium text-zinc-950 dark:text-white">
+            Version adoption · {days}d
+          </h2>
+          <p className="mt-0.5 text-xs text-zinc-600 dark:text-zinc-400">Which release users install.</p>
           {versionDownloads.size === 0 ? (
-            <p className="mt-3 rounded-lg border border-dashed p-6 text-center text-sm text-muted-foreground">
+            <p className="mt-4 rounded-xl border border-dashed border-zinc-200 p-6 text-center text-sm text-zinc-500 dark:border-white/[0.1] dark:text-zinc-400">
               No version data in this range.
             </p>
           ) : (
-            <ul className="mt-4 divide-y">
+            <ul className="mt-4 divide-y divide-zinc-200/70 dark:divide-white/[0.06]">
               {[...versionDownloads.entries()]
                 .sort((a, b) => b[1] - a[1])
                 .slice(0, 10)
@@ -495,10 +513,11 @@ export function DeveloperAnalytics({ extensions }: { extensions: DevExtension[] 
                   const ext = extById.get(extId);
                   return (
                     <li key={key} className="flex items-center justify-between gap-3 py-2.5 text-sm">
-                      <span className="min-w-0 truncate">
-                        {ext?.name || "Extension"} <span className="font-mono text-xs text-muted-foreground">({code})</span>
+                      <span className="min-w-0 truncate text-zinc-900 dark:text-zinc-100">
+                        {ext?.name || "Extension"}{" "}
+                        <span className="font-mono text-xs text-zinc-500">({code})</span>
                       </span>
-                      <span className="shrink-0 font-mono text-xs text-muted-foreground">
+                      <span className="shrink-0 font-mono text-xs tabular-nums text-zinc-500">
                         {downloads.toLocaleString()}
                       </span>
                     </li>
@@ -506,18 +525,19 @@ export function DeveloperAnalytics({ extensions }: { extensions: DevExtension[] 
                 })}
             </ul>
           )}
-        </Card>
+        </div>
       </div>
 
-      <div className="grid gap-6 lg:grid-cols-2">
-        <Card className="gap-0 p-5 shadow-none">
-          <h2 className="text-sm font-semibold">Devices · {days}d</h2>
-          <p className="mt-1 text-sm text-muted-foreground">
-            Which phones and tablets install your extensions. Sent by the app with the download,
-            never linked to an account.
+      <div className="grid gap-5 lg:grid-cols-2">
+        <div className="resend-glass-panel rounded-2xl p-5">
+          <h2 className="font-display text-sm font-medium text-zinc-950 dark:text-white">
+            Devices · {days}d
+          </h2>
+          <p className="mt-0.5 text-xs text-zinc-600 dark:text-zinc-400">
+            Phones and tablets installing your extensions. Sent anonymously with the download.
           </p>
           {!data?.devices?.length ? (
-            <p className="mt-3 rounded-lg border border-dashed p-6 text-center text-sm text-muted-foreground">
+            <p className="mt-4 rounded-xl border border-dashed border-zinc-200 p-6 text-center text-sm text-zinc-500 dark:border-white/[0.1] dark:text-zinc-400">
               No device data in this range yet.
             </p>
           ) : (
@@ -529,12 +549,12 @@ export function DeveloperAnalytics({ extensions }: { extensions: DevExtension[] 
                 return (
                   <li key={device.device_model}>
                     <div className="flex items-baseline justify-between gap-3 text-sm">
-                      <span className="min-w-0 truncate">{device.device_model}</span>
-                      <span className="shrink-0 font-mono text-xs text-muted-foreground">
+                      <span className="min-w-0 truncate text-zinc-900 dark:text-zinc-100">{device.device_model}</span>
+                      <span className="shrink-0 font-mono text-xs tabular-nums text-zinc-500">
                         {device.downloads.toLocaleString()} · {share}%
                       </span>
                     </div>
-                    <div className="mt-1.5 h-1.5 overflow-hidden rounded-full bg-muted">
+                    <div className="mt-1.5 h-1.5 overflow-hidden rounded-full bg-zinc-100 dark:bg-white/[0.06]">
                       <div
                         className={`h-full rounded-full ${colors[index % colors.length]}`}
                         style={{ width: `${Math.max(4, Math.round((device.downloads / maxDevice) * 100))}%` }}
@@ -545,84 +565,91 @@ export function DeveloperAnalytics({ extensions }: { extensions: DevExtension[] 
               })}
             </ul>
           )}
-        </Card>
+        </div>
 
-        <Card className="gap-0 p-5 shadow-none">
-          <h2 className="text-sm font-semibold">Platforms and app builds</h2>
-          <p className="mt-1 text-sm text-muted-foreground">
-            App store downloads versus the website, plus the Android and app versions in use.
+        <div className="resend-glass-panel rounded-2xl p-5">
+          <h2 className="font-display text-sm font-medium text-zinc-950 dark:text-white">
+            Platforms and app builds
+          </h2>
+          <p className="mt-0.5 text-xs text-zinc-600 dark:text-zinc-400">
+            In-app store versus website downloads, plus Android and app versions in use.
           </p>
 
-          <div className="mt-4 flex flex-wrap gap-2">
+          <div className="mt-4 flex flex-wrap gap-x-4 gap-y-1 border-b border-zinc-200/70 pb-3.5 font-mono text-xs dark:border-white/[0.06]">
             {(data?.sources || []).map((source) => (
-              <Badge key={source.source} variant="outline" className="font-normal">
-                {source.source === "app" ? "In-app store" : "Website"} · {source.downloads}
-              </Badge>
+              <span key={source.source} className="text-zinc-700 dark:text-zinc-300">
+                {source.source === "app" ? "In-app store" : "Website"}:{" "}
+                <span className="font-medium text-zinc-950 tabular dark:text-white">{source.downloads}</span>
+              </span>
             ))}
             {!data?.sources?.length ? (
-              <span className="text-xs text-muted-foreground">No downloads yet.</span>
+              <span className="text-zinc-500">No downloads yet.</span>
             ) : null}
           </div>
 
-          <div className="mt-5 grid gap-5 sm:grid-cols-2">
+          <div className="mt-4 grid gap-5 sm:grid-cols-2">
             <div>
-              <p className="text-[11px] font-medium tracking-wide text-muted-foreground uppercase">
+              <p className="font-mono text-[10.5px] font-medium tracking-[0.06em] text-zinc-500 uppercase">
                 Android
               </p>
               {data?.os_versions?.length ? (
                 <ul className="mt-2 space-y-1.5">
                   {data.os_versions.slice(0, 6).map((row) => (
                     <li key={row.os_version} className="flex items-center justify-between gap-2 text-xs">
-                      <span className="truncate">{row.os_version}</span>
-                      <span className="shrink-0 font-mono text-muted-foreground">{row.downloads}</span>
+                      <span className="truncate text-zinc-800 dark:text-zinc-200">{row.os_version}</span>
+                      <span className="shrink-0 font-mono tabular-nums text-zinc-500">{row.downloads}</span>
                     </li>
                   ))}
                 </ul>
               ) : (
-                <p className="mt-2 text-xs text-muted-foreground">-</p>
+                <p className="mt-2 font-mono text-xs text-zinc-500">-</p>
               )}
             </div>
             <div>
-              <p className="text-[11px] font-medium tracking-wide text-muted-foreground uppercase">
+              <p className="font-mono text-[10.5px] font-medium tracking-[0.06em] text-zinc-500 uppercase">
                 App builds
               </p>
               {data?.app_versions?.length ? (
                 <ul className="mt-2 space-y-1.5">
                   {data.app_versions.slice(0, 6).map((row) => (
                     <li key={row.app_version} className="flex items-center justify-between gap-2 text-xs">
-                      <span className="truncate">Build {row.app_version}</span>
-                      <span className="shrink-0 font-mono text-muted-foreground">{row.downloads}</span>
+                      <span className="truncate text-zinc-800 dark:text-zinc-200">Build {row.app_version}</span>
+                      <span className="shrink-0 font-mono tabular-nums text-zinc-500">{row.downloads}</span>
                     </li>
                   ))}
                 </ul>
               ) : (
-                <p className="mt-2 text-xs text-muted-foreground">-</p>
+                <p className="mt-2 font-mono text-xs text-zinc-500">-</p>
               )}
             </div>
           </div>
-        </Card>
+        </div>
       </div>
 
-      <div className="grid gap-6 lg:grid-cols-2">
-        <Card className="gap-0 p-5 shadow-none">
-          <h2 className="text-sm font-semibold">Release cadence</h2>
-          <p className="mt-1 text-sm text-muted-foreground">Uploads in the last six months.</p>
+      <div className="grid gap-5 lg:grid-cols-2">
+        <div className="resend-glass-panel rounded-2xl p-5">
+          <h2 className="font-display text-sm font-medium text-zinc-950 dark:text-white">
+            Release cadence
+          </h2>
+          <p className="mt-0.5 text-xs text-zinc-600 dark:text-zinc-400">Uploads in the last six months.</p>
           <div className="mt-4">
             <MonthlyBars versions={allVersions} />
           </div>
-          <p className="mt-3 flex items-center gap-2 text-xs text-muted-foreground">
+          <p className="mt-3 flex items-center gap-2 font-mono text-xs text-zinc-500">
             <Package className="size-3.5" />
             {formatBytes(packageBytes)} of packages stored
           </p>
-        </Card>
+        </div>
 
-        <Card className="gap-0 p-5 shadow-none">
-          <h2 className="text-sm font-semibold">Listing health</h2>
-          <p className="mt-1 text-sm text-muted-foreground">
-            Completeness of the store card. 100 means every field, icon and screenshot is filled.
+        <div className="resend-glass-panel rounded-2xl p-5">
+          <h2 className="font-display text-sm font-medium text-zinc-950 dark:text-white">
+            Listing health
+          </h2>
+          <p className="mt-0.5 text-xs text-zinc-600 dark:text-zinc-400">
+            Completeness of each store card. 100 means every field, icon, and screenshot is set.
           </p>
           {extensions.length === 0 ? (
-            <p className="mt-3 text-sm text-muted-foreground">No extensions yet.</p>
+            <p className="mt-3 text-sm text-zinc-500 dark:text-zinc-400">No extensions yet.</p>
           ) : (
             <ul className="mt-4 space-y-4">
               {extensions.map((ext) => {
@@ -630,21 +657,29 @@ export function DeveloperAnalytics({ extensions }: { extensions: DevExtension[] 
                 return (
                   <li key={ext.ext_id}>
                     <div className="flex items-baseline justify-between gap-3 text-sm">
-                      <span className="truncate font-medium">{ext.name}</span>
+                      <span className="truncate font-medium text-zinc-950 dark:text-white">{ext.name}</span>
                       <span
                         className={cn(
-                          "shrink-0 font-mono text-xs",
-                          score >= 80 ? "text-success" : score >= 50 ? "text-warning" : "text-destructive",
+                          "shrink-0 font-mono text-xs tabular-nums",
+                          score >= 80
+                            ? "text-emerald-600 dark:text-emerald-400"
+                            : score >= 50
+                              ? "text-amber-600 dark:text-amber-400"
+                              : "text-red-600 dark:text-red-400",
                         )}
                       >
                         {score}/100
                       </span>
                     </div>
-                    <div className="mt-1.5 h-1.5 overflow-hidden rounded-full bg-muted">
+                    <div className="mt-1.5 h-1.5 overflow-hidden rounded-full bg-zinc-100 dark:bg-white/[0.06]">
                       <div
                         className={cn(
                           "h-full rounded-full",
-                          score >= 80 ? "bg-success" : score >= 50 ? "bg-warning" : "bg-destructive",
+                          score >= 80
+                            ? "bg-emerald-500"
+                            : score >= 50
+                              ? "bg-amber-500"
+                              : "bg-red-500",
                         )}
                         style={{ width: `${score}%` }}
                       />
@@ -654,44 +689,49 @@ export function DeveloperAnalytics({ extensions }: { extensions: DevExtension[] 
               })}
             </ul>
           )}
-        </Card>
+        </div>
       </div>
 
-      <div className="grid gap-6 lg:grid-cols-2">
-        <Card className="gap-0 p-5 shadow-none">
-          <h2 className="text-sm font-semibold">Permissions in use</h2>
-          <p className="mt-1 text-sm text-muted-foreground">Across the latest release of each extension.</p>
+      <div className="grid gap-5 lg:grid-cols-2">
+        <div className="resend-glass-panel rounded-2xl p-5">
+          <h2 className="font-display text-sm font-medium text-zinc-950 dark:text-white">
+            Permissions in use
+          </h2>
+          <p className="mt-0.5 text-xs text-zinc-600 dark:text-zinc-400">
+            Across the latest release of each extension.
+          </p>
           {permissions.length === 0 ? (
-            <p className="mt-3 text-sm text-muted-foreground">No permissions requested.</p>
+            <p className="mt-3 text-sm text-zinc-500 dark:text-zinc-400">No permissions requested.</p>
           ) : (
-            <ul className="mt-4 flex flex-wrap gap-2">
+            <ul className="mt-4 divide-y divide-zinc-200/70 dark:divide-white/[0.06]">
               {permissions.map(([permission, count]) => (
-                <li key={permission}>
-                  <Badge variant="outline" className="font-mono font-normal">
-                    {permission} <span className="ml-1 text-muted-foreground">×{count}</span>
-                  </Badge>
+                <li key={permission} className="flex items-center justify-between py-2 font-mono text-xs">
+                  <span className="text-zinc-900 dark:text-zinc-200">{permission}</span>
+                  <span className="tabular-nums text-zinc-500">x{count}</span>
                 </li>
               ))}
             </ul>
           )}
-        </Card>
+        </div>
 
-        <Card className="gap-0 p-5 shadow-none">
+        <div className="resend-glass-panel rounded-2xl p-5">
           <div className="flex items-center gap-2">
-            <AlertTriangle className="size-4 text-muted-foreground" />
-            <h2 className="text-sm font-semibold">Stale extensions</h2>
+            <AlertTriangle className="size-4 text-zinc-500" />
+            <h2 className="font-display text-sm font-medium text-zinc-950 dark:text-white">
+              Stale extensions
+            </h2>
           </div>
-          <p className="mt-1 text-sm text-muted-foreground">
-            Published, but no release in the last 90 days.
+          <p className="mt-0.5 text-xs text-zinc-600 dark:text-zinc-400">
+            Published, with no release in the last 90 days.
           </p>
           {stale.length === 0 ? (
-            <p className="mt-3 text-sm text-muted-foreground">Everything is fresh.</p>
+            <p className="mt-3 text-sm text-zinc-500 dark:text-zinc-400">Everything is fresh.</p>
           ) : (
-            <ul className="mt-3 space-y-2">
+            <ul className="mt-3 divide-y divide-zinc-200/70 dark:divide-white/[0.06]">
               {stale.map((ext) => (
-                <li key={ext.ext_id} className="flex items-center justify-between gap-3 rounded-lg border p-2.5 text-xs">
-                  <span className="truncate">{ext.name}</span>
-                  <span className="shrink-0 text-muted-foreground">
+                <li key={ext.ext_id} className="flex items-center justify-between gap-3 py-2.5 text-xs">
+                  <span className="truncate font-medium text-zinc-900 dark:text-zinc-100">{ext.name}</span>
+                  <span className="shrink-0 font-mono text-zinc-500">
                     last {formatDateTime(latestVersion(ext)?.created_at)}
                   </span>
                 </li>
@@ -699,11 +739,11 @@ export function DeveloperAnalytics({ extensions }: { extensions: DevExtension[] 
             </ul>
           )}
           {extensions.some((ext) => pendingVersion(ext)) ? (
-            <p className="mt-3 text-xs text-muted-foreground">
+            <p className="mt-3 text-xs text-zinc-500 dark:text-zinc-400">
               Some extensions have a release waiting for review.
             </p>
           ) : null}
-        </Card>
+        </div>
       </div>
     </div>
   );

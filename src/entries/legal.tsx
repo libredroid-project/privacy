@@ -1,6 +1,4 @@
-import { StrictMode } from "react";
-import { createRoot } from "react-dom/client";
-import "@/index.css";
+import { mountPage } from "@/lib/mount-page";
 import { LegalPage } from "@/pages/legal";
 
 const page = (document.getElementById("root")?.dataset.page || "privacy") as
@@ -8,8 +6,4 @@ const page = (document.getElementById("root")?.dataset.page || "privacy") as
   | "tos"
   | "impressum";
 
-createRoot(document.getElementById("root")!).render(
-  <StrictMode>
-    <LegalPage page={page} />
-  </StrictMode>,
-);
+mountPage(<LegalPage page={page} />);

@@ -3,182 +3,182 @@
 GROUPS = [
     ("Start", [
         ("getting-started", "What KodaHosting is", """
-<p>KodaHosting turns a phone into a real Minecraft server. Not a client and not a remote control for somebody else's machine: the server process runs on the device, the world files sit in the device storage, and the app is the control panel around it. That one decision explains almost every design choice in this codebase, including the odd ones.</p>
-<p>Three planes do the work, and it helps to keep them apart in your head.</p>
+<p>KodaHosting turns an Android phone into a real Minecraft server. It's not a game client, and it's not a remote control talking to someone else's cloud box. The server process runs right on your phone, your world files live in your phone's storage, and the app wraps the whole thing in a clean control panel. Once you keep that in mind, pretty much every design decision in this codebase clicks into place, even the slightly unusual ones.</p>
+<p>Under the hood, the system splits into three parts. Keeping them separate in your head makes troubleshooting a lot easier:</p>
 <ul>
-  <li><b>The device plane</b> is the app itself. It downloads server jars and Java runtimes, starts and stops the process, owns the console, browses and edits files, makes backups and applies every change. If something mutates a server, it happens here.</li>
-  <li><b>The connectivity plane</b> is the tunnel. A bundled reverse proxy client forwards the Minecraft ports and the web dashboard through a public server, so friends can join without your home address ever leaving the router.</li>
-  <li><b>The control plane</b> is Supabase. It knows which devices belong to which user, which servers exist, which ports are taken, which releases are published and which extensions are approved. Every write goes through a function that checks a per device token.</li>
+  <li><b>The device plane</b> is the Android app itself. It downloads server jars and Java runtimes, starts and stops processes, streams the console, browses and edits files, runs backups, and applies config changes. Whenever something actually mutates your server, it happens here.</li>
+  <li><b>The connectivity plane</b> is the tunnel. A bundled reverse proxy client forwards your Minecraft ports and web dashboard through a public server, so your friends can join cleanly without you touching router port forwarding or exposing your home IP.</li>
+  <li><b>The control plane</b> is Supabase. It tracks which devices belong to which account, which servers exist, which ports are allocated, which app releases are live, and which extensions passed review. Every write runs through a server-side function that checks a per-device token.</li>
 </ul>
-<p>A fourth piece is easy to miss: KodaDash, a Java plugin that runs inside the Minecraft server and serves a web dashboard on port 7867. The app writes small JSON files into the server folder for stats, backups and schedules, and KodaDash picks them up, which is why the dashboard still shows sensible numbers while the phone sleeps.</p>
+<p>There's also a fourth piece that's easy to overlook at first: KodaDash. It's a Java plugin running inside your Minecraft server that serves a web dashboard on port 7867. The Android app mirrors small JSON snapshots for stats, backups, and schedules into the server folder, and KodaDash reads them. That's how the web dashboard still shows sensible numbers even while your phone's screen is off and sleeping.</p>
 """),
         ("own-instance", "Your own instance", """
-<p>The public repository is a complete snapshot of the source. What it cannot contain is the instance: the addresses, keys and accounts that belong to whoever runs it, plus the admin tooling that holds the service role key. Here is where the line is drawn.</p>
+<p>The public repository gives you the full source code, but it obviously can't include a live production instance. Keys, accounts, domains, and operator admin tools stay private by design. Here's where the boundary sits:</p>
 <table>
-  <tr><th>Missing on purpose</th><th>Why it matters</th></tr>
-  <tr><td><code>secrets_local.h</code></td><td>the Supabase URL, the public key, the AI key and the tunnel host that get compiled into the app</td></tr>
-  <tr><td>The Supabase project</td><td>its rows, storage objects, auth users and the edge function secrets</td></tr>
-  <tr><td>Tunnel and DNS credentials</td><td>the reverse proxy token and the DNS provider keys for custom domains</td></tr>
-  <tr><td>Signing material</td><td>the release keystore, its passwords and the Play credentials</td></tr>
-  <tr><td>The admin tools</td><td>the web panel and the Kotlin admin app</td></tr>
+  <tr><th>Left out on purpose</th><th>What it covers</th></tr>
+  <tr><td><code>secrets_local.h</code></td><td>the Supabase URL, public key, AI key, and tunnel host compiled into the native layer</td></tr>
+  <tr><td>The Supabase project</td><td>database rows, storage buckets, auth users, and edge function secrets</td></tr>
+  <tr><td>Tunnel and DNS credentials</td><td>the reverse proxy token and DNS provider keys used for custom domains</td></tr>
+  <tr><td>Signing material</td><td>the release keystore, passwords, and Google Play credentials</td></tr>
+  <tr><td>The admin tools</td><td>the operator web panel and the Kotlin admin app</td></tr>
 </table>
-<p>One exception is on purpose. The imprint and the privacy policy name a real operator with a real address, because German law requires it, and a service that hides who runs it is not trustworthy anyway.</p>
-<h4>Running your own</h4>
+<p>One detail stays public intentionally: the imprint and privacy policy list a real operator and address. German law requires it, and honestly, a hosted service that hides who runs it isn't worth trusting anyway.</p>
+<h4>Spinning up your own instance</h4>
 <ol>
-  <li>Clone the repository and build it once with JDK 21.</li>
-  <li>Create a Supabase project and apply the SQL files from <code>supabase/</code>: first <code>migrations/</code>, then <code>security_fix_*.sql</code>, then the remaining feature SQL (releases, extensions, notifications, KodaDash beta and profile avatar). Each file reloads the API schema.</li>
-  <li>Create the storage buckets: <code>artifacts</code>, <code>release_images</code>, <code>support_attachments</code>, <code>extension_assets</code> and <code>avatars</code> public, <code>extension_packages</code> and <code>data_exports</code> private.</li>
-  <li>Deploy the edge functions and set their secrets. <code>supabase/README.md</code> lists the full set; <code>get-tunnel-config</code> is the one you cannot skip, the app asks it for its tunnel credentials.</li>
-  <li>Run an frps server (a hardened starting point is <code>vps-https/frps.toml.example</code>) and put its address plus your Supabase URL and public key into the native header file.</li>
-  <li>Build a signed release and install it. The first screen registers a device and creates the row everything else hangs off.</li>
-  <li>Optional: the Discord bot with your own token. The team admin panel and admin app are not part of the public source.</li>
+  <li>Clone the repository and run an initial build with JDK 21.</li>
+  <li>Create a Supabase project and apply the SQL files inside <code>supabase/</code> in order: first <code>migrations/</code>, then <code>security_fix_*.sql</code>, and finally the remaining feature SQL (releases, extensions, notifications, KodaDash beta, and profile avatar). Each script reloads the API schema automatically.</li>
+  <li>Set up the storage buckets: make <code>artifacts</code>, <code>release_images</code>, <code>support_attachments</code>, <code>extension_assets</code>, and <code>avatars</code> public, and keep <code>extension_packages</code> and <code>data_exports</code> private.</li>
+  <li>Deploy the edge functions and configure their secrets. <code>supabase/README.md</code> documents the complete list. Don't skip <code>get-tunnel-config</code>, because the app calls it to pull its tunnel credentials.</li>
+  <li>Run an frps server (<code>vps-https/frps.toml.example</code> gives you a hardened baseline) and drop its address along with your Supabase URL and public key into the native header file.</li>
+  <li>Build a signed release APK and install it. On first launch, the app registers the device and creates the database row everything else attaches to.</li>
+  <li>Optional: wire up the Discord release bot with your own bot token. The team admin panel and Android admin app aren't included in the public repo.</li>
 </ol>
-<div class="callout">A fresh instance starts empty on purpose. Without a backend the app still runs, but the first start cannot register a device and most screens stay quiet.</div>
+<div class="callout">A brand-new instance starts empty on purpose. The app will still launch without a backend, but first-run device registration won't succeed and most cloud-backed screens will stay quiet.</div>
 """),
         ("building", "Building the app", """
-<p>One Gradle module plus a small native part that boots the embedded JVM. The first build takes a few minutes, later ones are quick.</p>
+<p>The project is a single Gradle module paired with a small native layer that boots the embedded JVM. The first compile takes a few minutes while dependencies settle; incremental builds after that are fast.</p>
 <pre><code>export JAVA_HOME=/path/to/jdk-21        # newer JDKs break the Gradle version in use
 ./gradlew :app:assembleDebug            # debug apk
 ./gradlew :app:assembleRelease -PKEYSTORE_PW=... -PKEY_PW=...
 adb install -r app/build/outputs/apk/release/app-release.apk
 ./gradlew :app:testDebugUnitTest        # unit tests, finishes in seconds</code></pre>
-<p><b>The first trap:</b> a debug build and a release build cannot replace each other, because their signatures differ. Decide early which one your test device carries, otherwise you will uninstall the app and lose its data on the way.</p>
-<p><b>The second trap:</b> release builds strip every log call. Logcat stays silent in a release build, for your code and for the framework wrappers alike, so show diagnostics in the interface instead of trusting a log line. The app has its own debug log screen for exactly this reason.</p>
-<p>Relevant devices are arm64 and run Android 11 or newer. The APK bundles only arm64 libraries, so an x86 emulator will install nothing useful.</p>
+<p><b>Watch out for signature mismatches:</b> debug and release builds use different signing keys, so Android won't let you install one directly over the other. Pick which build type lives on your test phone early, or you'll have to uninstall and wipe local server data to switch.</p>
+<p><b>Watch out for silent logs in release:</b> release builds strip out all Android log calls, both in app code and framework wrappers. Logcat stays completely quiet in release mode, so never rely on it to debug a release APK. Surface diagnostics in the UI instead, or use the app's built-in debug log screen.</p>
+<p>Target hardware is arm64 running Android 11 or newer. The APK only ships arm64 native libraries, so an x86 emulator won't be able to run servers.</p>
 """),
     ]),
     ("The app", [
         ("screens", "All screens at a glance", """
-<p>The app has one main screen, one large per server screen, and a set of dialogs and helpers around them. Knowing this map makes the rest of the documentation easier to follow.</p>
+<p>The app keeps its navigation flat: one home screen, one main server screen, and a focused set of setup flows and utility sheets around them. Here's the quick map:</p>
 <table>
-  <tr><th>Screen</th><th>What it is for</th></tr>
-  <tr><td>Main</td><td>your servers as cards, quick stats, and the ways into settings, support and this documentation</td></tr>
-  <tr><td>Create server</td><td>a step by step setup: name, type, version, memory, world, join address, optional modpack</td></tr>
-  <tr><td>Server detail</td><td>five tabs per server: dashboard, console, files, mods and plugins, settings</td></tr>
-  <tr><td>Settings</td><td>appearance, account, support, legal, developer options and the extension hub</td></tr>
-  <tr><td>Extensions</td><td>install, enable and configure extensions</td></tr>
-  <tr><td>Themes</td><td>the app colours plus every theme contributed by an extension</td></tr>
-  <tr><td>Support</td><td>tickets, bug reports and the personal chat</td></tr>
-  <tr><td>Onboarding</td><td>the first start: language, terms, account, background permissions, nickname</td></tr>
+  <tr><th>Screen</th><th>What you do there</th></tr>
+  <tr><td>Main</td><td>see all your servers as cards, check live resource totals, and jump into settings, support, or these docs</td></tr>
+  <tr><td>Create server</td><td>walk through name, software type, Minecraft version, RAM, world setup, join address, and optional modpack</td></tr>
+  <tr><td>Server detail</td><td>five tabs per server: dashboard, console, files, mods and plugins, and settings</td></tr>
+  <tr><td>Settings</td><td>appearance, account, support, legal docs, developer options, and the extension hub</td></tr>
+  <tr><td>Extensions</td><td>install, toggle, update, and configure app extensions</td></tr>
+  <tr><td>Themes</td><td>switch built-in colour schemes or apply themes provided by extensions</td></tr>
+  <tr><td>Support</td><td>open support tickets, file bug reports, or use the encrypted personal chat</td></tr>
+  <tr><td>Onboarding</td><td>first-launch setup: language, terms, optional account, background battery permissions, and nickname</td></tr>
 </table>
 """),
         ("dashboard-home", "Your servers, the home screen", """
-<p>The home screen lists every server as a card with its name, type, version and live state. A tap opens the server screen, a long press gives the quick actions that matter in the moment, and the cards carry the numbers you check most often: players, memory and uptime.</p>
-<p>Servers that are hibernated appear greyed out with a wake button. Servers that are starting or stopping show the animated state instead of a button, so you can see that something is happening without opening the console.</p>
-<p>Above the list you find the entry points to settings, support, Discord and the debug log, plus the button that starts a new server. The stats card at the top summarises how many servers exist, how many are online and how much memory they use together.</p>
+<p>Your home screen shows every server as a card with its name, server software, Minecraft version, and live status. Tap a card to open the full server screen, or long-press it for quick actions without leaving the list. Each card also puts the numbers you actually care about up front: player count, RAM usage, and uptime.</p>
+<p>Hibernated servers appear dimmed with a one-tap wake button. When a server is mid-startup or shutting down, the button turns into an animated status indicator so you know it's working without having to open the console.</p>
+<p>At the top of the screen, you'll find shortcuts to settings, support, Discord, the debug log, and the button to spin up a new server. Right above the list, a summary card adds up how many servers you have, how many are currently online, and how much memory they're using combined.</p>
 """),
         ("create-server", "Creating a server", """
-<p>The wizard is deliberately linear, because every step has consequences that are hard to undo later. Name and join address first, then the server software, then the Minecraft version, then memory, then the world.</p>
+<p>The creation wizard walks you through one choice at a time in a fixed order, because choices like software type and version affect everything that comes after. You'll set the name and join address first, then pick your server software, Minecraft version, memory budget, and world configuration.</p>
 <ul>
-  <li><b>Server type</b>: Paper, Purpur, Folia and Vanilla for plugins, Fabric, Forge and NeoForge for mods, and PumpkinMC, the native server that needs no Java at all.</li>
-  <li><b>Minecraft version</b>: only versions the chosen software actually publishes, with short notes on mod and plugin availability.</li>
-  <li><b>Memory</b>: the wizard shows what the device can spare while other servers keep running.</li>
-  <li><b>World</b>: type, seed and a few presets, including a flat world for building tests.</li>
-  <li><b>Setup mode</b>: the Koda design installs a tuned configuration with sensible gameplay defaults, or you start from a clean vanilla setup.</li>
+  <li><b>Server type</b>: Paper, Purpur, Folia, and Vanilla if you want plugins or vanilla gameplay; Fabric, Forge, and NeoForge for mods; or PumpkinMC, a native server that runs without Java at all.</li>
+  <li><b>Minecraft version</b>: filtered to versions that your chosen server software actually ships, complete with quick notes on plugin and mod compatibility.</li>
+  <li><b>Memory</b>: the slider shows what your phone can safely spare alongside any other running servers.</li>
+  <li><b>World</b>: configure world type, custom seed, or quick presets like a flat world for testing builds.</li>
+  <li><b>Setup mode</b>: pick the Koda design to start with a tuned config and solid gameplay defaults, or choose a completely clean vanilla setup.</li>
 </ul>
-<p>After the wizard the server is created locally and registered in the cloud, and the first start downloads the server jar and, if needed, the matching Java runtime. Both downloads show progress in the console.</p>
+<p>Once you finish the wizard, the app creates the server locally and registers it in the cloud. On its very first start, it automatically downloads the server jar and the matching Java runtime if needed, showing live progress right inside the console.</p>
 """),
         ("server-dashboard", "The server dashboard tab", """
-<p>The dashboard is the tab you land on, and it is built to answer three questions: is the server healthy, who is playing, and what can I do right now.</p>
-<p>Status and address come first, with the join address in a copyable form and a button to change it. The player panel lists who is online, with avatars and one tap into the full player sheet for stats, inventory and moderation actions. Memory and CPU usage update live, and the quick action row starts, stops and restarts the server with a confirmation countdown when players are online.</p>
-<p>When a server crashes, the dashboard is also where the crash report appears: a classified reason, the suggested fix, and the last log lines. Applying a suggested fix is a single tap and never guesses, it changes one known setting and tells you what it changed.</p>
+<p>When you tap into a server, you land on the dashboard tab. It's built to answer three questions in two seconds: is everything healthy, who's playing right now, and what actions do I need?</p>
+<p>Status and connectivity sit right at the top, with a copyable join address and a button to customize it. Below that, the player roster shows everyone online with their skins; tapping any player opens their full sheet with stats, live inventory, and moderation controls. CPU and RAM meters update in real time, and the quick-action bar lets you start, stop, or restart the server, automatically counting down in chat first if players are connected.</p>
+<p>If your server ever crashes, the dashboard swaps in a crash card with a classified root cause, a concrete suggested fix, and the final lines of the log. Applying a suggested fix takes one tap and never makes blind guesses: it adjusts one specific known setting and tells you exactly what it changed.</p>
 """),
         ("console", "The console", """
-<p>The console streams the server output live, stripped of the colour codes that Minecraft servers write, with the levels highlighted so warnings and errors stand out. Auto scroll follows the newest line until you scroll up, then it stays where you are, which is the behaviour you want while reading a stack trace.</p>
-<p>Above the input field sits a row of quick commands, and extensions can add their own chips to it. Commands you type are sent to the server process directly, so anything the server understands works here, including plugin commands.</p>
+<p>The console streams raw server output live, strips out messy Minecraft ANSI colour codes, and highlights log levels so warnings and errors jump off the screen. Auto-scroll follows incoming lines until you scroll up to read something, then stays pinned right where you left it so you can actually read a stack trace in peace.</p>
+<p>Just above the command bar sits a row of quick-command chips, and extensions can append their own chips there too. Anything you type goes straight to the server's stdin, so vanilla commands and plugin commands both work exactly as expected.</p>
 <ul>
-  <li><b>Copy</b> puts the visible log on the clipboard, handy for a support ticket.</li>
-  <li><b>Log</b> opens the full verbose log of the app itself, useful when a download or a start fails.</li>
-  <li><b>AI crash analysis</b> offers to read a crash with you, and asks for consent before anything leaves the device.</li>
+  <li><b>Copy</b> puts the visible console buffer on your clipboard, ready to paste into a support ticket.</li>
+  <li><b>Log</b> opens the app's own verbose log, which is where you look if a runtime download or tunnel startup fails before Minecraft even boots.</li>
+  <li><b>AI crash analysis</b> can walk through a crash log with you, and always asks for explicit consent before sending a single line off your phone.</li>
 </ul>
 """),
         ("files", "Files: browse, edit, unpack, export", """
-<p>The file tab is a full manager for the server folder. Tap a folder to enter it, tap a file to open the editor, long press an entry for the action sheet with rename, copy, cut, delete and share.</p>
+<p>The files tab gives you a full file manager rooted at your server directory. Tap folders to navigate, tap text files to open the built-in editor, or long-press any item to rename, copy, cut, delete, or share it.</p>
 <ul>
-  <li><b>Import</b> brings files in from anywhere the phone can read, including other apps and cloud providers.</li>
-  <li><b>Unpack here</b> extracts ZIP and RAR archives in place. Password protected RAR files are reported instead of failing silently.</li>
-  <li><b>Export</b> writes the whole folder as a ZIP into Downloads, without a wrapper folder so it can be reimported directly.</li>
-  <li><b>NBT viewer</b> opens player data, level data and other binary NBT files as a readable tree, read only by design.</li>
+  <li><b>Import</b> pulls files in from anywhere Android's file picker can see, including local storage, other apps, and cloud drives.</li>
+  <li><b>Unpack here</b> extracts ZIP and RAR archives right in place. If a RAR archive is password-protected, the app tells you plainly instead of failing silently.</li>
+  <li><b>Export</b> zips the entire server directory into your Downloads folder without an extra wrapper folder, so you can re-import it directly later.</li>
+  <li><b>NBT viewer</b> lets you inspect binary NBT files like player data and <code>level.dat</code> as a clean, readable tree (read-only on purpose so nothing gets corrupted).</li>
 </ul>
-<p>The editor is for text files up to a megabyte, with syntax friendly handling for properties, JSON and YAML, and a save button that warns when the server is running because some files are only read at start.</p>
+<p>The built-in text editor handles files up to 1 MB with clean formatting for properties, JSON, and YAML. If you hit save while the server is still online, it reminds you that many config files are only read at startup.</p>
 """),
         ("plugins", "Mods and plugins", """
-<p>Mods and plugins are managed in their own tab, and the install side is a Modrinth browser: search, filter by the server type and version, install with one tap, update with one tap.</p>
-<p>The installed list shows every jar with its metadata read from the file itself: name, version, authors and icon, with a Modrinth lookup as a fallback because many server jars ship no image. A switch enables and disables a jar by renaming it, and the trash keeps removed files for a while instead of deleting them outright.</p>
-<div class="callout">Server jars are not app extensions. This tab manages software that runs <b>inside</b> Minecraft. App extensions are a different system, described further down.</div>
+<p>Mods and plugins live in their own tab, complete with a built-in Modrinth browser. You can search, filter automatically by your server's software and Minecraft version, install with a tap, and update with a tap.</p>
+<p>Your installed list pulls metadata directly out of each jar (name, version, authors, and icon) and falls back to Modrinth when a jar doesn't bundle its own icon. Flipping a toggle disables a jar cleanly by renaming it rather than deleting it, and removing a jar moves it to trash for a while first in case you change your mind.</p>
+<div class="callout">Don't mix up server jars and app extensions. This tab manages plugins and mods running <b>inside</b> Minecraft. App extensions customize the KodaHosting app itself and are covered later in these docs.</div>
 """),
     ]),
     ("Server management", [
         ("lifecycle", "Starting, stopping, restarting", """
-<p>Starting a server is one tap, and the app orchestrates a lot behind that tap: it checks memory and network budget, prepares the runtime, writes generated configs, starts the process, and waits for the startup line before reporting the server as online.</p>
-<p>Stopping asks the server politely first, sends the save command, and only kills the process when it does not react. The force kill option exists and warns that world data may be lost, which is why it sits behind a confirmation.</p>
-<p>Restarts reuse the stop path, so players do not lose progress. When people are online, the server announces the restart in chat with a countdown.</p>
+<p>Starting a server looks like a single tap, but a lot happens behind the curtain: the app checks your phone's free RAM and network budget, gets the right runtime ready, writes any generated config files, launches the process, and watches the console for the startup completion line before flipping the status to online.</p>
+<p>Stopping always tries the graceful route first. It tells the server to save the world and shut down cleanly, and only terminates the process if it stops responding. A force-kill option is available when a server is truly hung, tucked behind a confirmation dialog because killing a JVM mid-write can corrupt chunks.</p>
+<p>Restarts go through the exact same graceful stop sequence so nobody loses inventory or builds. If players are online when you trigger a restart, the app broadcasts a countdown warning in chat first.</p>
 """),
         ("versions", "Changing the Minecraft version", """
-<p>Version changes live behind a wheel on the dashboard and are treated as a structural operation, not a setting. The list only shows versions the current server software really publishes, and the switch takes a backup first.</p>
+<p>You can change a server's Minecraft version from the dashboard settings wheel. Because shifting versions touches world formats and plugin compatibility, the app treats it as a real migration rather than a casual toggle. Only versions officially published for your current server software appear in the list.</p>
 <ul>
-  <li><b>Upgrades</b> ask for a backup but let you continue without one.</li>
-  <li><b>Downgrades</b> require one, because worlds and chunks are not backwards compatible.</li>
-  <li>The old jar is kept until the new one started successfully.</li>
+  <li><b>Upgrades</b> strongly recommend taking a backup first, though you can choose to skip it.</li>
+  <li><b>Downgrades</b> require a backup before continuing, since Minecraft worlds and chunks aren't backwards-compatible.</li>
+  <li>Your previous server jar stays safely in place until the new version boots cleanly.</li>
 </ul>
-<p>Plugins and mods are not migrated automatically. After a version change the app tells you to check the mods tab, and Modrinth update checks usually find matching builds.</p>
+<p>Plugins and mods won't auto-migrate across major Minecraft updates. Once the switch finishes, the app nudges you to check the mods/plugins tab, where Modrinth update checks usually locate matching builds right away.</p>
 """),
         ("backups", "Backups and restore", """
-<p>Backups are ZIP archives of the whole server folder, stored beside the app, and they are the reason a bad afternoon stays an afternoon. You can create one manually, or let the app keep a schedule: on stop, daily, or both.</p>
+<p>Backups are standard ZIP snapshots of your entire server folder stored alongside the app, and they're the fastest way to make sure a bad plugin or accidental TNT mishap stays a minor inconvenience. You can trigger a backup manually whenever you want, or set up automatic backups on stop, daily, or both.</p>
 <ul>
-  <li><b>Keep count</b> decides how many copies survive the rotation.</li>
-  <li><b>Restore</b> replaces the server folder with the chosen state and keeps the current files until the restore finishes.</li>
-  <li><b>Size and age</b> are shown per backup, so cleaning up is a decision and not a guess.</li>
+  <li><b>Keep count</b> sets how many backups to retain before older snapshots rotate out.</li>
+  <li><b>Restore</b> rolls your server folder back to the selected archive while keeping your current files safe until the restore finishes cleanly.</li>
+  <li><b>Size and age</b> appear on every backup entry so freeing up storage is an informed choice rather than guesswork.</li>
 </ul>
-<div class="callout">Restoring needs a stopped server. The app refuses otherwise, and that refusal has saved more worlds than any warning text could.</div>
+<div class="callout">You can only restore a backup while the server is stopped. The app enforces that strictly, and it has saved plenty of worlds from half-written corruption.</div>
 """),
         ("schedules", "Automations and schedules", """
-<p>The automation sheet plans recurring work: restart, stop, save the world, announce something or run a command. Jobs can run on an interval or daily at a fixed time, and they can wait until nobody is online.</p>
-<p>A nightly restart with an announcement a few minutes ahead is the usual first job. The app notes in chat before an empty only restart, so players are never surprised, and the KodaDash dashboard shows the same job list because the app mirrors it into the server folder.</p>
+<p>The automation sheet lets you schedule recurring chores: restart, stop, save the world, broadcast a chat announcement, or run any console command. Tasks can repeat on an interval or run daily at a specific clock time, and you can optionally tell a task to wait until the server is empty.</p>
+<p>Most hosts start with a nightly restart paired with a chat warning a few minutes beforehand. When an empty-only restart is queued, the app announces it in chat so nobody gets caught off guard. Everything you configure here is mirrored into the server folder so KodaDash displays the exact same schedule list in the browser.</p>
 """),
         ("players", "Players, stats and moderation", """
-<p>Player management covers both worlds: the live roster of who is connected, and the history of everyone who ever joined. Tapping a player opens a sheet with their skin, playtime, statistics and inventory rendered from the actual save data.</p>
+<p>Player management covers both sides of your community: who's connected right now and everyone who has joined in the past. Tap any player to pull up their skin, total playtime, gameplay stats, and a live inventory view read directly from their save data.</p>
 <ul>
-  <li><b>Live actions</b>: kick, ban, pardon, op and deop, message, gamemode, teleport, experience.</li>
-  <li><b>Care actions</b>: heal, feed, saturate, and a full inventory wipe that asks twice.</li>
-  <li><b>Inventory</b> can be rearranged by dragging items between slots, which writes straight into the player save.</li>
-  <li><b>Whitelist</b> switches per player and for the server as a whole, with the same rules the server uses.</li>
+  <li><b>Live actions</b>: kick, ban, pardon, op/deop, private message, gamemode switch, teleport, and XP adjustments.</li>
+  <li><b>Care actions</b>: heal, feed, saturate, plus a full inventory wipe guarded by a double confirmation.</li>
+  <li><b>Inventory editing</b>: drag items straight between slots to rearrange a player's inventory, written right back into their player data.</li>
+  <li><b>Whitelist</b>: toggle server-wide whitelist enforcement and add or remove individual players using the server's native whitelist rules.</li>
 </ul>
 """),
         ("motd", "The MOTD editor", """
-<p>The MOTD is the two line text players see in their server list, and the editor treats it like the formatting puzzle it is. Colours, bold, italic, underline, obfuscated, reset, plus hex colours in all three notations Minecraft accepts, are inserted as proper codes while you type.</p>
-<p>Every code button inserts into the field and keeps your cursor in the right place, and a live preview shows how the text will look. If you prefer raw editing, the plain properties view is still one tab away.</p>
-<div class="callout">The MOTD field can be resized by dragging its lower edge, which helps with long texts and small screens.</div>
+<p>Your MOTD is the two-line banner players see in their Minecraft multiplayer list, and writing colour codes by hand is nobody's idea of fun. The built-in editor gives you formatting buttons for colours, bold, italic, underline, obfuscated text, resets, and hex colours in all three formats Minecraft accepts.</p>
+<p>Each toolbar button drops the right code at your cursor without losing your typing position, while a live preview shows how it will look in-game. If you'd rather edit the raw text directly, the plain <code>server.properties</code> view is still right there in the files tab.</p>
+<div class="callout">Tip: drag the bottom edge of the MOTD input box to resize it when you're crafting longer messages on a smaller screen.</div>
 """),
         ("resourcepack", "Resource packs", """
-<p>A resource pack is served by the server itself, and the app handles the whole chain: pick a ZIP, upload it into the server folder, set the pack URL and the SHA-1 checksum in the properties, and switch the pack requirement on or off.</p>
-<p>KodaDash serves the file over the tunnel so players can download it through the join address, which means no external hosting is needed. The dashboard shows whether a pack is active and how large it is.</p>
+<p>You don't need an external file host to serve a custom resource pack. Pick a ZIP from your phone, and the app handles every step: copies it into the server folder, calculates its SHA-1 checksum, updates the pack URL and hash in <code>server.properties</code>, and lets you flip the required-pack toggle on or off.</p>
+<p>KodaDash serves the pack straight over your tunnel on your server's join address, so players download it automatically on connect. The dashboard shows whether a resource pack is active and how big the download is.</p>
 """),
         ("world", "World settings: type, seed, gameplay", """
-<p>World type, seed, gamemode, difficulty, view and simulation distance, spawn protection and hardcore mode are all edited in the settings tab and written into <code>server.properties</code>. The app reads the file back afterwards and compares it to what it wrote, so manual edits are never overwritten silently.</p>
-<p>If you change a value by hand while the server is stopped, the app notices the drift on the next visit and asks which value should win. That is the reason the file and the interface never disagree, a problem that otherwise shows up as a server that ignores its own settings.</p>
+<p>World type, seed, gamemode, difficulty, view and simulation distance, spawn protection, and hardcore mode all live in the settings tab and write directly to <code>server.properties</code>. After saving, the app reads the file back and compares values so any manual edits you made in the text editor never get silently clobbered.</p>
+<p>If you tweak <code>server.properties</code> by hand while the server is offline, the app spots the mismatch next time you open settings and asks which version you want to keep. That way the UI and the config file never drift out of sync.</p>
 """),
         ("memory", "Memory settings", """
-<p>Each server gets its own heap size, and the app guards the total: Android keeps a reserve for itself, and starting a second server can only use what is left. The RAM slider shows what fits right now and warns when a value would push the device into swapping.</p>
-<p>Changing memory requires a restart to take effect, because it becomes a JVM start argument. The app uses it to power the crash advice as well: an out of memory crash arrives with a suggested value that fits the device, not an arbitrary number.</p>
+<p>Every server gets its own JVM heap limit, and the app keeps an eye on the global ceiling. Android always needs breathing room for itself, so if you launch a second server, the RAM slider automatically caps itself to what's actually free and warns you before pushing the phone into heavy swapping.</p>
+<p>Because heap size is passed as a JVM launch flag, changing it takes effect on the next restart. The app also feeds your device's real memory budget into crash diagnostics, so if a server runs out of memory, the recommended fix suggests a realistic number for your specific phone rather than a generic guess.</p>
 """),
         ("java", "Java runtimes", """
-<p>Minecraft servers need a Java runtime per version, and the app bundles none of them by default. Instead it downloads the matching runtime when a server needs it, from JDK 25 down to 8 and 17, and remembers the choice per server.</p>
+<p>Different Minecraft versions require different Java versions, and bundling all of them inside the APK would make it massive. Instead, KodaHosting downloads the exact runtime a server needs on demand (covering everything from JDK 25 down to Java 17 and Java 8) and remembers that preference per server.</p>
 <ul>
-  <li><b>Automatic</b> picks the runtime that matches the server version and software.</li>
-  <li><b>Manual</b> lets you pin a version, for example a mod that insists on Java 17.</li>
-  <li><b>Fallback</b> starts the server anyway when a runtime is broken, and tells you what it did and why.</li>
+  <li><b>Automatic</b> picks the right JDK for your server software and Minecraft version.</li>
+  <li><b>Manual</b> lets you pin a specific runtime, which is handy if a legacy mod refuses to run on anything newer than Java 17.</li>
+  <li><b>Fallback</b> keeps your server bootable if a selected runtime is broken, clearly telling you which fallback it used and why.</li>
 </ul>
-<p>The download progress is visible in the console tab, and runtimes are shared between servers, so the second server of the same version starts much faster.</p>
+<p>Runtime downloads stream their progress into the console tab. Downloaded runtimes are shared across all servers on your phone, so spinning up a second server on the same Java version is much faster.</p>
 """),
         ("hibernation", "Hibernate and wake", """
-<p>Hibernation takes a server off the air without deleting it: the app stops the process, removes the join address from the network, packs the folder, and leaves a marker behind so the dashboard shows a sleeping server instead of a broken one.</p>
-<p>Waking it restores the folder, requests a fresh join address, and starts the process. The point of the feature is the phone: a hibernated server uses no memory, no battery and no tunnel, which matters when you host more than one world.</p>
-<div class="callout">The transfer between two devices speaks the same language, which is why both features share their packing code.</div>
+<p>Hibernation puts a server to sleep without deleting your work. The app stops the process, releases the join address on the tunnel, packs up the server folder, and leaves a clean marker so your home screen shows a sleeping server instead of a missing one.</p>
+<p>When you're ready to play again, waking it unpacks the folder, grabs a fresh join address, and boots the server right back up. A hibernated server consumes zero RAM, zero battery, and zero tunnel bandwidth, which makes a big difference if you juggle several worlds on one phone.</p>
+<div class="callout">Device-to-device server transfers use the exact same archive format under the hood, which is why both features share the same packing pipeline.</div>
 """),
         ("databases", "MariaDB and Redis", """
-<p>For plugins that need a database, the app can run MariaDB or Redis next to the server, on the phone, with credentials you choose in the wizard. Both run as native processes from the same runtime set that runs the servers, so there is nothing to install separately.</p>
-<p>The connection details are shown in the database card, including port, user and a generated password, and the app keeps the data directory beside the server folder so a backup covers both. The server type <b>Database</b> in the main list is exactly this: a database instance without a Minecraft server around it.</p>
+<p>Running plugins that expect a real database? KodaHosting can run MariaDB or Redis right alongside your Minecraft server on the same phone, using credentials you pick in the setup wizard. Both run as native binaries from the same runtime stack, so there's nothing extra to install.</p>
+<p>The database card displays everything your plugin config needs (port, username, and generated password), and the data directory sits right beside the server files so normal backups capture both together. If you see the <b>Database</b> server type on the main list, that's simply a standalone MariaDB or Redis instance running without a Minecraft server attached.</p>
 """),
     ]),
 ]

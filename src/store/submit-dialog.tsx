@@ -113,10 +113,12 @@ function FileField({
       <button
         type="button"
         onClick={() => input.current?.click()}
-        className="flex h-9 w-full min-w-0 items-center gap-3 rounded-md border border-input px-2 text-left text-sm shadow-xs transition-colors hover:bg-accent/50 focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:outline-none"
+        className="flex h-10 w-full min-w-0 items-center gap-3 rounded-xl border border-zinc-200 bg-white px-2.5 text-left text-sm transition-colors hover:bg-zinc-50 focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:outline-none dark:border-white/[0.1] dark:bg-white/[0.03] dark:hover:bg-white/[0.06]"
       >
-        <span className="shrink-0 rounded-sm bg-secondary px-2 py-1 text-xs font-medium">Choose file</span>
-        <span className="truncate text-muted-foreground">{fileName || "No file chosen"}</span>
+        <span className="shrink-0 rounded-lg border border-zinc-200 bg-zinc-100 px-2.5 py-1 text-xs font-medium text-zinc-900 dark:border-white/[0.08] dark:bg-white/[0.08] dark:text-zinc-100">
+          Choose file
+        </span>
+        <span className="truncate text-zinc-500 dark:text-zinc-400">{fileName || "No file chosen"}</span>
       </button>
       <input
         ref={input}
@@ -127,7 +129,7 @@ function FileField({
         className="sr-only"
         onChange={(event) => onFiles(Array.from(event.target.files || []))}
       />
-      {hint ? <p className="text-xs text-muted-foreground">{hint}</p> : null}
+      {hint ? <p className="text-xs text-zinc-500 dark:text-zinc-400">{hint}</p> : null}
     </div>
   );
 }
@@ -182,10 +184,10 @@ export function SubmitDialog({
       if (!pkg) throw new Error("Pick the .kodaext package.");
       if (pkg.size > 20 * 1024 * 1024) throw new Error("The package must be under 20 MB.");
 
-      setStatus({ kind: "busy", text: "Hashing the package…" });
+      setStatus({ kind: "busy", text: "Hashing the package..." });
       const sha256 = await sha256Hex(pkg);
 
-      setStatus({ kind: "busy", text: "Uploading images…" });
+      setStatus({ kind: "busy", text: "Uploading images..." });
       const iconUrl = icon ? await uploadImage(icon) : null;
       const shotUrls: string[] = [];
       for (const shot of screenshots.slice(0, 4)) shotUrls.push(await uploadImage(shot));
@@ -209,7 +211,7 @@ export function SubmitDialog({
         file_size: pkg.size,
       };
 
-      setStatus({ kind: "busy", text: "Creating the submission…" });
+      setStatus({ kind: "busy", text: "Creating the submission..." });
       const existing = mineItems.find((item) => item.ext_id === extId);
       const created = existing
         ? await api<CreatedSubmission>(`/v1/extensions/${encodeURIComponent(extId)}/versions`, {
@@ -223,7 +225,7 @@ export function SubmitDialog({
             body: JSON.stringify(metadata),
           });
 
-      setStatus({ kind: "busy", text: "Uploading the package…" });
+      setStatus({ kind: "busy", text: "Uploading the package..." });
       assertSafeUploadUrl(created.upload.signed_url);
       const put = await fetch(created.upload.signed_url, {
         method: "PUT",
@@ -232,7 +234,7 @@ export function SubmitDialog({
       });
       if (!put.ok) throw new Error(`package upload failed (${put.status})`);
 
-      setStatus({ kind: "busy", text: "Verifying the package…" });
+      setStatus({ kind: "busy", text: "Verifying the package..." });
       await api(`/v1/extensions/${encodeURIComponent(extId)}/finalize`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -252,10 +254,12 @@ export function SubmitDialog({
 
   return (
     <Dialog open={open} onOpenChange={(next) => (busy ? null : onOpenChange(next))}>
-      <DialogContent className="max-h-[92vh] gap-0 overflow-y-auto p-0 sm:max-w-2xl">
-        <DialogHeader className="border-b p-6 pr-14">
-          <DialogTitle>Submit an extension</DialogTitle>
-          <DialogDescription>
+      <DialogContent className="max-h-[92vh] gap-0 overflow-y-auto rounded-2xl border-zinc-200/80 bg-white p-0 sm:max-w-2xl dark:border-white/[0.08] dark:bg-[#09090b]">
+        <DialogHeader className="border-b border-zinc-200/80 p-6 pr-14 dark:border-white/[0.06]">
+          <DialogTitle className="text-lg font-medium tracking-[-0.02em] text-zinc-950 dark:text-white">
+            Submit an extension
+          </DialogTitle>
+          <DialogDescription className="text-sm text-zinc-500 dark:text-zinc-400">
             A package and its metadata go to review. The store shows it after a hand check.
           </DialogDescription>
         </DialogHeader>
@@ -263,7 +267,9 @@ export function SubmitDialog({
         <form onSubmit={submit} className="space-y-7 p-6">
           <fieldset disabled={busy} className="space-y-7">
             <section className="space-y-4">
-              <h3 className="text-sm font-semibold">Package</h3>
+              <h3 className="font-mono text-[11px] uppercase tracking-[0.14em] text-zinc-500 dark:text-zinc-400">
+                Package
+              </h3>
               <div className="grid gap-4 sm:grid-cols-2">
                 <div className="space-y-2">
                   <Label htmlFor="in-extid">Extension id</Label>
@@ -274,7 +280,7 @@ export function SubmitDialog({
                     onChange={(event) => set("extId", event.target.value)}
                     required
                   />
-                  <p className="text-xs text-muted-foreground">Lowercase, dots, no spaces.</p>
+                  <p className="text-xs text-zinc-500 dark:text-zinc-400">Lowercase, dots, no spaces.</p>
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="in-name">Name</Label>
@@ -341,10 +347,12 @@ export function SubmitDialog({
               />
             </section>
 
-            <Separator />
+            <Separator className="bg-zinc-200/80 dark:bg-white/[0.06]" />
 
             <section className="space-y-4">
-              <h3 className="text-sm font-semibold">Details</h3>
+              <h3 className="font-mono text-[11px] uppercase tracking-[0.14em] text-zinc-500 dark:text-zinc-400">
+                Details
+              </h3>
               <div className="grid gap-4 sm:grid-cols-2">
                 <div className="space-y-2">
                   <Label htmlFor="in-author">Author</Label>
@@ -359,7 +367,7 @@ export function SubmitDialog({
                   <Label htmlFor="in-source">Source code URL</Label>
                   <Input
                     id="in-source"
-                    placeholder="https://github.com/…"
+                    placeholder="https://github.com/..."
                     value={form.source}
                     onChange={(event) => set("source", event.target.value)}
                   />
@@ -394,10 +402,12 @@ export function SubmitDialog({
               </div>
             </section>
 
-            <Separator />
+            <Separator className="bg-zinc-200/80 dark:bg-white/[0.06]" />
 
             <section className="space-y-4">
-              <h3 className="text-sm font-semibold">Permissions</h3>
+              <h3 className="font-mono text-[11px] uppercase tracking-[0.14em] text-zinc-500 dark:text-zinc-400">
+                Permissions
+              </h3>
               <div className="grid gap-3 sm:grid-cols-2">
                 {PERMISSIONS.map((permission) => (
                   <div key={permission} className="flex items-center gap-2.5">
@@ -414,10 +424,12 @@ export function SubmitDialog({
               </div>
             </section>
 
-            <Separator />
+            <Separator className="bg-zinc-200/80 dark:bg-white/[0.06]" />
 
             <section className="space-y-4">
-              <h3 className="text-sm font-semibold">Images</h3>
+              <h3 className="font-mono text-[11px] uppercase tracking-[0.14em] text-zinc-500 dark:text-zinc-400">
+                Images
+              </h3>
               <div className="grid gap-4 sm:grid-cols-2">
                 <FileField
                   id="in-icon"
@@ -443,6 +455,7 @@ export function SubmitDialog({
               variant={status.kind === "err" ? "destructive" : "default"}
               role="status"
               aria-live="polite"
+              className="rounded-xl"
             >
               {status.kind === "busy" ? <Loader2 className="size-4 animate-spin" /> : null}
               {status.kind === "ok" ? <CheckCircle2 className="size-4 text-emerald-600 dark:text-emerald-400" /> : null}
@@ -451,7 +464,7 @@ export function SubmitDialog({
             </Alert>
           ) : null}
 
-          <Button type="submit" className="w-full" disabled={busy}>
+          <Button type="submit" className="koda-btn-black h-10 w-full rounded-full" disabled={busy}>
             {busy ? <Loader2 className="size-4 animate-spin" /> : <Upload className="size-4" />}
             Submit for review
           </Button>

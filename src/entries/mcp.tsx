@@ -1,10 +1,4 @@
-import { StrictMode } from "react";
-import { createRoot } from "react-dom/client";
-import "@/index.css";
+import { mountPage } from "@/lib/mount-page";
 import { McpPage } from "@/pages/mcp";
 
-createRoot(document.getElementById("root")!).render(
-  <StrictMode>
-    <McpPage />
-  </StrictMode>,
-);
+mountPage(<McpPage />);

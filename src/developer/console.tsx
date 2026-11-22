@@ -19,9 +19,6 @@ import {
   Sun,
 } from "lucide-react";
 import { toast } from "sonner";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import {
   Sidebar,
@@ -45,13 +42,13 @@ import { SiteFooter } from "@/components/site-footer";
 import type { DevExtension, DeveloperMe } from "@/developer/types";
 import {
   displayStatus,
-  displayStatusTone,
+  displayStatusDotClasses,
   formatBytes,
   formatDate,
   formatDateTime,
   isEnded,
   latestVersion,
-  statusTone,
+  statusDotClasses,
 } from "@/developer/types";
 import { DeveloperOverview } from "@/developer/overview";
 import { VerifyEmail } from "@/developer/verify-email";
@@ -198,54 +195,58 @@ function ExtensionList({
     <div className="space-y-6">
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-semibold tracking-tight">Extensions</h1>
-          <p className="mt-1 text-sm text-muted-foreground">
-            Store listing, releases and code for everything you publish.
+          <h1 className="font-display text-2xl font-medium tracking-[-0.03em] text-zinc-950 dark:text-white">
+            Extensions
+          </h1>
+          <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
+            Store listing, releases, and package source for everything you publish.
           </p>
         </div>
-        <Button onClick={onNew}>
-          <Plus className="size-4" /> New extension
-        </Button>
+        <button type="button" onClick={onNew} className="koda-btn-black h-9 px-4 text-xs">
+          <Plus className="size-3.5" /> New extension
+        </button>
       </div>
 
       <div className="flex flex-wrap items-center justify-between gap-3">
         <StatusFilters value={status} onChange={setStatus} counts={counts} />
         <div className="relative w-full sm:w-64">
-          <Search className="pointer-events-none absolute top-1/2 left-2.5 size-4 -translate-y-1/2 text-muted-foreground" />
+          <Search className="pointer-events-none absolute top-1/2 left-3.5 size-4 -translate-y-1/2 text-zinc-400 dark:text-zinc-500" />
           <Input
             value={search}
             onChange={(event) => setSearch(event.target.value)}
             placeholder="Search name or id"
-            className="pl-8"
+            className="h-9 rounded-full border-zinc-200 bg-zinc-100/70 pl-9 text-xs text-zinc-950 placeholder:text-zinc-400 focus-visible:ring-1 focus-visible:ring-zinc-400/50 dark:border-white/[0.08] dark:bg-white/[0.05] dark:text-white dark:placeholder:text-zinc-500 dark:focus-visible:ring-white/20"
             aria-label="Search extensions"
           />
         </div>
       </div>
 
       {filtered.length === 0 ? (
-        <Card className="gap-0 p-10 text-center shadow-none">
-          <PackageOpen className="mx-auto size-6 text-muted-foreground" />
-          <p className="mt-3 text-sm font-medium">
+        <div className="resend-glass-panel rounded-2xl p-12 text-center">
+          <div className="mx-auto mb-3 flex size-11 items-center justify-center rounded-xl bg-zinc-100 text-zinc-500 dark:bg-white/[0.05] dark:text-zinc-400">
+            <PackageOpen className="size-5" />
+          </div>
+          <p className="font-display text-sm font-medium text-zinc-950 dark:text-white">
             {extensions.length === 0 ? "No extensions yet" : "Nothing matches this filter"}
           </p>
-          <p className="mx-auto mt-1 max-w-md text-sm text-muted-foreground">
+          <p className="mx-auto mt-1 max-w-md text-sm text-zinc-600 dark:text-zinc-400">
             {extensions.length === 0
-              ? "Upload a .kodaext package to start. The first version goes through the normal review."
+              ? "Upload a .kodaext package to get started. The first version goes through review."
               : "Clear the search or pick another status."}
           </p>
           {extensions.length === 0 ? (
-            <Button size="sm" className="mt-4" onClick={onNew}>
-              <Plus className="size-4" /> New extension
-            </Button>
+            <button type="button" onClick={onNew} className="koda-btn-black mt-5 h-9 px-4 text-xs">
+              <Plus className="size-3.5" /> New extension
+            </button>
           ) : null}
-        </Card>
+        </div>
       ) : (
-        <Card className="gap-0 overflow-hidden p-0 shadow-none">
+        <div className="resend-glass-panel overflow-hidden rounded-2xl">
           <div className="overflow-x-auto">
             <table className="w-full min-w-[720px] text-left text-sm">
               <thead>
-                <tr className="border-b bg-muted/30 text-[11px] font-medium tracking-wide text-muted-foreground uppercase">
-                  <th className="px-4 py-3 font-medium">Extension</th>
+                <tr className="border-b border-zinc-200/80 bg-zinc-50/80 font-mono text-[10.5px] font-medium tracking-[0.06em] text-zinc-500 uppercase dark:border-white/[0.06] dark:bg-white/[0.02]">
+                  <th className="px-5 py-3 font-medium">Extension</th>
                   <th className="px-4 py-3 font-medium">Status</th>
                   <th className="px-4 py-3 font-medium">Latest</th>
                   <th className="px-4 py-3 font-medium">Downloads</th>
@@ -253,19 +254,20 @@ function ExtensionList({
                   <th className="px-4 py-3" />
                 </tr>
               </thead>
-              <tbody>
+              <tbody className="divide-y divide-zinc-200/70 dark:divide-white/[0.06]">
                 {filtered.map((ext) => {
                   const latest = latestVersion(ext);
                   const iconSrc = safeImageUrl(ext.icon_url);
+                  const tone = displayStatusDotClasses(ext);
                   return (
                     <tr
                       key={ext.ext_id}
-                      className="cursor-pointer border-b last:border-0 hover:bg-accent/30"
+                      className="group cursor-pointer transition-colors hover:bg-black/[0.025] dark:hover:bg-white/[0.03]"
                       onClick={() => onOpen(ext.ext_id)}
                     >
-                      <td className="px-4 py-3">
+                      <td className="px-5 py-3.5">
                         <div className="flex items-center gap-3">
-                          <div className="flex size-9 shrink-0 items-center justify-center overflow-hidden rounded-lg border bg-muted text-xs font-medium">
+                          <div className="flex size-9 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-zinc-100 font-display text-xs font-medium text-zinc-700 ring-1 ring-black/[0.06] dark:bg-white/[0.06] dark:text-white dark:ring-white/[0.08]">
                             {iconSrc ? (
                               <img src={iconSrc} alt="" className="size-full object-cover" />
                             ) : (
@@ -273,29 +275,32 @@ function ExtensionList({
                             )}
                           </div>
                           <div className="min-w-0">
-                            <p className="truncate font-medium">{ext.name}</p>
-                            <p className="truncate font-mono text-[11px] text-muted-foreground">
+                            <p className="truncate font-display text-sm font-medium text-zinc-950 dark:text-white">
+                              {ext.name}
+                            </p>
+                            <p className="truncate font-mono text-[11px] text-zinc-500">
                               {ext.ext_id}
                             </p>
                           </div>
                         </div>
                       </td>
-                      <td className="px-4 py-3">
-                        <Badge variant="outline" className={`font-normal ${displayStatusTone(ext)}`}>
+                      <td className="px-4 py-3.5">
+                        <span className={cn("inline-flex items-center gap-1.5 font-mono text-[11px] font-medium", tone.text)}>
+                          <span className={cn("size-1.5 rounded-full", tone.dot)} />
                           {displayStatus(ext)}
-                        </Badge>
+                        </span>
                       </td>
-                      <td className="px-4 py-3 font-mono text-xs tabular">
+                      <td className="px-4 py-3.5 font-mono text-xs text-zinc-700 tabular dark:text-zinc-300">
                         {latest ? `v${latest.version} (${latest.version_code})` : "-"}
                       </td>
-                      <td className="px-4 py-3 font-mono text-xs text-muted-foreground tabular">
+                      <td className="px-4 py-3.5 font-mono text-xs text-zinc-500 tabular">
                         {ext.downloads.toLocaleString()}
                       </td>
-                      <td className="px-4 py-3 font-mono text-xs text-muted-foreground tabular">
+                      <td className="px-4 py-3.5 font-mono text-xs text-zinc-500 tabular">
                         {formatDate(ext.updated_at)}
                       </td>
-                      <td className="px-4 py-3 text-right">
-                        <ChevronRight className="ml-auto size-4 text-muted-foreground" />
+                      <td className="px-4 py-3.5 text-right">
+                        <ChevronRight className="ml-auto size-4 text-zinc-400 transition-transform group-hover:translate-x-0.5 group-hover:text-zinc-700 dark:text-zinc-600 dark:group-hover:text-zinc-300" />
                       </td>
                     </tr>
                   );
@@ -303,7 +308,7 @@ function ExtensionList({
               </tbody>
             </table>
           </div>
-        </Card>
+        </div>
       )}
     </div>
   );
@@ -327,6 +332,7 @@ function Workspace({
   onChanged: () => void;
 }) {
   const latest = latestVersion(ext);
+  const tone = displayStatusDotClasses(ext);
   const tabs: { id: WorkspaceTab; label: string }[] = [
     { id: "listing", label: "Store listing" },
     { id: "releases", label: "Releases" },
@@ -339,13 +345,13 @@ function Workspace({
         <button
           type="button"
           onClick={onBack}
-          className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground"
+          className="inline-flex items-center gap-1.5 text-xs text-zinc-500 transition-colors hover:text-zinc-950 dark:text-zinc-400 dark:hover:text-white"
         >
           <ArrowLeft className="size-3.5" /> All extensions
         </button>
         <div className="mt-3 flex flex-wrap items-start justify-between gap-4">
-          <div className="flex min-w-0 items-center gap-3">
-            <div className="flex size-12 shrink-0 items-center justify-center overflow-hidden rounded-xl border bg-muted text-base font-medium">
+          <div className="flex min-w-0 items-center gap-3.5">
+            <div className="flex size-12 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-zinc-100 font-display text-base font-medium text-zinc-800 ring-1 ring-black/[0.07] dark:bg-white/[0.06] dark:text-white dark:ring-white/[0.09]">
               {safeImageUrl(ext.icon_url) ? (
                 <img src={safeImageUrl(ext.icon_url)!} alt="" className="size-full object-cover" />
               ) : (
@@ -353,13 +359,16 @@ function Workspace({
               )}
             </div>
             <div className="min-w-0">
-              <div className="flex flex-wrap items-center gap-2">
-                <h1 className="truncate text-xl font-semibold tracking-tight">{ext.name}</h1>
-                <Badge variant="outline" className={`font-normal ${displayStatusTone(ext)}`}>
+              <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+                <h1 className="truncate font-display text-xl font-medium tracking-[-0.02em] text-zinc-950 dark:text-white">
+                  {ext.name}
+                </h1>
+                <span className={cn("inline-flex items-center gap-1.5 font-mono text-[11px] font-medium", tone.text)}>
+                  <span className={cn("size-1.5 rounded-full", tone.dot)} />
                   {displayStatus(ext)}
-                </Badge>
+                </span>
               </div>
-              <p className="truncate font-mono text-xs text-muted-foreground">
+              <p className="mt-0.5 truncate font-mono text-xs text-zinc-500">
                 {ext.ext_id}
                 {latest ? ` · v${latest.version} (${latest.version_code})` : ""} ·{" "}
                 {ext.downloads.toLocaleString()} downloads
@@ -367,34 +376,35 @@ function Workspace({
             </div>
           </div>
           <div className="flex flex-wrap items-center gap-2">
-            <Button
-              variant="ghost"
-              size="sm"
+            <button
+              type="button"
               onClick={() => {
                 const link = `${window.location.origin}/store?ext=${encodeURIComponent(ext.ext_id)}`;
                 void navigator.clipboard?.writeText(link);
                 toast.success("Store link copied.");
               }}
+              className="koda-btn-pill h-8 px-3.5 text-xs"
             >
-              <Copy className="size-4" /> Copy link
-            </Button>
+              <Copy className="size-3.5" /> Copy link
+            </button>
             {ext.status === "APPROVED" ? (
-              <Button asChild variant="outline" size="sm">
-                <a href={`/store?ext=${encodeURIComponent(ext.ext_id)}`}>
-                  View in store <ExternalLink className="size-4" />
-                </a>
-              </Button>
+              <a
+                href={`/store?ext=${encodeURIComponent(ext.ext_id)}`}
+                className="koda-btn-black h-8 px-3.5 text-xs"
+              >
+                View in store <ExternalLink className="size-3.5 opacity-80" />
+              </a>
             ) : null}
           </div>
         </div>
       </div>
 
       {ext.review_note && isEnded(ext.status) ? (
-        <div className="rounded-xl border border-destructive/30 bg-destructive/5 p-4">
-          <p className="text-sm font-medium text-destructive">
+        <div className="rounded-2xl border border-red-500/25 bg-red-500/5 p-4 dark:bg-red-500/10">
+          <p className="font-display text-sm font-medium text-red-700 dark:text-red-400">
             {ext.status === "REJECTED" ? "Review rejected this extension" : "Delisted"}
           </p>
-          <p className="mt-1 text-sm text-muted-foreground">{ext.review_note}</p>
+          <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-300">{ext.review_note}</p>
         </div>
       ) : null}
 
@@ -434,9 +444,9 @@ function Workspace({
           {tab === "code" ? (
             <Suspense
               fallback={
-                <Card className="flex items-center justify-center gap-2 p-16 text-sm text-muted-foreground shadow-none">
-                  <Loader2 className="size-4 animate-spin" /> Loading the editor…
-                </Card>
+                <div className="resend-glass-panel flex items-center justify-center gap-2 rounded-2xl p-16 text-sm text-zinc-500 dark:text-zinc-400">
+                  <Loader2 className="size-4 animate-spin" /> Loading the editor...
+                </div>
               }
             >
               <CodeEditor ext={ext} onPublished={onChanged} />
@@ -472,8 +482,10 @@ function ReleasesView({
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-semibold tracking-tight">Releases</h1>
-        <p className="mt-1 text-sm text-muted-foreground">
+        <h1 className="font-display text-2xl font-medium tracking-[-0.03em] text-zinc-950 dark:text-white">
+          Releases
+        </h1>
+        <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
           Every version across your extensions, newest first.
         </p>
       </div>
@@ -490,16 +502,16 @@ function ReleasesView({
       />
 
       {rows.length === 0 ? (
-        <Card className="p-10 text-center text-sm text-muted-foreground shadow-none">
+        <div className="resend-glass-panel rounded-2xl p-12 text-center text-sm text-zinc-500 dark:text-zinc-400">
           No release matches this filter.
-        </Card>
+        </div>
       ) : (
-        <Card className="gap-0 overflow-hidden p-0 shadow-none">
+        <div className="resend-glass-panel overflow-hidden rounded-2xl">
           <div className="overflow-x-auto">
             <table className="w-full min-w-[760px] text-left text-sm">
               <thead>
-                <tr className="border-b bg-muted/30 text-[11px] font-medium tracking-wide text-muted-foreground uppercase">
-                  <th className="px-4 py-3 font-medium">Extension</th>
+                <tr className="border-b border-zinc-200/80 bg-zinc-50/80 font-mono text-[10.5px] font-medium tracking-[0.06em] text-zinc-500 uppercase dark:border-white/[0.06] dark:bg-white/[0.02]">
+                  <th className="px-5 py-3 font-medium">Extension</th>
                   <th className="px-4 py-3 font-medium">Version</th>
                   <th className="px-4 py-3 font-medium">Status</th>
                   <th className="px-4 py-3 font-medium">Size</th>
@@ -507,40 +519,48 @@ function ReleasesView({
                   <th className="px-4 py-3 font-medium">Review note</th>
                 </tr>
               </thead>
-              <tbody>
-                {rows.map(({ ext, version }) => (
-                  <tr
-                    key={`${ext.ext_id}-${version.version_code}`}
-                    className="cursor-pointer border-b last:border-0 hover:bg-accent/30"
-                    onClick={() => onOpen(ext.ext_id)}
-                  >
-                    <td className="px-4 py-3">
-                      <p className="truncate font-medium">{ext.name}</p>
-                      <p className="truncate font-mono text-[11px] text-muted-foreground">{ext.ext_id}</p>
-                    </td>
-                    <td className="px-4 py-3 font-mono text-xs">
-                      {version.version} ({version.version_code})
-                    </td>
-                    <td className="px-4 py-3">
-                      <Badge variant="outline" className={`font-normal ${statusTone(version.status)}`}>
-                        {version.status}
-                      </Badge>
-                    </td>
-                    <td className="px-4 py-3 text-xs text-muted-foreground">
-                      {formatBytes(version.file_size)}
-                    </td>
-                    <td className="px-4 py-3 text-xs text-muted-foreground">
-                      {formatDateTime(version.created_at)}
-                    </td>
-                    <td className="max-w-[260px] px-4 py-3">
-                      <p className="truncate text-xs text-muted-foreground">{version.review_note || "-"}</p>
-                    </td>
-                  </tr>
-                ))}
+              <tbody className="divide-y divide-zinc-200/70 dark:divide-white/[0.06]">
+                {rows.map(({ ext, version }) => {
+                  const tone = statusDotClasses(version.status);
+                  return (
+                    <tr
+                      key={`${ext.ext_id}-${version.version_code}`}
+                      className="cursor-pointer transition-colors hover:bg-black/[0.025] dark:hover:bg-white/[0.03]"
+                      onClick={() => onOpen(ext.ext_id)}
+                    >
+                      <td className="px-5 py-3.5">
+                        <p className="truncate font-display text-sm font-medium text-zinc-950 dark:text-white">
+                          {ext.name}
+                        </p>
+                        <p className="truncate font-mono text-[11px] text-zinc-500">{ext.ext_id}</p>
+                      </td>
+                      <td className="px-4 py-3.5 font-mono text-xs text-zinc-700 tabular dark:text-zinc-300">
+                        {version.version} ({version.version_code})
+                      </td>
+                      <td className="px-4 py-3.5">
+                        <span className={cn("inline-flex items-center gap-1.5 font-mono text-[11px] font-medium", tone.text)}>
+                          <span className={cn("size-1.5 rounded-full", tone.dot)} />
+                          {version.status}
+                        </span>
+                      </td>
+                      <td className="px-4 py-3.5 font-mono text-xs text-zinc-500 tabular">
+                        {formatBytes(version.file_size)}
+                      </td>
+                      <td className="px-4 py-3.5 font-mono text-xs text-zinc-500 tabular">
+                        {formatDateTime(version.created_at)}
+                      </td>
+                      <td className="max-w-[260px] px-4 py-3.5">
+                        <p className="truncate text-xs text-zinc-500 dark:text-zinc-400">
+                          {version.review_note || "-"}
+                        </p>
+                      </td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>
-        </Card>
+        </div>
       )}
     </div>
   );
@@ -562,74 +582,109 @@ function AccountView({
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-semibold tracking-tight">Account</h1>
-        <p className="mt-1 text-sm text-muted-foreground">
+        <h1 className="font-display text-2xl font-medium tracking-[-0.03em] text-zinc-950 dark:text-white">
+          Account
+        </h1>
+        <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
           The KodaHosting account that publishes under your name.
         </p>
       </div>
 
       <VerifyEmail me={me} onVerified={() => { onVerified(); onReloadMe(); }} />
 
-      <Card className="gap-0 p-5 shadow-none">
-        <h2 className="text-sm font-semibold">Account details</h2>
-        <dl className="mt-4 grid gap-4 text-sm sm:grid-cols-2">
-          <div>
-            <dt className="text-xs text-muted-foreground">E-mail</dt>
-            <dd className="mt-0.5 truncate">{me?.email || "-"}</dd>
-          </div>
-          <div>
-            <dt className="text-xs text-muted-foreground">Status</dt>
-            <dd className="mt-0.5">{me?.email_verified ? "Verified" : "Not verified"}</dd>
-          </div>
-          <div>
-            <dt className="text-xs text-muted-foreground">Member since</dt>
-            <dd className="mt-0.5">{formatDate(me?.member_since)}</dd>
-          </div>
-          <div>
-            <dt className="text-xs text-muted-foreground">Extensions</dt>
-            <dd className="mt-0.5">{extensions.length}</dd>
-          </div>
-          {me?.mc_username ? (
-            <div>
-              <dt className="text-xs text-muted-foreground">Minecraft name</dt>
-              <dd className="mt-0.5">{me.mc_username}</dd>
+      <div className="grid gap-4 lg:grid-cols-2">
+        <div className="resend-glass-panel rounded-2xl p-6">
+          <h2 className="font-display text-sm font-medium text-zinc-950 dark:text-white">
+            Account details
+          </h2>
+          <dl className="mt-4 divide-y divide-zinc-200/70 text-sm dark:divide-white/[0.06]">
+            <div className="flex items-center justify-between gap-4 py-2.5 first:pt-0">
+              <dt className="text-zinc-500">E-mail</dt>
+              <dd className="truncate font-mono text-xs text-zinc-900 dark:text-zinc-100">
+                {me?.email || "-"}
+              </dd>
             </div>
-          ) : null}
-        </dl>
-        <div className="mt-5 flex flex-wrap gap-2">
-          <Button asChild variant="outline" size="sm">
-            <a href="/dashboard">Dashboard</a>
-          </Button>
-          <Button variant="ghost" size="sm" onClick={signOut}>
-            <LogOut className="size-4" /> Sign out
-          </Button>
-        </div>
-      </Card>
-
-      <Card className="gap-0 p-5 shadow-none">
-        <h2 className="text-sm font-semibold">Publishing</h2>
-        <div className="mt-3 space-y-3 text-sm text-muted-foreground">
-          <p>
-            Every new extension and every release is reviewed by hand before it appears in the store.
-            You get the decision as an in-app notification and the reason is always shown here in the
-            console.
-          </p>
-          <p>
-            A package must contain a manifest.json with the same id as the extension, the announced
-            versionCode and a license. The app checks it before installing.
-          </p>
-        </div>
-        <div className="mt-4 flex flex-wrap gap-2">
-          <Button asChild variant="outline" size="sm">
-            <a href="/docs">Documentation</a>
-          </Button>
-          <Button asChild variant="ghost" size="sm">
-            <a href="https://github.com/libredroid-project/KodaNetwork/tree/main/extensions">
-              Extension examples <ExternalLink className="size-3.5" />
+            <div className="flex items-center justify-between gap-4 py-2.5">
+              <dt className="text-zinc-500">Status</dt>
+              <dd
+                className={cn(
+                  "inline-flex items-center gap-1.5 font-mono text-xs",
+                  me?.email_verified
+                    ? "text-emerald-700 dark:text-emerald-400"
+                    : "text-amber-700 dark:text-amber-300",
+                )}
+              >
+                <span
+                  className={cn(
+                    "size-1.5 rounded-full",
+                    me?.email_verified ? "bg-emerald-500 dark:bg-emerald-400" : "bg-amber-500 dark:bg-amber-400",
+                  )}
+                />
+                {me?.email_verified ? "Verified" : "Not verified"}
+              </dd>
+            </div>
+            <div className="flex items-center justify-between gap-4 py-2.5">
+              <dt className="text-zinc-500">Member since</dt>
+              <dd className="font-mono text-xs text-zinc-900 dark:text-zinc-100">
+                {formatDate(me?.member_since)}
+              </dd>
+            </div>
+            <div className="flex items-center justify-between gap-4 py-2.5">
+              <dt className="text-zinc-500">Extensions</dt>
+              <dd className="font-mono text-xs tabular-nums text-zinc-900 dark:text-zinc-100">
+                {extensions.length}
+              </dd>
+            </div>
+            {me?.mc_username ? (
+              <div className="flex items-center justify-between gap-4 py-2.5 last:pb-0">
+                <dt className="text-zinc-500">Minecraft name</dt>
+                <dd className="font-mono text-xs text-zinc-900 dark:text-zinc-100">{me.mc_username}</dd>
+              </div>
+            ) : null}
+          </dl>
+          <div className="mt-5 flex flex-wrap gap-2 border-t border-zinc-200/70 pt-4 dark:border-white/[0.06]">
+            <a href="/dashboard" className="koda-btn-pill h-8 px-3.5 text-xs">
+              Dashboard
             </a>
-          </Button>
+            <button
+              type="button"
+              onClick={signOut}
+              className="inline-flex h-8 items-center gap-1.5 rounded-full px-3 text-xs text-zinc-600 transition-colors hover:bg-black/[0.05] hover:text-zinc-950 dark:text-zinc-400 dark:hover:bg-white/[0.06] dark:hover:text-white"
+            >
+              <LogOut className="size-3.5" /> Sign out
+            </button>
+          </div>
         </div>
-      </Card>
+
+        <div className="resend-glass-panel flex flex-col justify-between rounded-2xl p-6">
+          <div>
+            <h2 className="font-display text-sm font-medium text-zinc-950 dark:text-white">
+              Publishing rules
+            </h2>
+            <div className="mt-3 space-y-3 text-sm leading-6 text-zinc-600 dark:text-zinc-400">
+              <p>
+                Every new extension and release is reviewed by hand before appearing in the store. You get the decision in the app and the exact reason stays visible here.
+              </p>
+              <p>
+                Each package must contain a valid <code className="rounded bg-black/[0.06] px-1.5 py-0.5 font-mono text-xs dark:bg-white/[0.08]">manifest.json</code> matching the extension id, announced versionCode, and license.
+              </p>
+            </div>
+          </div>
+          <div className="mt-5 flex flex-wrap gap-2 border-t border-zinc-200/70 pt-4 dark:border-white/[0.06]">
+            <a href="/docs" className="koda-btn-pill h-8 px-3.5 text-xs">
+              Documentation
+            </a>
+            <a
+              href="https://github.com/libredroid-project/KodaNetwork/tree/main/extensions"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex h-8 items-center gap-1.5 rounded-full px-3 text-xs text-zinc-600 transition-colors hover:bg-black/[0.05] hover:text-zinc-950 dark:text-zinc-400 dark:hover:bg-white/[0.06] dark:hover:text-white"
+            >
+              Extension examples <ExternalLink className="size-3.5 opacity-75" />
+            </a>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
@@ -818,24 +873,27 @@ export function DeveloperConsole({
               type="button"
               onClick={() => setLight((value) => !value)}
               aria-label={light ? "Switch to dark mode" : "Switch to light mode"}
-              className="koda-btn-pill h-8 px-3 text-xs whitespace-nowrap shrink-0"
+              className="koda-btn-pill h-8 shrink-0 px-3 text-xs whitespace-nowrap"
             >
               {light ? <Moon className="size-3.5" /> : <Sun className="size-3.5" />}
               {light ? "Dark" : "Light"}
             </button>
             <a
               href="/dashboard"
-              className="koda-btn-pill h-8 px-3.5 text-xs whitespace-nowrap shrink-0"
+              className="koda-btn-pill h-8 shrink-0 px-3.5 text-xs whitespace-nowrap"
             >
               Dashboard <ExternalLink className="size-3.5 opacity-70" />
             </a>
           </header>
 
           <div className="p-4 md:p-8">
-            <div className="mx-auto w-full max-w-5xl">
+            <div
+              key={`${route.view}:${route.extId ?? ""}:${route.tab}:${route.release ? "new" : ""}`}
+              className="page-reveal mx-auto w-full max-w-5xl"
+            >
               {loading ? (
-                <div className="flex items-center justify-center gap-2 py-24 text-sm text-muted-foreground">
-                  <Loader2 className="size-4 animate-spin" /> Loading your extensions…
+                <div className="flex items-center justify-center gap-2 py-24 text-sm text-zinc-500 dark:text-zinc-400">
+                  <Loader2 className="size-4 animate-spin" /> Loading your extensions...
                 </div>
               ) : error ? (
                 <ErrorState

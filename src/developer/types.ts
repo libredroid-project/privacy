@@ -91,6 +91,28 @@ export function displayStatusTone(ext: DevExtension): string {
   return pendingVersion(ext) ? "tone-pending" : statusTone(ext.status);
 }
 
+export function statusDotClasses(status: string): { dot: string; text: string } {
+  switch (status) {
+    case "APPROVED":
+    case "RESOLVED":
+      return { dot: "bg-emerald-500 dark:bg-emerald-400", text: "text-emerald-700 dark:text-emerald-400" };
+    case "PENDING":
+    case "IN REVIEW":
+    case "OPEN":
+    case "IN_PROGRESS":
+      return { dot: "bg-amber-500 dark:bg-amber-400", text: "text-amber-700 dark:text-amber-300" };
+    case "REJECTED":
+    case "DELISTED":
+      return { dot: "bg-red-500 dark:bg-red-400", text: "text-red-700 dark:text-red-400" };
+    default:
+      return { dot: "bg-zinc-400 dark:bg-zinc-500", text: "text-zinc-600 dark:text-zinc-400" };
+  }
+}
+
+export function displayStatusDotClasses(ext: DevExtension): { dot: string; text: string } {
+  return statusDotClasses(displayStatus(ext));
+}
+
 export const CATEGORIES = [
   ["tools", "Tools"],
   ["ui", "Interface"],

@@ -10,9 +10,6 @@ import {
   UploadCloud,
 } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -23,6 +20,7 @@ import { formatBytes, formatDate, latestVersion, PERMISSIONS } from "@/developer
 import { publishErrorText, publishVersion } from "@/developer/publish";
 import { runPreflight } from "@/developer/preflight";
 import { PreflightPanel } from "@/developer/preflight-panel";
+import { cn } from "@/lib/utils";
 
 interface Manifest {
   id?: string;
@@ -66,6 +64,9 @@ function unpackPackage(bytes: Uint8Array): Unpacked | null {
     return null;
   }
 }
+
+const INPUT_CLASS =
+  "rounded-xl border-zinc-200 bg-white text-zinc-950 placeholder:text-zinc-400 dark:border-white/[0.09] dark:bg-white/[0.04] dark:text-white dark:placeholder:text-zinc-500";
 
 export function ReleaseScreen({
   ext,
@@ -180,7 +181,7 @@ export function ReleaseScreen({
     setBusy(true);
     setError("");
     try {
-      setStage("Uploading the package…");
+      setStage("Uploading the package...");
       await publishVersion(ext, bytes, {
         version: version.trim(),
         versionCode: code,
@@ -205,27 +206,27 @@ export function ReleaseScreen({
           <button
             type="button"
             onClick={onBack}
-            className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground"
+            className="inline-flex items-center gap-1.5 text-xs text-zinc-500 transition-colors hover:text-zinc-950 dark:text-zinc-400 dark:hover:text-white"
           >
             <ArrowLeft className="size-3.5" /> All releases
           </button>
-          <h1 className="mt-3 text-2xl font-semibold tracking-tight">New release for {ext.name}</h1>
-          <p className="mt-1 text-sm text-muted-foreground">
+          <h1 className="mt-3 font-display text-2xl font-medium tracking-[-0.03em] text-zinc-950 dark:text-white">
+            New release for {ext.name}
+          </h1>
+          <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
             The package goes through the same review as a first submission. Last release: v
             {latest?.version || "-"} ({latest?.version_code ?? 0}).
           </p>
         </div>
-        <Badge variant="outline" className="font-mono font-normal">
-          {formatDate(latest?.created_at)}
-        </Badge>
+        <span className="font-mono text-xs text-zinc-500">{formatDate(latest?.created_at)}</span>
       </div>
 
       <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_300px]">
         <div className="min-w-0 space-y-6">
-          <Card className="gap-0 p-5 shadow-none">
-            <h2 className="text-sm font-semibold">Package</h2>
-            <p className="mt-1 text-sm text-muted-foreground">
-              A .kodaext zip with manifest.json in the root. Max 20 MB.
+          <div className="resend-glass-panel rounded-2xl p-6">
+            <h2 className="font-display text-sm font-medium text-zinc-950 dark:text-white">Package</h2>
+            <p className="mt-0.5 text-xs text-zinc-600 dark:text-zinc-400">
+              A .kodaext archive with manifest.json at the root. Max 20 MB.
             </p>
             <button
               type="button"
@@ -240,27 +241,31 @@ export function ReleaseScreen({
                 setDragging(false);
                 void pick(event.dataTransfer.files?.[0]);
               }}
-              className={`mt-4 flex w-full items-center gap-4 rounded-xl border border-dashed p-6 text-left transition-colors ${
-                dragging ? "border-brand bg-brand-soft/10" : "border-border hover:bg-accent/40"
-              }`}
+              className={cn(
+                "mt-4 flex w-full items-center gap-4 rounded-xl border border-dashed p-6 text-left transition-colors",
+                dragging
+                  ? "border-brand bg-brand/10"
+                  : "border-zinc-300 hover:bg-black/[0.02] dark:border-white/[0.12] dark:hover:bg-white/[0.03]",
+              )}
             >
-              <div className="flex size-12 shrink-0 items-center justify-center rounded-xl bg-muted">
+              <div className="flex size-12 shrink-0 items-center justify-center rounded-xl bg-zinc-100 text-zinc-700 dark:bg-white/[0.06] dark:text-zinc-200">
                 {file ? <FileArchive className="size-6" /> : <UploadCloud className="size-6" />}
               </div>
               <div className="min-w-0 flex-1">
-                <p className="truncate text-sm font-medium">
+                <p className="truncate font-display text-sm font-medium text-zinc-950 dark:text-white">
                   {file ? file.name : "Drop the .kodaext file here"}
                 </p>
-                <p className="mt-0.5 text-xs text-muted-foreground">
+                <p className="mt-0.5 font-mono text-xs text-zinc-500">
                   {file
-                    ? `${formatBytes(file.size)} · ${files ? Object.keys(files).length : 0} files · versionCode ${manifest?.versionCode ?? "?"} in the manifest`
+                    ? `${formatBytes(file.size)} · ${files ? Object.keys(files).length : 0} files · versionCode ${manifest?.versionCode ?? "?"}`
                     : "or click to choose a file"}
                 </p>
               </div>
               {file ? (
-                <Badge variant="outline" className="font-normal tone-online">
-                  loaded
-                </Badge>
+                <span className="inline-flex shrink-0 items-center gap-1.5 font-mono text-[11px] text-emerald-700 dark:text-emerald-400">
+                  <span className="size-1.5 rounded-full bg-emerald-500 dark:bg-emerald-400" />
+                  Loaded
+                </span>
               ) : null}
             </button>
             <input
@@ -272,63 +277,73 @@ export function ReleaseScreen({
             />
 
             {manifest ? (
-              <dl className="mt-4 grid gap-3 rounded-lg border bg-muted/20 p-3 text-xs sm:grid-cols-2">
+              <dl className="mt-4 grid gap-3 rounded-xl bg-zinc-100/80 p-3.5 text-xs dark:bg-white/[0.03] sm:grid-cols-2">
                 <div>
-                  <dt className="text-muted-foreground">Manifest id</dt>
-                  <dd className="mt-0.5 font-mono">{manifest.id || "missing"}</dd>
+                  <dt className="text-zinc-500">Manifest id</dt>
+                  <dd className="mt-0.5 font-mono text-zinc-900 dark:text-zinc-100">{manifest.id || "missing"}</dd>
                 </div>
                 <div>
-                  <dt className="text-muted-foreground">Manifest version</dt>
-                  <dd className="mt-0.5 font-mono">
+                  <dt className="text-zinc-500">Manifest version</dt>
+                  <dd className="mt-0.5 font-mono text-zinc-900 dark:text-zinc-100">
                     {manifest.version || "missing"} ({manifest.versionCode || "?"})
                   </dd>
                 </div>
                 <div>
-                  <dt className="text-muted-foreground">License</dt>
-                  <dd className="mt-0.5">{manifest.license || "missing"}</dd>
+                  <dt className="text-zinc-500">License</dt>
+                  <dd className="mt-0.5 text-zinc-900 dark:text-zinc-100">{manifest.license || "missing"}</dd>
                 </div>
                 <div>
-                  <dt className="text-muted-foreground">Permissions in package</dt>
-                  <dd className="mt-0.5 font-mono">
+                  <dt className="text-zinc-500">Permissions in package</dt>
+                  <dd className="mt-0.5 font-mono text-zinc-900 dark:text-zinc-100">
                     {manifest.permissions?.length ? manifest.permissions.join(", ") : "none"}
                   </dd>
                 </div>
               </dl>
             ) : null}
-          </Card>
+          </div>
 
-          <Card className="gap-0 p-5 shadow-none">
-            <h2 className="text-sm font-semibold">Release notes</h2>
-            <p className="mt-1 text-sm text-muted-foreground">
-              Version, changelog and the app build this release needs.
+          <div className="resend-glass-panel rounded-2xl p-6">
+            <h2 className="font-display text-sm font-medium text-zinc-950 dark:text-white">
+              Release notes
+            </h2>
+            <p className="mt-0.5 text-xs text-zinc-600 dark:text-zinc-400">
+              Version, changelog, and minimum app build required for this release.
             </p>
             <div className="mt-4 grid gap-4 sm:grid-cols-2">
               <div className="space-y-2">
-                <Label htmlFor="rel-version">Version name</Label>
+                <Label htmlFor="rel-version" className="text-xs text-zinc-600 dark:text-zinc-400">
+                  Version name
+                </Label>
                 <Input
                   id="rel-version"
                   value={version}
                   onChange={(event) => setVersion(event.target.value)}
                   placeholder="1.2.0"
+                  className={INPUT_CLASS}
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="rel-code">Version code</Label>
+                <Label htmlFor="rel-code" className="text-xs text-zinc-600 dark:text-zinc-400">
+                  Version code
+                </Label>
                 <Input
                   id="rel-code"
                   value={versionCode}
                   onChange={(event) => setVersionCode(event.target.value.replace(/[^0-9]/g, ""))}
                   inputMode="numeric"
                   placeholder={String(suggestedCode)}
+                  className={INPUT_CLASS}
                 />
-                <p className="text-xs text-muted-foreground">Must match manifest.json.</p>
+                <p className="text-xs text-zinc-500">Must match manifest.json.</p>
               </div>
             </div>
 
             <div className="mt-4 space-y-2">
               <div className="flex items-baseline justify-between">
-                <Label htmlFor="rel-changelog">What changed</Label>
-                <span className="text-xs text-muted-foreground">{changelog.length}/4000</span>
+                <Label htmlFor="rel-changelog" className="text-xs text-zinc-600 dark:text-zinc-400">
+                  What changed
+                </Label>
+                <span className="font-mono text-[11px] text-zinc-500">{changelog.length}/4000</span>
               </div>
               <Textarea
                 id="rel-changelog"
@@ -337,34 +352,39 @@ export function ReleaseScreen({
                 maxLength={4000}
                 onChange={(event) => setChangelog(event.target.value)}
                 placeholder="Shown to users with the update."
+                className={INPUT_CLASS}
               />
             </div>
 
             <div className="mt-4 space-y-2">
-              <Label htmlFor="rel-min">Minimum app version code</Label>
+              <Label htmlFor="rel-min" className="text-xs text-zinc-600 dark:text-zinc-400">
+                Minimum app version code
+              </Label>
               <Input
                 id="rel-min"
                 value={minAppVersion}
                 onChange={(event) => setMinAppVersion(event.target.value.replace(/[^0-9]/g, ""))}
                 inputMode="numeric"
+                className={INPUT_CLASS}
               />
-              <p className="text-xs text-muted-foreground">
-                0 works on every app build. Otherwise only builds from this code can install the
-                update. It must match manifest.json.
+              <p className="text-xs text-zinc-500">
+                0 works on every app build. Otherwise only builds from this code onward can install the update. Must match manifest.json.
               </p>
             </div>
-          </Card>
+          </div>
 
-          <Card className="gap-0 p-5 shadow-none">
-            <h2 className="text-sm font-semibold">Permissions</h2>
-            <p className="mt-1 text-sm text-muted-foreground">
+          <div className="resend-glass-panel rounded-2xl p-6">
+            <h2 className="font-display text-sm font-medium text-zinc-950 dark:text-white">
+              Permissions
+            </h2>
+            <p className="mt-0.5 text-xs text-zinc-600 dark:text-zinc-400">
               Written to the release and compared against manifest.json.
             </p>
             <div className="mt-4 grid grid-cols-2 gap-2 sm:grid-cols-3">
               {PERMISSIONS.map((permission) => (
                 <label
                   key={permission}
-                  className="flex items-center gap-2 rounded-md border px-2.5 py-2 font-mono text-xs"
+                  className="flex cursor-pointer items-center gap-2 rounded-xl border border-zinc-200 px-3 py-2 font-mono text-xs text-zinc-800 transition-colors hover:bg-black/[0.02] dark:border-white/[0.08] dark:text-zinc-200 dark:hover:bg-white/[0.03]"
                 >
                   <Checkbox
                     checked={permissions.includes(permission)}
@@ -379,119 +399,141 @@ export function ReleaseScreen({
               ))}
             </div>
             {manifest && Array.isArray(manifest.permissions) ? (
-              <p className="mt-2 text-xs text-muted-foreground">
+              <p className="mt-3 text-xs text-zinc-500">
                 Package manifest:{" "}
-                <span className="font-mono">
+                <span className="font-mono text-zinc-700 dark:text-zinc-300">
                   {manifest.permissions.length ? manifest.permissions.join(", ") : "none"}
                 </span>
               </p>
             ) : null}
-          </Card>
+          </div>
 
           {report ? <PreflightPanel report={report} /> : null}
 
-          <Card className="gap-0 p-5 shadow-none">
-            <h2 className="text-sm font-semibold">Store listing</h2>
-            <p className="mt-1 text-sm text-muted-foreground">
-              The release uses the current listing. You can change it separately, without a new
-              version.
+          <div className="resend-glass-panel rounded-2xl p-6">
+            <h2 className="font-display text-sm font-medium text-zinc-950 dark:text-white">
+              Store listing
+            </h2>
+            <p className="mt-0.5 text-xs text-zinc-600 dark:text-zinc-400">
+              The release uses your current listing. You can update it anytime without publishing a new version.
             </p>
             <dl className="mt-4 grid gap-4 text-sm sm:grid-cols-2">
               <div>
-                <dt className="text-xs text-muted-foreground">Name</dt>
-                <dd className="mt-0.5">{ext.name}</dd>
+                <dt className="text-xs text-zinc-500">Name</dt>
+                <dd className="mt-0.5 text-zinc-900 dark:text-zinc-100">{ext.name}</dd>
               </div>
               <div>
-                <dt className="text-xs text-muted-foreground">Category</dt>
-                <dd className="mt-0.5">{ext.category || "-"}</dd>
+                <dt className="text-xs text-zinc-500">Category</dt>
+                <dd className="mt-0.5 text-zinc-900 dark:text-zinc-100">{ext.category || "-"}</dd>
               </div>
               <div>
-                <dt className="text-xs text-muted-foreground">License</dt>
-                <dd className="mt-0.5">{ext.license || "missing"}</dd>
+                <dt className="text-xs text-zinc-500">License</dt>
+                <dd className="mt-0.5 font-mono text-xs text-zinc-900 dark:text-zinc-100">
+                  {ext.license || "missing"}
+                </dd>
               </div>
               <div>
-                <dt className="text-xs text-muted-foreground">Author</dt>
-                <dd className="mt-0.5">{ext.author || "-"}</dd>
+                <dt className="text-xs text-zinc-500">Author</dt>
+                <dd className="mt-0.5 text-zinc-900 dark:text-zinc-100">{ext.author || "-"}</dd>
               </div>
               <div className="sm:col-span-2">
-                <dt className="text-xs text-muted-foreground">Short description</dt>
-                <dd className="mt-0.5 text-muted-foreground">{ext.summary || "missing"}</dd>
+                <dt className="text-xs text-zinc-500">Short description</dt>
+                <dd className="mt-0.5 text-zinc-600 dark:text-zinc-400">{ext.summary || "missing"}</dd>
               </div>
             </dl>
-            <div className="mt-4 flex flex-wrap items-center gap-2">
-              <Badge variant="outline" className="font-normal">
-                <ImageIcon className="mr-1 size-3" />
-                {ext.icon_url ? "icon set" : "no icon"}
-              </Badge>
-              <Badge variant="outline" className="font-normal">
-                {ext.screenshots?.length || 0}/6 screenshots
-              </Badge>
-              <Button variant="ghost" size="sm" className="ml-auto" onClick={onEditListing}>
+            <div className="mt-4 flex flex-wrap items-center gap-3 border-t border-zinc-200/70 pt-4 dark:border-white/[0.06]">
+              <span className="inline-flex items-center gap-1.5 font-mono text-xs text-zinc-500">
+                <ImageIcon className="size-3.5" />
+                {ext.icon_url ? "Icon set" : "No icon"} · {ext.screenshots?.length || 0}/6 screenshots
+              </span>
+              <button
+                type="button"
+                onClick={onEditListing}
+                className="koda-btn-pill ml-auto h-8 px-3.5 text-xs"
+              >
                 Edit store listing
-              </Button>
+              </button>
             </div>
-          </Card>
+          </div>
         </div>
 
         <div className="space-y-4 lg:sticky lg:top-24 lg:self-start">
-          <Card className="gap-0 p-4 shadow-none">
+          <div className="resend-glass-panel rounded-2xl p-5">
             <div className="flex items-center gap-2">
-              <Package className="size-4 text-muted-foreground" />
-              <h2 className="text-sm font-semibold">Release summary</h2>
+              <Package className="size-4 text-zinc-500" />
+              <h2 className="font-display text-sm font-medium text-zinc-950 dark:text-white">
+                Release summary
+              </h2>
             </div>
-            <dl className="mt-3 space-y-2 text-sm">
-              <div className="flex items-baseline justify-between gap-3">
-                <dt className="text-muted-foreground">Version</dt>
-                <dd className="font-mono text-xs">{version || "-"}</dd>
+            <dl className="mt-3.5 divide-y divide-zinc-200/70 text-sm dark:divide-white/[0.06]">
+              <div className="flex items-baseline justify-between gap-3 py-2 first:pt-0">
+                <dt className="text-zinc-500">Version</dt>
+                <dd className="font-mono text-xs text-zinc-900 dark:text-zinc-100">{version || "-"}</dd>
               </div>
-              <div className="flex items-baseline justify-between gap-3">
-                <dt className="text-muted-foreground">Code</dt>
-                <dd className="font-mono text-xs">{versionCode || "-"}</dd>
+              <div className="flex items-baseline justify-between gap-3 py-2">
+                <dt className="text-zinc-500">Code</dt>
+                <dd className="font-mono text-xs text-zinc-900 dark:text-zinc-100">{versionCode || "-"}</dd>
               </div>
-              <div className="flex items-baseline justify-between gap-3">
-                <dt className="text-muted-foreground">Package</dt>
-                <dd className="font-mono text-xs">{file ? formatBytes(file.size) : "-"}</dd>
+              <div className="flex items-baseline justify-between gap-3 py-2">
+                <dt className="text-zinc-500">Package</dt>
+                <dd className="font-mono text-xs text-zinc-900 dark:text-zinc-100">
+                  {file ? formatBytes(file.size) : "-"}
+                </dd>
               </div>
-              <div className="flex items-baseline justify-between gap-3">
-                <dt className="text-muted-foreground">Permissions</dt>
-                <dd className="font-mono text-xs">{permissions.length}</dd>
+              <div className="flex items-baseline justify-between gap-3 py-2 last:pb-0">
+                <dt className="text-zinc-500">Permissions</dt>
+                <dd className="font-mono text-xs text-zinc-900 dark:text-zinc-100">{permissions.length}</dd>
               </div>
             </dl>
 
-            <div className="mt-4 flex items-center gap-2 rounded-lg border p-2.5 text-xs">
-              <ShieldCheck className={report?.ok ? "size-4 text-success" : "size-4 text-muted-foreground"} />
+            <div className="mt-4 flex items-center gap-2 rounded-xl bg-zinc-100/80 p-3 text-xs text-zinc-700 dark:bg-white/[0.04] dark:text-zinc-300">
+              <ShieldCheck
+                className={cn(
+                  "size-4 shrink-0",
+                  report?.ok ? "text-emerald-600 dark:text-emerald-400" : "text-zinc-500",
+                )}
+              />
               <span>
                 {report
                   ? `${report.passes} passed · ${report.warns} warnings · ${report.fails} blocking`
-                  : "Checks start when a package is loaded."}
+                  : "Checks run once a package is loaded."}
               </span>
             </div>
 
-            <Button className="mt-4 w-full" onClick={() => void submit()} disabled={busy || !file}>
+            <button
+              type="button"
+              onClick={() => void submit()}
+              disabled={busy || !file}
+              className="koda-btn-black mt-4 h-10 w-full px-4 text-xs disabled:opacity-45"
+            >
               {busy ? <Loader2 className="size-4 animate-spin" /> : <UploadCloud className="size-4" />}
               Send to review
-            </Button>
-            <Button variant="ghost" className="mt-2 w-full" onClick={onBack} disabled={busy}>
+            </button>
+            <button
+              type="button"
+              onClick={onBack}
+              disabled={busy}
+              className="koda-btn-pill mt-2 h-9 w-full px-4 text-xs disabled:opacity-45"
+            >
               Cancel
-            </Button>
+            </button>
 
             {stage ? (
-              <p className="mt-3 flex items-center gap-2 text-xs text-muted-foreground">
+              <p className="mt-3 flex items-center gap-2 text-xs text-zinc-500">
                 <Loader2 className="size-3.5 animate-spin" /> {stage}
               </p>
             ) : null}
-          </Card>
+          </div>
 
-          <div className="flex items-start gap-2 rounded-lg border border-dashed p-3 text-xs text-muted-foreground">
+          <div className="flex items-start gap-2.5 rounded-2xl border border-dashed border-zinc-200 p-3.5 text-xs leading-5 text-zinc-500 dark:border-white/[0.1] dark:text-zinc-400">
             <AlertTriangle className="mt-0.5 size-3.5 shrink-0" />
             <span>
-              After sending, the release is PENDING until an admin reviews it. Store downloads keep
-              using the current approved version.
+              After sending, the release stays PENDING until reviewed. Store downloads keep serving the current approved version.
             </span>
           </div>
 
           {error ? (
-            <Alert variant="destructive">
+            <Alert variant="destructive" className="rounded-2xl">
               <AlertDescription>{error}</AlertDescription>
             </Alert>
           ) : null}

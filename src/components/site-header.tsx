@@ -53,7 +53,7 @@ export function SiteHeader({ active, auth }: Props) {
   const [open, setOpen] = useState(false);
 
   return (
-    <header className="fixed inset-x-0 top-0 z-40 bg-black/80 backdrop-blur-md">
+    <header className="site-header-fixed fixed inset-x-0 top-0 z-40 bg-black/80 backdrop-blur-md">
       <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-8 px-4 sm:px-6">
         <Brand />
 

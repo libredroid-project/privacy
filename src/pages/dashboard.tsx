@@ -303,7 +303,9 @@ function DashboardShell(props: ShellProps) {
         </header>
 
         <div className="p-4 md:p-8">
-          <div className="mx-auto w-full max-w-5xl">{renderTab()}</div>
+          <div key={tab} className="page-reveal mx-auto w-full max-w-5xl">
+            {renderTab()}
+          </div>
         </div>
 
         <SiteFooter className="mt-10 [&>div]:max-w-5xl" />

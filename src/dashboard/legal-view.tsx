@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import { ExternalLink } from "lucide-react";
-import { Card } from "@/components/ui/card";
 import { AnimatedSwitch } from "@/components/animated-switch";
 import legal from "@/generated/legal.json";
 
@@ -41,9 +40,9 @@ export function LegalView() {
     <div className="space-y-6">
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-semibold tracking-tight">Legal</h1>
-          <p className="mt-1 max-w-2xl text-sm text-muted-foreground">
-            The documents that apply to the app, the dashboard and the network.
+          <h1 className="font-display text-2xl font-medium tracking-[-0.03em] text-white">Legal</h1>
+          <p className="mt-1 max-w-2xl text-sm text-zinc-400">
+            The documents that apply to the app, the dashboard, and the network.
           </p>
         </div>
         <AnimatedSwitch<Language>
@@ -65,25 +64,27 @@ export function LegalView() {
           "",
         );
         return (
-          <Card key={key} className="gap-0 p-6 shadow-none">
-            <div className="flex flex-wrap items-start justify-between gap-3 border-b pb-4">
+          <section key={key} className="resend-glass-panel rounded-2xl p-6">
+            <div className="flex flex-wrap items-start justify-between gap-3 border-b border-white/[0.06] pb-4">
               <div>
-                <h2 className="text-lg font-semibold">{doc.title[language]}</h2>
-                {updated ? <p className="mt-0.5 text-xs text-muted-foreground">Last updated {updated}</p> : null}
+                <h2 className="font-display text-lg font-medium text-white">{doc.title[language]}</h2>
+                {updated ? (
+                  <p className="mt-0.5 font-mono text-xs text-zinc-500">Last updated {updated}</p>
+                ) : null}
               </div>
               <a
                 href={HREF[key]}
-                className="inline-flex items-center gap-1.5 text-xs font-medium underline decoration-border underline-offset-4 hover:decoration-brand"
+                className="koda-btn-pill h-8 px-3.5 text-xs"
               >
-                Open the full page
-                <ExternalLink className="size-3.5" />
+                Full page
+                <ExternalLink className="size-3.5 opacity-75" />
               </a>
             </div>
             <div
               className="legal-prose mt-4 max-h-[32rem] overflow-y-auto pr-2"
               dangerouslySetInnerHTML={{ __html: articleBody(doc.html[language]) }}
             />
-          </Card>
+          </section>
         );
       })}
     </div>

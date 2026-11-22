@@ -1,17 +1,34 @@
 import { useEffect, useState, type FormEvent } from "react";
-import { ArrowLeft, Loader2, MessageSquare, Paperclip, Send } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
+import { ArrowLeft, ChevronRight, Loader2, MessageSquare, Paperclip, Send } from "lucide-react";
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Textarea } from "@/components/ui/textarea";
 import { ErrorState } from "@/components/error-state";
 import { api } from "@/lib/api";
 import { relativeTime } from "@/lib/format";
 import { safeExternalUrl } from "@/lib/security";
-import type { TicketDetail, TicketSummary } from "@/dashboard/types";
-import { ticketTone } from "@/dashboard/types";
+import type { TicketDetail, TicketStatus, TicketSummary } from "@/dashboard/types";
 import { cn } from "@/lib/utils";
+
+function ticketStatusStyle(status: TicketStatus): { dot: string; text: string } {
+  switch (status) {
+    case "OPEN":
+      return { dot: "bg-emerald-400", text: "text-emerald-400" };
+    case "CLOSE_REQUESTED":
+      return { dot: "bg-amber-400", text: "text-amber-300" };
+    default:
+      return { dot: "bg-zinc-500", text: "text-zinc-400" };
+  }
+}
+
+function TicketStatusDot({ status }: { status: TicketStatus }) {
+  const style = ticketStatusStyle(status);
+  return (
+    <span className={cn("inline-flex shrink-0 items-center gap-1.5 font-mono text-[11px] font-medium", style.text)}>
+      <span className={cn("size-1.5 rounded-full", style.dot)} />
+      {status.replace(/_/g, " ")}
+    </span>
+  );
+}
 
 export function TicketsView() {
   const [items, setItems] = useState<TicketSummary[]>([]);
@@ -79,7 +96,7 @@ export function TicketsView() {
       setItems(nextList.items || []);
     } catch (err) {
       const message = (err as Error).message;
-      setReplyError(message === "slow_down" ? "That was too fast - wait a moment." : `Could not send: ${message}`);
+      setReplyError(message === "slow_down" ? "That was too fast. Wait a moment and try again." : `Could not send: ${message}`);
     } finally {
       setReplyBusy(false);
     }
@@ -89,11 +106,20 @@ export function TicketsView() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-semibold tracking-tight">Support Tickets</h1>
-        <p className="mt-1 max-w-2xl text-sm text-muted-foreground">
-          Support conversations with the developer. Personal and mental-support chats stay in the app.
-        </p>
+      <div className="flex flex-wrap items-end justify-between gap-2">
+        <div>
+          <h1 className="font-display text-2xl font-medium tracking-[-0.03em] text-white">
+            Support Tickets
+          </h1>
+          <p className="mt-1 max-w-2xl text-sm text-zinc-400">
+            Support conversations with the developer. Personal and mental-support chats stay private inside the app.
+          </p>
+        </div>
+        {!loading && !error && items.length > 0 ? (
+          <span className="pb-1 font-mono text-xs tabular-nums text-zinc-500">
+            {items.length} {items.length === 1 ? "ticket" : "tickets"}
+          </span>
+        ) : null}
       </div>
 
       {error ? (
@@ -107,80 +133,87 @@ export function TicketsView() {
       ) : null}
 
       {loading ? (
-        <p className="flex items-center gap-2 text-sm text-muted-foreground">
-          <Loader2 className="size-4 animate-spin" /> Loading the tickets…
-        </p>
+        <div className="resend-glass-panel flex items-center justify-center gap-2 rounded-2xl p-12 text-sm text-zinc-400">
+          <Loader2 className="size-4 animate-spin" /> Loading your tickets...
+        </div>
       ) : items.length === 0 ? (
-        <div className="rounded-xl bg-card p-10 text-center">
-          <MessageSquare className="mx-auto mb-3 size-6 text-muted-foreground" />
-          <p className="text-sm text-muted-foreground">No tickets yet. Open one in the app, it appears here.</p>
+        <div className="resend-glass-panel rounded-2xl p-12 text-center">
+          <div className="mx-auto mb-3 flex size-11 items-center justify-center rounded-xl bg-white/[0.05] text-zinc-400">
+            <MessageSquare className="size-5" />
+          </div>
+          <p className="font-display text-sm font-medium text-white">No tickets yet</p>
+          <p className="mx-auto mt-1 max-w-sm text-sm text-zinc-400">
+            Open a support ticket in the KodaHosting app and the full conversation will appear here.
+          </p>
         </div>
       ) : (
-        <div className="grid gap-4 lg:grid-cols-2">
-          {items.map((ticket) => (
-            <Card
-              key={ticket.id}
-              role="button"
-              tabIndex={0}
-              onClick={() => void openTicket(ticket.id)}
-              onKeyDown={(event) => {
-                if (event.key === "Enter" || event.key === " ") {
-                  event.preventDefault();
-                  void openTicket(ticket.id);
-                }
-              }}
-              className="cursor-pointer gap-0 p-5 transition-colors hover:bg-accent/30"
-            >
-              <div className="flex items-start justify-between gap-3">
-                <div className="min-w-0">
-                  <div className="truncate text-sm font-semibold">{ticket.title}</div>
-                  <div className="mt-1 text-xs text-muted-foreground">
-                    {(ticket.ticket_type || "support").replace(/_/g, " ")} · {relativeTime(ticket.created_at)}
+        <div className="resend-glass-panel overflow-hidden rounded-2xl">
+          <ul className="divide-y divide-white/[0.06]">
+            {items.map((ticket) => (
+              <li key={ticket.id}>
+                <button
+                  type="button"
+                  onClick={() => void openTicket(ticket.id)}
+                  className="group flex w-full items-start gap-3.5 px-5 py-4 text-left transition-colors hover:bg-white/[0.03]"
+                >
+                  <div className="mt-0.5 flex size-9 shrink-0 items-center justify-center rounded-xl bg-white/[0.05] text-zinc-400 transition-colors group-hover:bg-white/[0.08] group-hover:text-white">
+                    <MessageSquare className="size-4" />
                   </div>
-                </div>
-                <Badge variant="outline" className={cn("shrink-0 font-normal", ticketTone(ticket.status))}>
-                  {ticket.status.replace(/_/g, " ")}
-                </Badge>
-              </div>
-              {ticket.last_message?.message ? (
-                <p className="mt-3 line-clamp-2 text-sm text-muted-foreground">
-                  {ticket.last_message.is_admin ? "Team: " : ""}
-                  {ticket.last_message.message}
-                </p>
-              ) : null}
-            </Card>
-          ))}
+                  <div className="min-w-0 flex-1">
+                    <div className="flex flex-wrap items-center justify-between gap-2">
+                      <span className="truncate font-display text-sm font-medium text-white">
+                        {ticket.title}
+                      </span>
+                      <TicketStatusDot status={ticket.status} />
+                    </div>
+                    {ticket.last_message?.message ? (
+                      <p className="mt-1 line-clamp-2 text-xs leading-5 text-zinc-400">
+                        {ticket.last_message.is_admin ? (
+                          <span className="font-medium text-brand-ink">Team: </span>
+                        ) : null}
+                        {ticket.last_message.message}
+                      </p>
+                    ) : null}
+                    <div className="mt-1.5 font-mono text-[11px] text-zinc-500">
+                      {(ticket.ticket_type || "support").replace(/_/g, " ")} · {relativeTime(ticket.created_at)}
+                    </div>
+                  </div>
+                  <ChevronRight className="mt-2 size-4 shrink-0 text-zinc-600 transition-transform group-hover:translate-x-0.5 group-hover:text-zinc-300" />
+                </button>
+              </li>
+            ))}
+          </ul>
         </div>
       )}
 
       <Sheet open={selectedId !== null} onOpenChange={(open) => (open ? null : setSelectedId(null))}>
-        <SheetContent side="right" className="w-full overflow-y-auto sm:max-w-xl">
-          <SheetHeader>
-            <div className="flex items-center gap-2">
-              <Button
-                variant="ghost"
-                size="icon-sm"
-                className="-ml-1"
+        <SheetContent
+          side="right"
+          className="flex w-full flex-col border-l border-white/[0.08] bg-[#070709] p-0 text-white sm:max-w-xl"
+        >
+          <SheetHeader className="border-b border-white/[0.07] px-5 py-4">
+            <div className="flex items-center gap-2.5 pr-8">
+              <button
+                type="button"
                 onClick={() => setSelectedId(null)}
                 aria-label="Back to the ticket list"
+                className="flex size-8 shrink-0 items-center justify-center rounded-full text-zinc-400 transition-colors hover:bg-white/[0.06] hover:text-white"
               >
                 <ArrowLeft className="size-4" />
-              </Button>
-              <SheetTitle className="truncate text-left">{detail?.title || "Ticket"}</SheetTitle>
+              </button>
+              <SheetTitle className="truncate text-left font-display text-base font-medium text-white">
+                {detail?.title || "Ticket"}
+              </SheetTitle>
             </div>
-            <SheetDescription className="flex items-center gap-2">
-              {detail ? (
-                <Badge variant="outline" className={cn("font-normal", ticketTone(detail.status))}>
-                  {detail.status.replace(/_/g, " ")}
-                </Badge>
-              ) : null}
+            <SheetDescription className="pl-10">
+              {detail ? <TicketStatusDot status={detail.status} /> : <span className="text-xs text-zinc-500">Loading details...</span>}
             </SheetDescription>
           </SheetHeader>
 
-          <div className="space-y-4 px-1 pb-6">
+          <div className="flex-1 overflow-y-auto px-5 py-5">
             {detailLoading ? (
-              <p className="flex items-center gap-2 text-sm text-muted-foreground">
-                <Loader2 className="size-4 animate-spin" /> Loading the conversation…
+              <p className="flex items-center gap-2 text-sm text-zinc-400">
+                <Loader2 className="size-4 animate-spin" /> Loading the conversation...
               </p>
             ) : detailError ? (
               <ErrorState
@@ -190,76 +223,78 @@ export function TicketsView() {
                 onRetry={selectedId !== null ? () => void openTicket(selectedId) : undefined}
               />
             ) : detail ? (
-              <>
-                <div className="space-y-3">
-                  {(detail.messages || []).map((message, index) => {
-                    const safeAttachmentUrl = safeExternalUrl(message.attachment_url);
-                    return (
+              <div className="space-y-3.5">
+                {(detail.messages || []).map((message, index) => {
+                  const safeAttachmentUrl = safeExternalUrl(message.attachment_url);
+                  return (
                     <div
                       key={index}
                       className={cn("flex", message.is_admin ? "justify-start" : "justify-end")}
                     >
                       <div
                         className={cn(
-                          "max-w-[85%] rounded-lg px-3.5 py-2.5 text-sm leading-6",
+                          "max-w-[86%] rounded-2xl px-4 py-3 text-sm leading-6",
                           message.is_admin
-                            ? "bg-muted text-foreground"
-                            : "bg-primary text-primary-foreground",
+                            ? "bg-[#111115] text-zinc-100 ring-1 ring-white/[0.07]"
+                            : "bg-white/[0.11] text-white ring-1 ring-white/[0.14]",
                         )}
                       >
-                        {message.is_admin ? (
-                          <div className="mb-1 text-[10px] font-medium tracking-wide uppercase opacity-70">
-                            Team
-                          </div>
-                        ) : null}
-                        <p className="whitespace-pre-wrap">{message.message}</p>
+                        <div className="mb-1 flex items-center justify-between gap-3 font-mono text-[10.5px]">
+                          <span className={message.is_admin ? "text-brand-ink" : "text-zinc-300"}>
+                            {message.is_admin ? "KodaHosting team" : "You"}
+                          </span>
+                          <span className="text-zinc-500">{relativeTime(message.created_at)}</span>
+                        </div>
+                        <p className="whitespace-pre-wrap text-[13.5px] leading-6">{message.message}</p>
                         {safeAttachmentUrl ? (
                           <a
                             href={safeAttachmentUrl}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="mt-2 inline-flex items-center gap-1.5 text-xs underline underline-offset-2"
+                            className="mt-2 inline-flex items-center gap-1.5 font-mono text-xs text-brand-ink underline underline-offset-4 hover:text-brand"
                           >
                             <Paperclip className="size-3" />
                             Attachment
                           </a>
                         ) : null}
-                        <div
-                          className={cn(
-                            "mt-1 text-[10px]",
-                            message.is_admin ? "text-muted-foreground" : "text-primary-foreground/70",
-                          )}
-                        >
-                          {relativeTime(message.created_at)}
-                        </div>
                       </div>
                     </div>
-                    );
-                  })}
-                </div>
-
-                {closed ? (
-                  <p className="rounded-md bg-muted p-3 text-xs text-muted-foreground">
-                    This ticket is {detail.status.toLowerCase()}. Replies are closed.
-                  </p>
-                ) : (
-                  <form onSubmit={sendReply} className="space-y-2 border-t pt-4">
-                    <Textarea
-                      value={reply}
-                      onChange={(event) => setReply(event.target.value)}
-                      placeholder="Write a reply…"
-                      rows={3}
-                    />
-                    {replyError ? <p className="text-xs text-destructive">{replyError}</p> : null}
-                    <Button type="submit" size="sm" disabled={replyBusy || !reply.trim()}>
-                      {replyBusy ? <Loader2 className="size-4 animate-spin" /> : <Send className="size-4" />}
-                      Send reply
-                    </Button>
-                  </form>
-                )}
-              </>
+                  );
+                })}
+              </div>
             ) : null}
           </div>
+
+          {detail && !detailLoading && !detailError ? (
+            <div className="border-t border-white/[0.07] bg-black/40 px-5 py-4">
+              {closed ? (
+                <p className="rounded-xl bg-white/[0.04] px-3.5 py-2.5 text-xs text-zinc-400">
+                  This ticket is {detail.status.toLowerCase()}. Replies are closed.
+                </p>
+              ) : (
+                <form onSubmit={sendReply} className="space-y-3">
+                  <Textarea
+                    value={reply}
+                    onChange={(event) => setReply(event.target.value)}
+                    placeholder="Write a reply..."
+                    rows={3}
+                    className="resize-none rounded-xl border-white/[0.09] bg-white/[0.04] text-sm text-white placeholder:text-zinc-500 focus-visible:border-white/25 focus-visible:ring-0"
+                  />
+                  {replyError ? <p className="text-xs text-red-400">{replyError}</p> : null}
+                  <div className="flex justify-end">
+                    <button
+                      type="submit"
+                      disabled={replyBusy || !reply.trim()}
+                      className="koda-btn-black h-9 px-4 text-xs disabled:opacity-45"
+                    >
+                      {replyBusy ? <Loader2 className="size-3.5 animate-spin" /> : <Send className="size-3.5" />}
+                      Send reply
+                    </button>
+                  </div>
+                </form>
+              )}
+            </div>
+          ) : null}
         </SheetContent>
       </Sheet>
     </div>

@@ -1,21 +1,39 @@
 import { Download, ExternalLink, Puzzle } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
 import { ErrorState } from "@/components/error-state";
-import type { ExtensionItem, MyExtensionItem } from "@/dashboard/types";
-import { submissionTone } from "@/dashboard/types";
+import type { ExtensionItem, MyExtensionItem, SubmissionStatus } from "@/dashboard/types";
 import { safeImageUrl } from "@/lib/security";
 import { cn } from "@/lib/utils";
 
 function ExtensionIcon({ url, name }: { url?: string; name: string }) {
   const safeUrl = safeImageUrl(url);
-  if (safeUrl) return <img src={safeUrl} alt="" className="size-10 shrink-0 rounded-lg border object-cover" />;
+  if (safeUrl) {
+    return (
+      <img
+        src={safeUrl}
+        alt=""
+        className="size-10 shrink-0 rounded-xl bg-white/[0.05] object-cover ring-1 ring-white/[0.08]"
+      />
+    );
+  }
   return (
-    <div className="flex size-10 shrink-0 items-center justify-center rounded-lg border bg-muted text-sm font-medium">
+    <div className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-white/[0.06] font-display text-sm font-medium text-white ring-1 ring-white/[0.08]">
       {(name || "?").trim().charAt(0).toUpperCase()}
     </div>
   );
+}
+
+function statusDot(status: SubmissionStatus): { dot: string; text: string } {
+  switch (status) {
+    case "APPROVED":
+      return { dot: "bg-emerald-400", text: "text-emerald-400" };
+    case "PENDING":
+      return { dot: "bg-amber-400", text: "text-amber-300" };
+    case "REJECTED":
+    case "DELISTED":
+      return { dot: "bg-red-400", text: "text-red-400" };
+    default:
+      return { dot: "bg-zinc-500", text: "text-zinc-400" };
+  }
 }
 
 export function ExtensionsView({
@@ -33,20 +51,19 @@ export function ExtensionsView({
 }) {
   return (
     <div className="space-y-8">
-      <div className="flex flex-wrap items-start justify-between gap-4">
+      <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-semibold tracking-tight">Extensions</h1>
-          <p className="mt-1 max-w-2xl text-sm text-muted-foreground">
-            Language packs, themes and tools that run inside the app. The store shows everything that
-            passed review.
+          <h1 className="font-display text-2xl font-medium tracking-[-0.03em] text-white">
+            Extensions
+          </h1>
+          <p className="mt-1 max-w-2xl text-sm text-zinc-400">
+            Language packs, themes, and tools that run inside the app. The store lists every package that passed review.
           </p>
         </div>
-        <Button asChild variant="outline" size="sm">
-          <a href="/store">
-            Open the store
-            <ExternalLink className="size-4" />
-          </a>
-        </Button>
+        <a href="/store" className="koda-btn-pill h-9 px-4 text-xs">
+          Open store
+          <ExternalLink className="size-3.5 opacity-75" />
+        </a>
       </div>
 
       {error ? (
@@ -61,20 +78,20 @@ export function ExtensionsView({
 
       <section>
         <div className="flex items-baseline justify-between gap-3">
-          <h2 className="text-sm font-semibold">In the store</h2>
-          <span className="text-xs text-muted-foreground">
-            {loading ? "Loading…" : `${all.length} published`}
+          <h2 className="font-display text-sm font-medium text-white">In the store</h2>
+          <span className="font-mono text-xs tabular-nums text-zinc-500">
+            {loading ? "Loading..." : `${all.length} published`}
           </span>
         </div>
 
         {all.length === 0 && !loading ? (
-          <p className="mt-3 rounded-xl bg-card p-8 text-center text-sm text-muted-foreground">
+          <div className="resend-glass-panel mt-3 rounded-2xl p-10 text-center text-sm text-zinc-400">
             Nothing published yet. The first extensions appear after review.
-          </p>
+          </div>
         ) : (
-          <div className="mt-3 grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+          <div className="mt-3 grid gap-3.5 sm:grid-cols-2 xl:grid-cols-3">
             {all.map((item) => (
-              <Card
+              <div
                 key={item.ext_id}
                 role="button"
                 tabIndex={0}
@@ -87,18 +104,20 @@ export function ExtensionsView({
                     window.location.href = `/store?ext=${encodeURIComponent(item.ext_id)}`;
                   }
                 }}
-                className="group cursor-pointer gap-0 p-4 transition-colors hover:bg-accent/30"
+                className="resend-glass-panel group cursor-pointer rounded-2xl p-4 transition-colors hover:bg-white/[0.04]"
               >
                 <div className="flex items-start gap-3">
                   <ExtensionIcon url={item.icon_url} name={item.name} />
                   <div className="min-w-0 flex-1">
-                    <div className="truncate text-sm font-semibold">{item.name}</div>
-                    <div className="truncate text-xs text-muted-foreground">
+                    <div className="truncate font-display text-sm font-medium text-white">
+                      {item.name}
+                    </div>
+                    <div className="mt-0.5 truncate text-xs text-zinc-400">
                       {item.author ? (
                         <a
                           href={`/store?author=${encodeURIComponent(item.author)}`}
                           onClick={(event) => event.stopPropagation()}
-                          className="hover:text-foreground hover:underline hover:underline-offset-2"
+                          className="hover:text-white hover:underline hover:underline-offset-2"
                         >
                           {item.author}
                         </a>
@@ -108,61 +127,80 @@ export function ExtensionsView({
                       {item.latest_version ? ` · v${item.latest_version.version}` : ""}
                     </div>
                   </div>
-                  <Badge variant="secondary" className="shrink-0 font-normal">
-                    <Download className="size-3" />
-                    {item.downloads || 0}
-                  </Badge>
+                  <span className="inline-flex shrink-0 items-center gap-1 font-mono text-xs tabular-nums text-zinc-400">
+                    <Download className="size-3 text-zinc-500" />
+                    {(item.downloads || 0).toLocaleString()}
+                  </span>
                 </div>
-                <p className="mt-3 line-clamp-2 text-xs leading-5 text-muted-foreground">{item.license || ""}</p>
-              </Card>
+                {item.license ? (
+                  <p className="mt-3 truncate font-mono text-[11px] text-zinc-500">{item.license}</p>
+                ) : null}
+              </div>
             ))}
           </div>
         )}
       </section>
 
       <section>
-        <h2 className="text-sm font-semibold">My submissions</h2>
+        <div className="flex items-baseline justify-between gap-3">
+          <h2 className="font-display text-sm font-medium text-white">My submissions</h2>
+          <a
+            href="/developer"
+            className="text-xs text-zinc-400 transition-colors hover:text-white"
+          >
+            Open Developer Console
+          </a>
+        </div>
+
         {mine.length === 0 ? (
-          <p className="mt-3 rounded-xl bg-card p-8 text-center text-sm text-muted-foreground">
-            You have not submitted anything yet. Submit extensions for review in the{" "}
-            <a href="/developer?new=1" className="font-medium text-foreground underline underline-offset-4">
+          <div className="resend-glass-panel mt-3 rounded-2xl p-10 text-center text-sm text-zinc-400">
+            You have not submitted anything yet. Publish extensions for review in the{" "}
+            <a
+              href="/developer?new=1"
+              className="font-medium text-white underline decoration-white/30 underline-offset-4 hover:decoration-brand"
+            >
               Developer Console
             </a>
             .
-          </p>
+          </div>
         ) : (
-          <div className="mt-3 grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+          <div className="mt-3 grid gap-3.5 sm:grid-cols-2 xl:grid-cols-3">
             {mine.map((item) => {
               const latest = item.versions?.[0];
+              const tone = statusDot(item.status);
               return (
-                <Card key={item.ext_id} className="gap-0 p-4 shadow-none">
+                <a
+                  key={item.ext_id}
+                  href={`/developer/extensions/${encodeURIComponent(item.ext_id)}/listing`}
+                  className="resend-glass-panel block rounded-2xl p-4 transition-colors hover:bg-white/[0.04]"
+                >
                   <div className="flex items-start gap-3">
-                    <div className="flex size-10 shrink-0 items-center justify-center rounded-lg border bg-muted">
-                      <Puzzle className="size-4 text-muted-foreground" />
+                    <div className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-white/[0.05] text-zinc-400">
+                      <Puzzle className="size-4" />
                     </div>
                     <div className="min-w-0 flex-1">
-                      <div className="truncate text-sm font-semibold">{item.name}</div>
-                      <div className="truncate font-mono text-[11px] text-muted-foreground">
+                      <div className="truncate font-display text-sm font-medium text-white">
+                        {item.name}
+                      </div>
+                      <div className="mt-0.5 truncate font-mono text-[11px] text-zinc-500">
                         {item.ext_id}
                         {latest ? ` · v${latest.version}` : ""}
                       </div>
                     </div>
-                    <Badge
-                      variant="outline"
-                      className={cn("shrink-0 font-normal", submissionTone(item.status))}
-                    >
+                    <span className={cn("inline-flex shrink-0 items-center gap-1.5 font-mono text-[11px]", tone.text)}>
+                      <span className={cn("size-1.5 rounded-full", tone.dot)} />
                       {item.status}
-                    </Badge>
+                    </span>
                   </div>
                   {item.review_note ? (
-                    <p className="mt-3 text-xs leading-5 text-muted-foreground">
+                    <p className="mt-3 rounded-xl bg-white/[0.03] px-3 py-2 text-xs leading-5 text-zinc-400">
                       Review note: {item.review_note}
                     </p>
                   ) : null}
-                  <div className="mt-3 text-xs text-muted-foreground">
-                    {item.downloads || 0} downloads
+                  <div className="mt-3 font-mono text-xs tabular-nums text-zinc-500">
+                    {(item.downloads || 0).toLocaleString()} downloads
                   </div>
-                </Card>
+                </a>
               );
             })}
           </div>

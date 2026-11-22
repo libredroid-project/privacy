@@ -34,9 +34,6 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
 import {
   Dialog,
   DialogContent,
@@ -59,6 +56,7 @@ import { formatBytes, pendingVersion, PERMISSIONS } from "@/developer/types";
 import { publishErrorText, publishVersion } from "@/developer/publish";
 import { runPreflight } from "@/developer/preflight";
 import { PreflightPanel } from "@/developer/preflight-panel";
+import { cn } from "@/lib/utils";
 
 const editorTheme = EditorView.theme({
   "&": { backgroundColor: "transparent", fontSize: "13px" },
@@ -74,6 +72,9 @@ const editorTheme = EditorView.theme({
   "&.cm-focused": { outline: "none" },
   ".cm-selectionBackground, ::selection": { backgroundColor: "rgba(255,255,255,0.14) !important" },
 });
+
+const INPUT_CLASS =
+  "rounded-xl border-zinc-200 bg-white text-zinc-950 placeholder:text-zinc-400 dark:border-white/[0.09] dark:bg-white/[0.04] dark:text-white dark:placeholder:text-zinc-500";
 
 function extensionOf(path: string): string {
   const name = path.split("/").pop() || "";
@@ -153,9 +154,9 @@ function buildTree(paths: string[]): TreeNode[] {
 function FileGlyph({ path }: { path: string }) {
   const ext = extensionOf(path);
   if (["js", "mjs", "ts", "tsx", "jsx", "java", "kt", "json"].includes(ext)) {
-    return <FileCode2 className="size-3.5 shrink-0 text-muted-foreground" />;
+    return <FileCode2 className="size-3.5 shrink-0 text-zinc-400 dark:text-zinc-500" />;
   }
-  return <FileText className="size-3.5 shrink-0 text-muted-foreground" />;
+  return <FileText className="size-3.5 shrink-0 text-zinc-400 dark:text-zinc-500" />;
 }
 
 function Tree({ nodes, selected, dirty, onSelect }: {
@@ -172,9 +173,12 @@ function Tree({ nodes, selected, dirty, onSelect }: {
             <button
               type="button"
               onClick={() => onSelect(node.path)}
-              className={`flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left text-xs transition-colors ${
-                selected === node.path ? "bg-accent text-foreground" : "text-muted-foreground hover:bg-accent/50"
-              }`}
+              className={cn(
+                "flex w-full items-center gap-2 rounded-lg px-2 py-1.5 text-left text-xs transition-colors",
+                selected === node.path
+                  ? "bg-black/[0.07] text-zinc-950 dark:bg-white/[0.08] dark:text-white"
+                  : "text-zinc-600 hover:bg-black/[0.04] dark:text-zinc-400 dark:hover:bg-white/[0.04]",
+              )}
               style={{ paddingLeft: `${8 + node.path.split("/").length * 10}px` }}
             >
               <FileGlyph path={node.path} />
@@ -185,7 +189,7 @@ function Tree({ nodes, selected, dirty, onSelect }: {
         ) : (
           <li key={node.path}>
             <div
-              className="flex items-center gap-2 px-2 py-1.5 text-xs text-muted-foreground"
+              className="flex items-center gap-2 px-2 py-1.5 text-xs text-zinc-500"
               style={{ paddingLeft: `${8 + node.path.split("/").length * 10}px` }}
             >
               <Folder className="size-3.5 shrink-0" />
@@ -350,100 +354,113 @@ export function CodeEditor({ ext, onPublished }: { ext: DevExtension; onPublishe
 
   if (loading) {
     return (
-      <Card className="flex items-center justify-center gap-2 p-16 text-sm text-muted-foreground shadow-none">
-        <Loader2 className="size-4 animate-spin" /> Loading the package…
-      </Card>
+      <div className="resend-glass-panel flex items-center justify-center gap-2 rounded-2xl p-16 text-sm text-zinc-500 dark:text-zinc-400">
+        <Loader2 className="size-4 animate-spin" /> Loading the package...
+      </div>
     );
   }
 
   if (error && !source) {
     return (
-      <Card className="gap-3 p-6 shadow-none">
-        <p className="text-sm font-medium">The package could not be loaded.</p>
-        <p className="text-sm text-muted-foreground">{error}</p>
-        <p className="text-xs text-muted-foreground">
+      <div className="resend-glass-panel space-y-3 rounded-2xl p-6">
+        <p className="font-display text-sm font-medium text-zinc-950 dark:text-white">
+          The package could not be loaded.
+        </p>
+        <p className="text-sm text-zinc-600 dark:text-zinc-400">{error}</p>
+        <p className="text-xs text-zinc-500">
           Only extensions with at least one uploaded release have a package to edit.
         </p>
-        <Button size="sm" variant="outline" onClick={() => void load()}>
-          <RefreshCw className="size-4" /> Try again
-        </Button>
-      </Card>
+        <button type="button" onClick={() => void load()} className="koda-btn-pill h-8 px-3.5 text-xs">
+          <RefreshCw className="size-3.5" /> Try again
+        </button>
+      </div>
     );
   }
 
   return (
     <div className="space-y-4">
-      <Card className="gap-0 p-5 shadow-none">
+      <div className="resend-glass-panel rounded-2xl p-5">
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div>
-            <div className="flex items-center gap-2">
-              <h2 className="text-sm font-semibold">Code editor</h2>
-              <Badge variant="outline" className="font-mono font-normal">
+            <div className="flex flex-wrap items-center gap-2.5">
+              <h2 className="font-display text-sm font-medium text-zinc-950 dark:text-white">
+                Code editor
+              </h2>
+              <span className="font-mono text-xs text-zinc-500">
                 v{source?.version} ({source?.version_code})
-              </Badge>
+              </span>
             </div>
-            <p className="mt-1 text-sm text-muted-foreground">
-              Edits stay local until you publish them as a new release. The manifest gets the new
-              version and version code automatically.
+            <p className="mt-1 text-xs text-zinc-600 dark:text-zinc-400">
+              Edits stay local until you publish them as a new release. The manifest gets the new version and version code automatically.
             </p>
           </div>
           <div className="flex flex-wrap items-center gap-2">
-            <Button size="sm" variant="outline" onClick={() => setReloadOpen(true)} disabled={dirty.size > 0}>
-              <RefreshCw className="size-4" /> Reload
-            </Button>
-            <Button size="sm" variant="outline" onClick={download}>
-              <Download className="size-4" /> Download
-            </Button>
-            <Button
-              size="sm"
+            <button
+              type="button"
+              onClick={() => setReloadOpen(true)}
+              disabled={dirty.size > 0}
+              className="koda-btn-pill h-8 px-3 text-xs disabled:opacity-45"
+            >
+              <RefreshCw className="size-3.5" /> Reload
+            </button>
+            <button
+              type="button"
+              onClick={download}
+              className="koda-btn-pill h-8 px-3 text-xs"
+            >
+              <Download className="size-3.5" /> Download
+            </button>
+            <button
+              type="button"
               onClick={() => setPublishOpen(true)}
               disabled={Object.keys(files).length === 0 || Boolean(pending)}
               title={pending ? `v${pending.version} is already in review` : undefined}
+              className="koda-btn-black h-8 px-3.5 text-xs disabled:opacity-45"
             >
-              <Rocket className="size-4" /> Publish update
-            </Button>
+              <Rocket className="size-3.5" /> Publish update
+            </button>
           </div>
         </div>
         {dirty.size > 0 ? (
-          <p className="mt-3 flex items-center gap-2 text-xs text-muted-foreground">
+          <p className="mt-3 flex items-center gap-2 font-mono text-xs text-zinc-500">
             <span className="size-1.5 rounded-full bg-brand" />
             {dirty.size} changed {dirty.size === 1 ? "file" : "files"} · package{" "}
             {formatBytes(Object.values(files).reduce((sum, bytes) => sum + bytes.byteLength, 0))}
           </p>
         ) : null}
         {pending ? (
-          <p className="mt-3 rounded-lg border border-dashed p-3 text-sm text-muted-foreground">
-            v{pending.version} is in review. Publishing the editor changes unlocks after the decision.
+          <p className="mt-3 rounded-xl border border-dashed border-amber-500/35 bg-amber-500/5 p-3 text-xs text-amber-800 dark:text-amber-300">
+            v{pending.version} is in review. Publishing editor changes unlocks once reviewed.
           </p>
         ) : null}
-      </Card>
+      </div>
 
       <div className="grid gap-4 lg:grid-cols-[230px_minmax(0,1fr)]">
-        <Card className="gap-0 p-3 shadow-none lg:self-start">
-          <div className="flex items-center justify-between gap-2 px-1 pb-2">
-            <p className="text-[11px] font-medium tracking-wide text-muted-foreground uppercase">
+        <div className="resend-glass-panel rounded-2xl p-3 lg:self-start">
+          <div className="flex items-center justify-between gap-2 px-1.5 pb-2">
+            <p className="font-mono text-[10.5px] font-medium tracking-[0.06em] text-zinc-500 uppercase">
               Package
             </p>
             <div className="flex items-center gap-0.5">
-              <Button
-                size="icon-sm"
-                variant="ghost"
+              <button
+                type="button"
                 aria-label="New file"
                 onClick={() => {
                   setNewPath("");
                   setNewOpen(true);
                 }}
+                className="flex size-7 items-center justify-center rounded-lg text-zinc-500 transition-colors hover:bg-black/[0.05] hover:text-zinc-950 dark:hover:bg-white/[0.06] dark:hover:text-white"
               >
                 <Plus className="size-3.5" />
-              </Button>
-              <Button
-                size="icon-sm"
-                variant="ghost"
+              </button>
+              <button
+                type="button"
                 aria-label="Upload file"
                 onClick={() => uploadInput.current?.click()}
+                className="flex size-7 items-center justify-center rounded-lg text-zinc-500 transition-colors hover:bg-black/[0.05] hover:text-zinc-950 dark:hover:bg-white/[0.06] dark:hover:text-white"
               >
                 <Upload className="size-3.5" />
-              </Button>
+              </button>
               <input
                 ref={uploadInput}
                 type="file"
@@ -465,168 +482,177 @@ export function CodeEditor({ ext, onPublished }: { ext: DevExtension; onPublishe
 
           <div className="max-h-[520px] overflow-y-auto">
             {Object.keys(files).length === 0 ? (
-              <p className="px-2 py-4 text-xs text-muted-foreground">No files.</p>
+              <p className="px-2 py-4 text-xs text-zinc-500">No files.</p>
             ) : (
               <Tree nodes={tree} selected={selected} dirty={dirty} onSelect={select} />
             )}
           </div>
 
           {selected ? (
-            <div className="mt-2 flex items-center gap-1 border-t pt-2">
-              <Button
-                size="sm"
-                variant="ghost"
-                className="flex-1 justify-start text-xs"
+            <div className="mt-2 flex items-center gap-1 border-t border-zinc-200/70 pt-2 dark:border-white/[0.06]">
+              <button
+                type="button"
+                className="flex-1 rounded-lg px-2 py-1.5 text-left text-xs text-zinc-600 transition-colors hover:bg-black/[0.04] hover:text-zinc-950 dark:text-zinc-400 dark:hover:bg-white/[0.05] dark:hover:text-white"
                 onClick={() => {
                   setRenameValue(selected);
                   setRenameOpen(true);
                 }}
               >
                 Rename
-              </Button>
-              <Button
-                size="icon-sm"
-                variant="ghost"
+              </button>
+              <button
+                type="button"
                 aria-label="Delete file"
                 onClick={() => setDeleteOpen(true)}
+                className="flex size-7 items-center justify-center rounded-lg text-zinc-500 transition-colors hover:bg-red-500/10 hover:text-red-500"
               >
                 <Trash2 className="size-3.5" />
-              </Button>
+              </button>
             </div>
           ) : null}
-        </Card>
+        </div>
 
-        <Card className="min-w-0 gap-0 overflow-hidden shadow-none">
-          <div className="flex items-center justify-between gap-3 border-b px-4 py-2.5">
-            <div className="flex min-w-0 items-center gap-2 font-mono text-xs">
-              <FolderOpen className="size-3.5 shrink-0 text-muted-foreground" />
+        <div className="resend-glass-panel min-w-0 overflow-hidden rounded-2xl">
+          <div className="flex items-center justify-between gap-3 border-b border-zinc-200/80 px-4 py-2.5 dark:border-white/[0.06]">
+            <div className="flex min-w-0 items-center gap-2 font-mono text-xs text-zinc-900 dark:text-zinc-100">
+              <FolderOpen className="size-3.5 shrink-0 text-zinc-500" />
               <span className="truncate">{selected || "No file selected"}</span>
               {dirty.has(selected) ? (
-                <Badge variant="outline" className="font-normal">
-                  changed
-                </Badge>
+                <span className="font-mono text-[11px] text-brand-ink">· modified</span>
               ) : null}
             </div>
             {selected && files[selected] ? (
-              <span className="shrink-0 text-[11px] text-muted-foreground">
+              <span className="shrink-0 font-mono text-[11px] text-zinc-500">
                 {formatBytes(files[selected].byteLength)}
               </span>
             ) : null}
           </div>
 
           {!selected ? (
-            <p className="p-10 text-center text-sm text-muted-foreground">
+            <p className="p-10 text-center text-sm text-zinc-500 dark:text-zinc-400">
               Pick a file or create one.
             </p>
           ) : binary ? (
             <div className="flex flex-col items-center justify-center gap-2 p-16 text-center">
-              <FileText className="size-6 text-muted-foreground" />
-              <p className="text-sm font-medium">Binary file</p>
-              <p className="text-sm text-muted-foreground">
-                {binary.byteLength} bytes. The editor only shows text; the file stays in the package
-                untouched.
+              <FileText className="size-6 text-zinc-500" />
+              <p className="font-display text-sm font-medium text-zinc-950 dark:text-white">Binary file</p>
+              <p className="text-sm text-zinc-600 dark:text-zinc-400">
+                {binary.byteLength} bytes. The editor only shows text; this file stays in the package untouched.
               </p>
             </div>
           ) : (
-            <CodeMirror
-              key={selected}
-              value={content}
-              height="520px"
-              theme="dark"
-              extensions={[
-                languageFor(selected),
-                syntaxHighlighting(oneDarkHighlightStyle),
-                editorTheme,
-              ]}
-              onChange={edit}
-              basicSetup={{
-                lineNumbers: true,
-                foldGutter: true,
-                highlightActiveLine: true,
-                highlightActiveLineGutter: true,
-                searchKeymap: true,
-              }}
-            />
+            <div className="bg-[#09090c] text-zinc-100">
+              <CodeMirror
+                key={selected}
+                value={content}
+                height="520px"
+                theme="dark"
+                extensions={[
+                  languageFor(selected),
+                  syntaxHighlighting(oneDarkHighlightStyle),
+                  editorTheme,
+                ]}
+                onChange={edit}
+                basicSetup={{
+                  lineNumbers: true,
+                  foldGutter: true,
+                  highlightActiveLine: true,
+                  highlightActiveLineGutter: true,
+                  searchKeymap: true,
+                }}
+              />
+            </div>
           )}
-        </Card>
+        </div>
       </div>
 
       {error ? (
-        <Alert variant="destructive">
+        <Alert variant="destructive" className="rounded-2xl">
           <AlertDescription>{error}</AlertDescription>
         </Alert>
       ) : null}
 
-      <p className="flex items-start gap-2 text-xs text-muted-foreground">
+      <p className="flex items-start gap-2 text-xs text-zinc-500 dark:text-zinc-400">
         <AlertTriangle className="mt-0.5 size-3.5 shrink-0" />
-        The app checks manifest.json before it installs a package. A broken manifest only fails at
-        review, so keep the id, version and permissions consistent.
+        The app checks manifest.json before installing a package. Keep the id, version, and permissions consistent.
       </p>
 
       <Dialog open={newOpen} onOpenChange={setNewOpen}>
-        <DialogContent className="sm:max-w-md">
+        <DialogContent className="rounded-2xl border-zinc-200 bg-white dark:border-white/[0.1] dark:bg-[#0b0b0e] sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>New file</DialogTitle>
+            <DialogTitle className="font-display">New file</DialogTitle>
             <DialogDescription>Relative to the package root, for example ui/settings.html.</DialogDescription>
           </DialogHeader>
           <div className="space-y-2">
-            <Label htmlFor="new-file">Path</Label>
+            <Label htmlFor="new-file" className="text-xs text-zinc-600 dark:text-zinc-400">
+              Path
+            </Label>
             <Input
               id="new-file"
               value={newPath}
               onChange={(event) => setNewPath(event.target.value)}
               placeholder="ui/page.html"
-              className="font-mono"
+              className={cn("font-mono", INPUT_CLASS)}
             />
           </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setNewOpen(false)}>Cancel</Button>
-            <Button
+          <DialogFooter className="gap-2">
+            <button type="button" onClick={() => setNewOpen(false)} className="koda-btn-pill h-9 px-4 text-xs">
+              Cancel
+            </button>
+            <button
+              type="button"
               onClick={() => {
                 addFile(newPath, strToU8(""));
                 if (newPath.trim()) setNewOpen(false);
               }}
+              className="koda-btn-black h-9 px-4 text-xs"
             >
               Create
-            </Button>
+            </button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
 
       <Dialog open={renameOpen} onOpenChange={setRenameOpen}>
-        <DialogContent className="sm:max-w-md">
+        <DialogContent className="rounded-2xl border-zinc-200 bg-white dark:border-white/[0.1] dark:bg-[#0b0b0e] sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>Rename file</DialogTitle>
+            <DialogTitle className="font-display">Rename file</DialogTitle>
             <DialogDescription>The file keeps its content.</DialogDescription>
           </DialogHeader>
           <div className="space-y-2">
-            <Label htmlFor="rename-file">Path</Label>
+            <Label htmlFor="rename-file" className="text-xs text-zinc-600 dark:text-zinc-400">
+              Path
+            </Label>
             <Input
               id="rename-file"
               value={renameValue}
               onChange={(event) => setRenameValue(event.target.value)}
-              className="font-mono"
+              className={cn("font-mono", INPUT_CLASS)}
             />
           </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setRenameOpen(false)}>Cancel</Button>
-            <Button onClick={renameFile}>Rename</Button>
+          <DialogFooter className="gap-2">
+            <button type="button" onClick={() => setRenameOpen(false)} className="koda-btn-pill h-9 px-4 text-xs">
+              Cancel
+            </button>
+            <button type="button" onClick={renameFile} className="koda-btn-black h-9 px-4 text-xs">
+              Rename
+            </button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
 
       <AlertDialog open={deleteOpen} onOpenChange={setDeleteOpen}>
-        <AlertDialogContent>
+        <AlertDialogContent className="rounded-2xl border-zinc-200 bg-white dark:border-white/[0.1] dark:bg-[#0b0b0e]">
           <AlertDialogHeader>
-            <AlertDialogTitle>Delete {selected}?</AlertDialogTitle>
+            <AlertDialogTitle className="font-display">Delete {selected}?</AlertDialogTitle>
             <AlertDialogDescription>
-              Only from this draft. The published package stays untouched until the next release.
+              Only from this draft. The published package stays untouched until your next release.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Keep it</AlertDialogCancel>
+            <AlertDialogCancel className="rounded-full">Keep it</AlertDialogCancel>
             <AlertDialogAction
-              className="bg-destructive text-white hover:bg-destructive/90"
+              className="rounded-full bg-red-600 text-white hover:bg-red-500"
               onClick={(event) => {
                 event.preventDefault();
                 deleteFile();
@@ -639,17 +665,17 @@ export function CodeEditor({ ext, onPublished }: { ext: DevExtension; onPublishe
       </AlertDialog>
 
       <AlertDialog open={reloadOpen} onOpenChange={setReloadOpen}>
-        <AlertDialogContent>
+        <AlertDialogContent className="rounded-2xl border-zinc-200 bg-white dark:border-white/[0.1] dark:bg-[#0b0b0e]">
           <AlertDialogHeader>
-            <AlertDialogTitle>Discard the local changes?</AlertDialogTitle>
+            <AlertDialogTitle className="font-display">Discard local changes?</AlertDialogTitle>
             <AlertDialogDescription>
-              The editor loads the newest published package again. Files you added, renamed or edited
-              in the browser are gone.
+              The editor reloads the newest published package. Files you added, renamed, or edited in the browser will be lost.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Keep editing</AlertDialogCancel>
+            <AlertDialogCancel className="rounded-full">Keep editing</AlertDialogCancel>
             <AlertDialogAction
+              className="rounded-full"
               onClick={(event) => {
                 event.preventDefault();
                 setReloadOpen(false);
@@ -811,38 +837,45 @@ function EditorPublish({
 
   return (
     <Dialog open={open} onOpenChange={(next) => (busy ? null : onOpenChange(next))}>
-      <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-xl">
+      <DialogContent className="max-h-[90vh] overflow-y-auto rounded-2xl border-zinc-200 bg-white dark:border-white/[0.1] dark:bg-[#0b0b0e] sm:max-w-xl">
         <DialogHeader>
-          <DialogTitle>Publish the edited package</DialogTitle>
+          <DialogTitle className="font-display">Publish edited package</DialogTitle>
           <DialogDescription>
-            This creates a new release and sends it to review. The current store listing stays as it
-            is.
+            Creates a new release and submits it for review. Your current store listing stays unchanged.
           </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-4">
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="space-y-2">
-              <Label htmlFor="ed-version">Version name</Label>
+              <Label htmlFor="ed-version" className="text-xs text-zinc-600 dark:text-zinc-400">
+                Version name
+              </Label>
               <Input
                 id="ed-version"
                 value={version}
                 onChange={(event) => setVersion(event.target.value)}
+                className={INPUT_CLASS}
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="ed-code">Version code</Label>
+              <Label htmlFor="ed-code" className="text-xs text-zinc-600 dark:text-zinc-400">
+                Version code
+              </Label>
               <Input
                 id="ed-code"
                 value={versionCode}
                 onChange={(event) => setVersionCode(event.target.value.replace(/[^0-9]/g, ""))}
                 inputMode="numeric"
+                className={INPUT_CLASS}
               />
             </div>
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="ed-changelog">What changed</Label>
+            <Label htmlFor="ed-changelog" className="text-xs text-zinc-600 dark:text-zinc-400">
+              What changed
+            </Label>
             <Textarea
               id="ed-changelog"
               value={changelog}
@@ -850,11 +883,12 @@ function EditorPublish({
               maxLength={4000}
               onChange={(event) => setChangelog(event.target.value)}
               placeholder="Shown to users with the update."
+              className={INPUT_CLASS}
             />
           </div>
 
           <div className="space-y-2">
-            <Label>Permissions</Label>
+            <Label className="text-xs text-zinc-600 dark:text-zinc-400">Permissions</Label>
             <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
               {PERMISSIONS.map((permission) => {
                 const checked = permissions.includes(permission);
@@ -867,37 +901,50 @@ function EditorPublish({
                         checked ? current.filter((item) => item !== permission) : [...current, permission],
                       )
                     }
-                    className={`rounded-md border px-2.5 py-2 text-left font-mono text-xs transition-colors ${
-                      checked ? "border-brand/60 bg-brand-soft/10" : "text-muted-foreground hover:bg-accent/40"
-                    }`}
+                    className={cn(
+                      "rounded-xl border px-3 py-2 text-left font-mono text-xs transition-colors",
+                      checked
+                        ? "border-brand/60 bg-brand/10 text-zinc-950 dark:text-white"
+                        : "border-zinc-200 text-zinc-600 hover:bg-black/[0.03] dark:border-white/[0.08] dark:text-zinc-400 dark:hover:bg-white/[0.04]",
+                    )}
                   >
                     {permission}
                   </button>
                 );
               })}
             </div>
-            <p className="text-xs text-muted-foreground">
-              Also written to manifest.json. Keep it identical to the permissions the code really uses.
+            <p className="text-xs text-zinc-500">
+              Written to manifest.json too. Keep this identical to the permissions your code actually uses.
             </p>
           </div>
 
           {report ? <PreflightPanel report={report} compact /> : null}
 
           {error ? (
-            <Alert variant="destructive">
+            <Alert variant="destructive" className="rounded-xl">
               <AlertDescription>{error}</AlertDescription>
             </Alert>
           ) : null}
         </div>
 
-        <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)} disabled={busy}>
+        <DialogFooter className="gap-2">
+          <button
+            type="button"
+            onClick={() => onOpenChange(false)}
+            disabled={busy}
+            className="koda-btn-pill h-9 px-4 text-xs disabled:opacity-45"
+          >
             Cancel
-          </Button>
-          <Button onClick={() => void publish()} disabled={busy}>
-            {busy ? <Loader2 className="size-4 animate-spin" /> : <ChevronRight className="size-4" />}
+          </button>
+          <button
+            type="button"
+            onClick={() => void publish()}
+            disabled={busy}
+            className="koda-btn-black h-9 px-4 text-xs disabled:opacity-45"
+          >
+            {busy ? <Loader2 className="size-3.5 animate-spin" /> : <ChevronRight className="size-3.5" />}
             Send to review
-          </Button>
+          </button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

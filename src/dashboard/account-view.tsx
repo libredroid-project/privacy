@@ -21,9 +21,6 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { ErrorState } from "@/components/error-state";
@@ -40,7 +37,7 @@ type Message = { tone: "ok" | "err"; text: string } | null;
 function MessageLine({ message }: { message: Message }) {
   if (!message) return null;
   return (
-    <p className={cn("text-xs", message.tone === "ok" ? "text-ok" : "text-destructive")}>
+    <p className={cn("text-xs", message.tone === "ok" ? "text-emerald-400" : "text-red-400")}>
       {message.text}
     </p>
   );
@@ -49,12 +46,18 @@ function MessageLine({ message }: { message: Message }) {
 function DeviceMedia({ model }: { model?: string }) {
   const photo = devicePhoto(model);
   if (photo) {
-    return <img src={photo} alt="" className="h-[108px] w-[84px] shrink-0 rounded-lg border object-cover" />;
+    return (
+      <img
+        src={photo}
+        alt=""
+        className="h-[108px] w-[84px] shrink-0 rounded-xl bg-white/[0.04] object-cover ring-1 ring-white/[0.08]"
+      />
+    );
   }
   const Icon = deviceIsTablet(model) ? Tablet : Smartphone;
   return (
-    <div className="flex h-[108px] w-[84px] shrink-0 items-center justify-center rounded-lg border bg-muted">
-      <Icon className="size-9 text-muted-foreground" />
+    <div className="flex h-[108px] w-[84px] shrink-0 items-center justify-center rounded-xl bg-white/[0.04] ring-1 ring-white/[0.08]">
+      <Icon className="size-8 text-zinc-500" />
     </div>
   );
 }
@@ -197,8 +200,8 @@ export function AccountView({
 
   if (loading && !me) {
     return (
-      <div className="flex items-center gap-2 text-sm text-muted-foreground">
-        <Loader2 className="size-4 animate-spin" /> Loading the account…
+      <div className="resend-glass-panel flex items-center justify-center gap-2 rounded-2xl p-12 text-sm text-zinc-400">
+        <Loader2 className="size-4 animate-spin" /> Loading your account...
       </div>
     );
   }
@@ -226,44 +229,47 @@ export function AccountView({
     me?.linked_since ? `linked with the app since ${formatDate(me.linked_since)}` : "",
   ]
     .filter(Boolean)
-    .join("  ·  ");
+    .join(" · ");
 
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-semibold tracking-tight">Account</h1>
-        <p className="mt-1 max-w-2xl text-sm text-muted-foreground">
-          The profile the app, the dashboard and the store share.
+        <h1 className="font-display text-2xl font-medium tracking-[-0.03em] text-white">Account</h1>
+        <p className="mt-1 max-w-2xl text-sm text-zinc-400">
+          The profile shared across the Android app, web dashboard, and extension store.
         </p>
       </div>
 
-      <Card className="gap-0 p-6 shadow-none">
+      <div className="resend-glass-panel rounded-2xl p-6">
         <div className="flex flex-col gap-6 sm:flex-row sm:items-start">
-          <Avatar className="size-20">
+          <Avatar className="size-20 ring-1 ring-white/[0.12]">
             <AvatarImage src={avatarUrl(me) || undefined} alt="" />
-            <AvatarFallback className="text-xl">{avatarInitial(me)}</AvatarFallback>
+            <AvatarFallback className="bg-white/[0.08] font-display text-xl text-white">
+              {avatarInitial(me)}
+            </AvatarFallback>
           </Avatar>
 
           <div className="min-w-0 flex-1">
-            <div className="flex flex-wrap items-center gap-2">
-              <h2 className="text-lg font-semibold">{me?.nickname || "No nickname set"}</h2>
-              <Badge variant="outline" className="font-normal">
+            <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+              <h2 className="font-display text-lg font-medium text-white">
+                {me?.nickname || "No nickname set"}
+              </h2>
+              <span
+                className={cn(
+                  "inline-flex items-center gap-1.5 font-mono text-[11px]",
+                  me?.two_fa ? "text-emerald-400" : "text-zinc-500",
+                )}
+              >
+                <span className={cn("size-1.5 rounded-full", me?.two_fa ? "bg-emerald-400" : "bg-zinc-600")} />
                 {me?.two_fa ? "2FA on" : "2FA off"}
-              </Badge>
+              </span>
               {me?.mc_username ? (
-                <Badge variant="secondary" className="font-normal">
-                  {me.mc_username}
-                </Badge>
+                <span className="font-mono text-xs text-brand-ink">· {me.mc_username}</span>
               ) : null}
             </div>
-            <p className="mt-1 text-sm text-muted-foreground">{me?.email}</p>
-            <p className="mt-2 text-xs text-muted-foreground">{counts}</p>
-            {since ? <p className="mt-1 text-xs text-muted-foreground">{since}</p> : null}
-            <p className="mt-2 text-xs text-muted-foreground">
-              {me?.mc_username
-                ? `Minecraft account: ${me.mc_username} (linked)`
-                : "No Minecraft account linked yet."}
-            </p>
+            <p className="mt-1 text-sm text-zinc-400">{me?.email}</p>
+            <p className="mt-2 font-mono text-xs text-zinc-500">{counts}</p>
+            {since ? <p className="mt-1 text-xs text-zinc-500">{since}</p> : null}
 
             <div className="mt-4 flex flex-wrap items-center gap-2">
               <input
@@ -276,33 +282,40 @@ export function AccountView({
                   if (file) void uploadAvatar(file);
                 }}
               />
-              <Button
-                variant="outline"
-                size="sm"
+              <button
+                type="button"
                 disabled={avatarBusy}
                 onClick={() => fileInput.current?.click()}
+                className="koda-btn-pill h-8 px-3.5 text-xs disabled:opacity-50"
               >
-                {avatarBusy ? <Loader2 className="size-4 animate-spin" /> : <ImagePlus className="size-4" />}
+                {avatarBusy ? <Loader2 className="size-3.5 animate-spin" /> : <ImagePlus className="size-3.5" />}
                 Change picture
-              </Button>
-              <Button variant="ghost" size="sm" disabled={avatarBusy} onClick={() => void removeAvatar()}>
-                <Trash2 className="size-4" />
+              </button>
+              <button
+                type="button"
+                disabled={avatarBusy}
+                onClick={() => void removeAvatar()}
+                className="inline-flex h-8 items-center gap-1.5 rounded-full px-3 text-xs text-zinc-400 transition-colors hover:bg-white/[0.06] hover:text-white disabled:opacity-50"
+              >
+                <Trash2 className="size-3.5" />
                 Remove
-              </Button>
+              </button>
             </div>
             <div className="mt-2">
               <MessageLine message={avatarMessage} />
             </div>
           </div>
         </div>
-      </Card>
+      </div>
 
       <div className="grid gap-4 lg:grid-cols-2">
-        <Card className="gap-0 p-6 shadow-none">
-          <h2 className="text-sm font-semibold">Profile</h2>
-          <div className="mt-4 space-y-4">
+        <div className="resend-glass-panel rounded-2xl p-6">
+          <h2 className="font-display text-sm font-medium text-white">Profile</h2>
+          <div className="mt-4 space-y-5">
             <div className="space-y-2">
-              <Label htmlFor="nickname">Nickname</Label>
+              <Label htmlFor="nickname" className="text-xs text-zinc-400">
+                Nickname
+              </Label>
               <div className="flex gap-2">
                 <Input
                   id="nickname"
@@ -312,17 +325,20 @@ export function AccountView({
                   onKeyDown={(event) => {
                     if (event.key === "Enter") void saveNickname();
                   }}
+                  className="h-9 rounded-xl border-white/[0.09] bg-white/[0.04] text-sm text-white placeholder:text-zinc-500 focus-visible:border-white/25 focus-visible:ring-0"
                 />
-                <Button variant="outline" onClick={() => void saveNickname()}>
+                <button type="button" onClick={() => void saveNickname()} className="koda-btn-black h-9 shrink-0 px-4 text-xs">
                   Save
-                </Button>
+                </button>
               </div>
-              <p className="text-xs text-muted-foreground">2 to 24 characters, shown in the app.</p>
+              <p className="text-xs text-zinc-500">2 to 24 characters, shown in the app.</p>
               <MessageLine message={nicknameMessage} />
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="new-password">New password</Label>
+            <div className="space-y-2 border-t border-white/[0.06] pt-4">
+              <Label htmlFor="new-password" className="text-xs text-zinc-400">
+                New password
+              </Label>
               <div className="flex gap-2">
                 <Input
                   id="new-password"
@@ -333,55 +349,65 @@ export function AccountView({
                   onKeyDown={(event) => {
                     if (event.key === "Enter") void changePassword();
                   }}
+                  className="h-9 rounded-xl border-white/[0.09] bg-white/[0.04] text-sm text-white placeholder:text-zinc-500 focus-visible:border-white/25 focus-visible:ring-0"
                 />
-                <Button variant="outline" onClick={() => void changePassword()}>
+                <button type="button" onClick={() => void changePassword()} className="koda-btn-black h-9 shrink-0 px-4 text-xs">
                   Change
-                </Button>
+                </button>
               </div>
-              <p className="text-xs text-muted-foreground">At least 6 characters.</p>
+              <p className="text-xs text-zinc-500">At least 6 characters.</p>
               <MessageLine message={passwordMessage} />
             </div>
           </div>
-        </Card>
+        </div>
 
-        <Card className="gap-0 p-6 shadow-none">
-          <h2 className="text-sm font-semibold">Account settings</h2>
-          <dl className="mt-4 space-y-3 text-sm">
-            <div className="flex items-center justify-between gap-4">
-              <dt className="text-muted-foreground">Two-factor authentication</dt>
-              <dd>
-                <Badge variant="outline" className={cn("font-normal", me?.two_fa && "tone-online")}>
-                  {me?.two_fa ? "On" : "Off"}
-                </Badge>
-              </dd>
-            </div>
-            <div className="flex items-center justify-between gap-4">
-              <dt className="text-muted-foreground">Minecraft account</dt>
-              <dd className="text-right">{me?.mc_username || "not linked"}</dd>
-            </div>
-            <div className="flex items-center justify-between gap-4">
-              <dt className="text-muted-foreground">Email</dt>
-              <dd className="truncate text-right">{me?.email}</dd>
-            </div>
-          </dl>
-          <p className="mt-4 border-t pt-4 text-xs leading-5 text-muted-foreground">
-            Linking a Minecraft account, deleting the account and the two-factor settings live in the
-            KodaHosting app under Settings → Account.
+        <div className="resend-glass-panel flex flex-col justify-between rounded-2xl p-6">
+          <div>
+            <h2 className="font-display text-sm font-medium text-white">Account settings</h2>
+            <dl className="mt-4 divide-y divide-white/[0.06] text-sm">
+              <div className="flex items-center justify-between gap-4 py-3 first:pt-0">
+                <dt className="text-zinc-400">Two-factor authentication</dt>
+                <dd
+                  className={cn(
+                    "inline-flex items-center gap-1.5 font-mono text-xs",
+                    me?.two_fa ? "text-emerald-400" : "text-zinc-500",
+                  )}
+                >
+                  <span className={cn("size-1.5 rounded-full", me?.two_fa ? "bg-emerald-400" : "bg-zinc-600")} />
+                  {me?.two_fa ? "Enabled" : "Off"}
+                </dd>
+              </div>
+              <div className="flex items-center justify-between gap-4 py-3">
+                <dt className="text-zinc-400">Minecraft account</dt>
+                <dd className="text-right font-mono text-xs text-zinc-200">
+                  {me?.mc_username || "Not linked"}
+                </dd>
+              </div>
+              <div className="flex items-center justify-between gap-4 py-3 last:pb-0">
+                <dt className="text-zinc-400">Email</dt>
+                <dd className="truncate text-right font-mono text-xs text-zinc-200">{me?.email}</dd>
+              </div>
+            </dl>
+          </div>
+          <p className="mt-5 border-t border-white/[0.06] pt-4 text-xs leading-5 text-zinc-500">
+            Linking a Minecraft account, deleting the account, and two-factor settings live in the KodaHosting app under Settings -&gt; Account.
           </p>
-        </Card>
+        </div>
       </div>
 
-      <section>
-        <h2 className="text-lg font-semibold tracking-tight">Your devices</h2>
-        <p className="mt-1 max-w-2xl text-sm text-muted-foreground">
-          Every device signed in to this account. Unlinking stops the dashboard from showing it; the
-          app keeps its servers and settings and can be linked again by signing in.
-        </p>
+      <section className="space-y-4">
+        <div>
+          <h2 className="font-display text-lg font-medium tracking-[-0.02em] text-white">
+            Your devices
+          </h2>
+          <p className="mt-1 max-w-2xl text-sm text-zinc-400">
+            Every phone or tablet signed in to this account. Unlinking stops the dashboard from showing it; the app keeps its servers and settings and can link again anytime.
+          </p>
+        </div>
 
         {deviceError ? (
           <ErrorState
             compact
-            className="mt-4"
             title="Could not load linked devices"
             detail={deviceError}
             onRetry={() => void onReload()}
@@ -390,84 +416,84 @@ export function AccountView({
 
         {devices.length === 0 ? (
           deviceError ? null : (
-            <p className="mt-4 rounded-xl bg-card p-8 text-center text-sm text-muted-foreground">
-              No devices linked to this account yet. Sign in with this account in the app (Settings,
-              Account) to link one.
-            </p>
+            <div className="resend-glass-panel rounded-2xl p-10 text-center text-sm text-zinc-400">
+              No devices linked to this account yet. Sign in with this account inside the app (Settings -&gt; Account) to link one.
+            </div>
           )
         ) : (
-          <div className="mt-4 grid gap-4 lg:grid-cols-2">
+          <div className="grid gap-4 lg:grid-cols-2">
             {devices.map((device) => {
               const accounts =
                 (device.accounts || [])
                   .filter((account) => account.mc_username)
                   .map((account) => account.mc_username + (account.is_main ? " (main)" : ""))
-                  .join(", ") || "no Minecraft account linked";
+                  .join(", ") || "No Minecraft account linked";
               const ram =
                 device.total_ram_mb && device.free_ram_mb != null
                   ? `${device.total_ram_mb - device.free_ram_mb} / ${device.total_ram_mb} MB`
                   : "--";
               const state =
                 device.app_state === "FOREGROUND"
-                  ? { label: "active", tone: "tone-online" }
+                  ? { label: "Active", dot: "bg-emerald-400", text: "text-emerald-400" }
                   : device.app_state === "BACKGROUND"
-                    ? { label: "in background", tone: "tone-pending" }
-                    : { label: "offline", tone: "border-border bg-muted text-muted-foreground" };
+                    ? { label: "In background", dot: "bg-amber-400", text: "text-amber-300" }
+                    : { label: "Offline", dot: "bg-zinc-600", text: "text-zinc-500" };
               const name = deviceName(device.model);
               const modelNote = device.model && name !== device.model ? ` · ${device.model}` : "";
 
               return (
-                <Card key={device.app_uuid} className="gap-0 p-5 shadow-none">
+                <div key={device.app_uuid} className="resend-glass-panel rounded-2xl p-5">
                   <div className="flex items-start justify-between gap-3">
                     <div className="min-w-0">
-                      <div className="truncate text-sm font-semibold">{name}</div>
-                      <div className="mt-0.5 text-xs text-muted-foreground">
+                      <div className="truncate font-display text-sm font-medium text-white">{name}</div>
+                      <div className="mt-0.5 text-xs text-zinc-500">
                         {device.os || "Android"}
                         {modelNote}
                       </div>
                     </div>
-                    <Badge variant="outline" className={cn("font-normal", state.tone)}>
+                    <span className={cn("inline-flex shrink-0 items-center gap-1.5 font-mono text-[11px]", state.text)}>
+                      <span className={cn("size-1.5 rounded-full", state.dot)} />
                       {state.label}
-                    </Badge>
+                    </span>
                   </div>
 
                   <div className="mt-4 flex gap-4">
                     <DeviceMedia model={device.model} />
-                    <ul className="min-w-0 flex-1 space-y-1.5 text-xs text-muted-foreground">
+                    <ul className="min-w-0 flex-1 space-y-2 text-xs text-zinc-400">
                       <li className="flex items-start gap-2">
-                        <UserRound className="mt-0.5 size-3.5 shrink-0" />
+                        <UserRound className="mt-0.5 size-3.5 shrink-0 text-zinc-500" />
                         <span className="truncate">{accounts}</span>
                       </li>
-                      <li className="flex items-center gap-2">
-                        <HardDrive className="size-3.5 shrink-0" />
+                      <li className="flex items-center gap-2 font-mono tabular-nums">
+                        <HardDrive className="size-3.5 shrink-0 text-zinc-500" />
                         {ram}
                       </li>
-                      <li className="flex items-center gap-2">
-                        <Battery className="size-3.5 shrink-0" />
+                      <li className="flex items-center gap-2 font-mono tabular-nums">
+                        <Battery className="size-3.5 shrink-0 text-zinc-500" />
                         {device.battery != null ? `${device.battery}%` : "--"}
                         {device.charging ? " charging" : ""}
                       </li>
                       <li className="flex items-center gap-2">
-                        <Clock className="size-3.5 shrink-0" />
+                        <Clock className="size-3.5 shrink-0 text-zinc-500" />
                         {relativeTime(device.last_ping)}
                       </li>
-                      <li className="text-[11px]">app {device.app_version || "--"}</li>
+                      <li className="font-mono text-[11px] text-zinc-500">app {device.app_version || "--"}</li>
                     </ul>
                   </div>
 
-                  <div className="mt-4">
-                    <Button
-                      variant="outline"
-                      size="sm"
+                  <div className="mt-4 border-t border-white/[0.06] pt-3.5">
+                    <button
+                      type="button"
                       onClick={() => {
                         setUnlinkError("");
                         setUnlinkTarget(device);
                       }}
+                      className="koda-btn-pill h-8 px-3.5 text-xs"
                     >
                       Unlink device
-                    </Button>
+                    </button>
                   </div>
-                </Card>
+                </div>
               );
             })}
           </div>
@@ -475,22 +501,23 @@ export function AccountView({
       </section>
 
       <AlertDialog open={Boolean(unlinkTarget)} onOpenChange={(open) => (open ? null : setUnlinkTarget(null))}>
-        <AlertDialogContent>
+        <AlertDialogContent className="rounded-2xl border-white/[0.1] bg-[#0b0b0e] text-white">
           <AlertDialogHeader>
-            <AlertDialogTitle>Unlink this device?</AlertDialogTitle>
-            <AlertDialogDescription>
-              The app keeps working with its servers and settings, and you can link it again by
-              signing in.
+            <AlertDialogTitle className="font-display text-white">Unlink this device?</AlertDialogTitle>
+            <AlertDialogDescription className="text-zinc-400">
+              The app keeps working with its servers and settings, and you can link it again by signing in.
             </AlertDialogDescription>
             {unlinkError ? (
-              <p className="text-sm text-destructive">Could not unlink: {unlinkError}</p>
+              <p className="text-sm text-red-400">Could not unlink: {unlinkError}</p>
             ) : null}
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel disabled={unlinkBusy}>Keep it</AlertDialogCancel>
+            <AlertDialogCancel disabled={unlinkBusy} className="rounded-full border-white/[0.1] bg-white/[0.04] text-zinc-200 hover:bg-white/[0.08] hover:text-white">
+              Keep it
+            </AlertDialogCancel>
             <AlertDialogAction
               disabled={unlinkBusy}
-              className="bg-destructive text-white hover:bg-destructive/90"
+              className="rounded-full bg-red-600 text-white hover:bg-red-500"
               onClick={(event) => {
                 event.preventDefault();
                 void unlink();

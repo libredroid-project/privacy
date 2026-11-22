@@ -1,11 +1,10 @@
 import { useEffect, useState } from "react";
 import { CheckCircle2, Loader2, MailCheck, ShieldAlert } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { api } from "@/lib/api";
 import type { DeveloperMe } from "@/developer/types";
+import { cn } from "@/lib/utils";
 
 const CODE_ERRORS: Record<string, string> = {
   wrong_code: "That code is not right. Check the mail and try again.",
@@ -82,12 +81,16 @@ export function VerifyEmail({
 
   if (me?.email_verified) {
     return (
-      <div className="flex items-start gap-3 rounded-xl border border-border/70 bg-card p-4">
-        <CheckCircle2 className="mt-0.5 size-5 shrink-0 text-success" />
+      <div className="resend-glass-panel flex items-start gap-3 rounded-2xl p-4">
+        <div className="flex size-8 shrink-0 items-center justify-center rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
+          <CheckCircle2 className="size-4" />
+        </div>
         <div className="min-w-0">
-          <p className="text-sm font-medium">E-mail verified</p>
-          <p className="mt-0.5 truncate text-sm text-muted-foreground">
-            {me.email} can publish extensions.
+          <p className="font-display text-sm font-medium text-zinc-950 dark:text-white">
+            E-mail verified
+          </p>
+          <p className="mt-0.5 truncate text-xs text-zinc-600 dark:text-zinc-400">
+            {me.email} is cleared to publish extensions.
           </p>
         </div>
       </div>
@@ -95,19 +98,21 @@ export function VerifyEmail({
   }
 
   return (
-    <Card className={compact ? "gap-0 p-4 shadow-none" : "gap-0 p-5 shadow-none"}>
-      <div className="flex items-start gap-3">
-        <div className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-muted">
-          <ShieldAlert className="size-5 text-warning" />
+    <div className={cn("resend-glass-panel rounded-2xl", compact ? "p-4" : "p-5")}>
+      <div className="flex items-start gap-3.5">
+        <div className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-amber-500/10 text-amber-600 dark:text-amber-400">
+          <ShieldAlert className="size-4" />
         </div>
         <div className="min-w-0 flex-1">
-          <p className="text-sm font-medium">Verify your e-mail to publish</p>
-          <p className="mt-1 text-sm leading-6 text-muted-foreground">
-            New extensions and versions need a confirmed address
+          <p className="font-display text-sm font-medium text-zinc-950 dark:text-white">
+            Verify your e-mail to publish
+          </p>
+          <p className="mt-1 text-sm leading-6 text-zinc-600 dark:text-zinc-400">
+            New extensions and releases require a confirmed address
             {me?.email ? (
               <>
                 {" "}
-                for <span className="text-foreground">{me.email}</span>
+                for <span className="font-mono text-xs text-zinc-950 dark:text-white">{me.email}</span>
               </>
             ) : null}
             . The code arrives from no-reply@kodaserv.eu.
@@ -122,44 +127,50 @@ export function VerifyEmail({
                 autoComplete="one-time-code"
                 placeholder="123456"
                 aria-label="Verification code"
-                className="h-9 w-36 font-mono tracking-[0.3em]"
+                className="h-9 w-36 rounded-xl border-zinc-200 bg-white font-mono tracking-[0.3em] dark:border-white/[0.09] dark:bg-white/[0.04]"
                 maxLength={6}
               />
-              <Button
-                size="sm"
+              <button
+                type="button"
                 onClick={() => void verify()}
                 disabled={busy || code.length !== 6}
+                className="koda-btn-black h-9 px-4 text-xs disabled:opacity-45"
               >
-                {busy ? <Loader2 className="size-4 animate-spin" /> : null}
+                {busy ? <Loader2 className="size-3.5 animate-spin" /> : null}
                 Verify
-              </Button>
-              <Button
-                size="sm"
-                variant="ghost"
+              </button>
+              <button
+                type="button"
                 onClick={() => void send()}
                 disabled={busy || cooldown > 0}
+                className="koda-btn-pill h-9 px-3.5 text-xs disabled:opacity-45"
               >
                 {cooldown > 0 ? `Resend in ${cooldown}s` : "Send again"}
-              </Button>
+              </button>
             </div>
           ) : (
-            <Button size="sm" className="mt-4" onClick={() => void send()} disabled={busy || !me?.email}>
-              {busy ? <Loader2 className="size-4 animate-spin" /> : <MailCheck className="size-4" />}
+            <button
+              type="button"
+              onClick={() => void send()}
+              disabled={busy || !me?.email}
+              className="koda-btn-black mt-4 h-9 px-4 text-xs disabled:opacity-45"
+            >
+              {busy ? <Loader2 className="size-3.5 animate-spin" /> : <MailCheck className="size-3.5" />}
               Send code
-            </Button>
+            </button>
           )}
 
           {sent ? (
-            <p className="mt-3 text-xs text-muted-foreground">Code sent to {sent}.</p>
+            <p className="mt-3 font-mono text-xs text-zinc-500">Code sent to {sent}.</p>
           ) : null}
 
           {error ? (
-            <Alert variant="destructive" className="mt-3">
+            <Alert variant="destructive" className="mt-3 rounded-xl">
               <AlertDescription>{error}</AlertDescription>
             </Alert>
           ) : null}
         </div>
       </div>
-    </Card>
+    </div>
   );
 }

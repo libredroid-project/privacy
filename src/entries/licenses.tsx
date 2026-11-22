@@ -1,10 +1,4 @@
-import { StrictMode } from "react";
-import { createRoot } from "react-dom/client";
-import "@/index.css";
+import { mountPage } from "@/lib/mount-page";
 import { LicensesPage } from "@/pages/licenses";
 
-createRoot(document.getElementById("root")!).render(
-  <StrictMode>
-    <LicensesPage />
-  </StrictMode>,
-);
+mountPage(<LicensesPage />);

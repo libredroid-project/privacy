@@ -300,7 +300,7 @@ export function DocsPage() {
     <div className="min-h-screen bg-black text-zinc-100">
       <SiteHeader active="docs" />
 
-      <div className="mx-auto w-full max-w-6xl px-4 sm:px-6">
+      <div className="page-reveal mx-auto w-full max-w-6xl px-4 sm:px-6">
         <div className="pt-28 pb-10">
           <p className="font-mono text-xs text-brand-ink">Technical reference</p>
           <h1 className="resend-title mt-2 max-w-3xl font-display text-3xl font-medium tracking-[-0.035em] sm:text-4xl lg:text-5xl">

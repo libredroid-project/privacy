@@ -357,6 +357,33 @@
     transform: translateX(3px);
   }
 
+  /* Unified multi-page navigation fade-in matching .reveal (opacity + 16px rise) */
+  .site-header-fixed {
+    view-transition-name: site-header;
+  }
+
+  .page-reveal,
+  #root > div > main {
+    animation: koda-page-reveal 560ms var(--ease-out) backwards;
+  }
+
+  /* Avoid double-animating a nested <main> inside a .page-reveal container or during native View Transitions */
+  .page-reveal main,
+  html[data-vt-active="1"] .page-reveal,
+  html[data-vt-active="1"] #root > div > main {
+    animation: none;
+  }
+
+  /* Fallback exit fade on browsers without native Cross-Document View Transitions */
+  html.page-leaving .page-reveal,
+  html.page-leaving #root > div > main {
+    opacity: 0;
+    transform: translateY(-6px);
+    transition:
+      opacity 140ms var(--ease-out),
+      transform 140ms var(--ease-out);
+  }
+
   @media (prefers-reduced-motion: reduce) {
     .reveal,
     .reveal-mask-host > .reveal-mask-inner,
@@ -366,9 +393,66 @@
       clip-path: none;
       transition: none;
     }
+    .page-reveal,
+    #root > div > main {
+      animation: none;
+    }
+    html.page-leaving .page-reveal,
+    html.page-leaving #root > div > main {
+      opacity: 1;
+      transform: none;
+      transition: none;
+    }
     .dev-rainbow-line {
       animation: none;
     }
+  }
+}
+
+@view-transition {
+  navigation: auto;
+}
+
+::view-transition-old(root) {
+  animation: koda-page-exit 160ms var(--ease-out) both;
+}
+
+::view-transition-new(root) {
+  animation: koda-page-reveal 560ms var(--ease-out) both;
+}
+
+::view-transition-old(site-header),
+::view-transition-new(site-header) {
+  animation: none;
+  mix-blend-mode: normal;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-old(root),
+  ::view-transition-new(root) {
+    animation: none;
+  }
+}
+
+@keyframes koda-page-reveal {
+  0% {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  100% {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes koda-page-exit {
+  0% {
+    opacity: 1;
+    transform: none;
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-6px);
   }
 }
 

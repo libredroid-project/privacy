@@ -1,7 +1,5 @@
 import { useEffect, useState } from "react";
 import { Activity, Boxes, Loader2, Server, ShieldCheck, Wrench } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
-import { Card } from "@/components/ui/card";
 import { ErrorState } from "@/components/error-state";
 import { Reveal } from "@/components/reveal";
 import { publicApi } from "@/lib/api";
@@ -14,10 +12,10 @@ function stripColors(text?: string): string {
   return (text || "").replace(/§./g, "");
 }
 
-function statusTone(status?: string): string {
-  if (status === "ONLINE") return "tone-online";
-  if (status === "HIBERNATED") return "tone-pending";
-  return "border-border bg-muted text-muted-foreground";
+function communityStatusTone(status?: string): { dot: string; text: string } {
+  if (status === "ONLINE") return { dot: "bg-emerald-400", text: "text-emerald-400" };
+  if (status === "HIBERNATED") return { dot: "bg-amber-400", text: "text-amber-300" };
+  return { dot: "bg-zinc-600", text: "text-zinc-500" };
 }
 
 function StatCard({
@@ -34,14 +32,16 @@ function StatCard({
   tone?: string;
 }) {
   return (
-    <Card className="gap-0 p-5 shadow-none">
+    <div className="resend-glass-panel rounded-2xl p-5">
       <div className="flex items-center justify-between">
-        <span className="text-xs text-muted-foreground">{label}</span>
-        <Icon className="size-4 text-muted-foreground" />
+        <span className="font-mono text-[10.5px] tracking-[0.06em] text-zinc-500 uppercase">{label}</span>
+        <Icon className="size-4 text-zinc-500" />
       </div>
-      <div className={cn("mt-3 text-xl font-semibold tracking-tight", tone)}>{value}</div>
-      <div className="mt-1 text-xs text-muted-foreground">{foot}</div>
-    </Card>
+      <div className={cn("mt-3 font-display text-2xl font-medium tracking-[-0.02em] tabular-nums text-white", tone)}>
+        {value}
+      </div>
+      <div className="mt-1.5 text-xs text-zinc-400">{foot}</div>
+    </div>
   );
 }
 
@@ -122,8 +122,8 @@ export function StatusView() {
     return (
       <div className="space-y-6">
         <div>
-          <h1 className="text-2xl font-semibold tracking-tight">Status</h1>
-          <p className="mt-1 max-w-2xl text-sm text-muted-foreground">
+          <h1 className="font-display text-2xl font-medium tracking-[-0.03em] text-white">Status</h1>
+          <p className="mt-1 max-w-2xl text-sm text-zinc-400">
             Live values from api.kodanetwork.eu and the tunnel server.
           </p>
         </div>
@@ -140,8 +140,8 @@ export function StatusView() {
 
   if (!status) {
     return (
-      <div className="flex items-center gap-2 text-sm text-muted-foreground">
-        <Loader2 className="size-4 animate-spin" /> Loading the live values…
+      <div className="resend-glass-panel flex items-center justify-center gap-2 rounded-2xl p-12 text-sm text-zinc-400">
+        <Loader2 className="size-4 animate-spin" /> Loading live telemetry...
       </div>
     );
   }
@@ -153,19 +153,19 @@ export function StatusView() {
   return (
     <div className="space-y-8">
       <div>
-        <h1 className="text-2xl font-semibold tracking-tight">Status</h1>
-        <p className="mt-1 max-w-2xl text-sm text-muted-foreground">
+        <h1 className="font-display text-2xl font-medium tracking-[-0.03em] text-white">Status</h1>
+        <p className="mt-1 max-w-2xl text-sm text-zinc-400">
           Live values from api.kodanetwork.eu and the tunnel server.
         </p>
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      <div className="grid gap-3.5 sm:grid-cols-2 lg:grid-cols-3">
         <StatCard
           icon={Activity}
           label="API"
           value={status.ok ? "Online" : "Down"}
           foot={`api.kodanetwork.eu · v${status.api?.version ?? "-"}`}
-          tone={status.ok ? "text-ok" : "text-destructive"}
+          tone={status.ok ? "text-emerald-400" : "text-red-400"}
         />
         <StatCard
           icon={Server}
@@ -188,7 +188,7 @@ export function StatusView() {
               ? `load ${vps.load1 ?? "-"} · RAM ${vps.ram_used_pct ?? "-"}% · ${vps.open_tunnels ?? 0} tunnels · up ${Math.floor((vps.uptime_seconds || 0) / 86400)} d`
               : "not reported"
           }
-          tone={vps && !vps.stale ? "text-ok" : undefined}
+          tone={vps && !vps.stale ? "text-emerald-400" : undefined}
         />
         <StatCard
           icon={Activity}
@@ -200,23 +200,22 @@ export function StatusView() {
           icon={Wrench}
           label="Maintenance"
           value={maintenance?.active ? "Active" : "None"}
-          foot={maintenance?.active ? maintenance.reason || "in progress" : "everything running normally"}
-          tone={maintenance?.active ? "text-warn" : undefined}
+          foot={maintenance?.active ? maintenance.reason || "in progress" : "Everything running normally"}
+          tone={maintenance?.active ? "text-amber-300" : undefined}
         />
       </div>
 
       <section>
         <div className="flex flex-wrap items-end justify-between gap-4">
           <div>
-            <h2 className="text-lg font-medium tracking-tight">API</h2>
-            <p className="mt-1 max-w-xl text-base text-muted-foreground">
-              The same JSON API this page reads. The public endpoints need no key; everything under
-              /v1/me expects the Supabase session token.
+            <h2 className="font-display text-lg font-medium tracking-[-0.02em] text-white">Public API</h2>
+            <p className="mt-1 max-w-xl text-sm text-zinc-400">
+              The same JSON API this page reads. Public endpoints need no key; anything under /v1/me expects a Supabase session token.
             </p>
           </div>
           <a
             href="/docs#api-reference"
-            className="text-sm font-medium underline decoration-border underline-offset-4 transition-colors hover:decoration-brand"
+            className="text-xs font-medium text-zinc-300 underline decoration-white/25 underline-offset-4 transition-colors hover:text-white hover:decoration-brand"
           >
             Read the API documentation
           </a>
@@ -224,30 +223,30 @@ export function StatusView() {
 
         <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
           {[
-            { method: "GET", path: "/v1/status", note: "live values on this page" },
-            { method: "GET", path: "/v1/servers", note: "public server list" },
-            { method: "GET", path: "/v1/extensions", note: "published catalog" },
-            { method: "GET", path: "/v1/invite/{token}", note: "the server behind an invite" },
+            { method: "GET", path: "/v1/status", note: "Live values on this page" },
+            { method: "GET", path: "/v1/servers", note: "Public server list" },
+            { method: "GET", path: "/v1/extensions", note: "Published catalog" },
+            { method: "GET", path: "/v1/invite/{token}", note: "Server behind an invite" },
           ].map((endpoint) => (
-            <Card key={endpoint.path} className="gap-0 p-4 shadow-none">
-              <div className="flex items-center gap-2 text-[13px] text-muted-foreground">
-                <span className="rounded-md bg-muted px-1.5 py-0.5 font-mono text-[13px]">{endpoint.method}</span>
-                <span className="truncate font-mono text-[13px] text-foreground">{endpoint.path}</span>
+            <div key={endpoint.path} className="resend-glass-panel rounded-2xl p-4">
+              <div className="flex items-center gap-2 font-mono text-xs">
+                <span className="text-brand-ink">{endpoint.method}</span>
+                <span className="truncate text-white">{endpoint.path}</span>
               </div>
-              <p className="mt-2 text-sm text-muted-foreground">{endpoint.note}</p>
-            </Card>
+              <p className="mt-2 text-xs text-zinc-400">{endpoint.note}</p>
+            </div>
           ))}
         </div>
       </section>
 
       <section>
-        <div className="flex items-baseline justify-between gap-3">
-          <div>
-            <h2 className="text-lg font-semibold tracking-tight">Community servers</h2>
-            <p className="mt-1 text-sm text-muted-foreground">
-              Public servers on the network. The list comes from the public server endpoint.
-            </p>
-          </div>
+        <div>
+          <h2 className="font-display text-lg font-medium tracking-[-0.02em] text-white">
+            Community servers
+          </h2>
+          <p className="mt-1 text-sm text-zinc-400">
+            Public servers on the network, read live from the public server endpoint.
+          </p>
         </div>
 
         {communityError ? (
@@ -259,53 +258,59 @@ export function StatusView() {
             onRetry={() => setRetryNonce((n) => n + 1)}
           />
         ) : communityLoading ? (
-          <p className="mt-4 flex items-center gap-2 text-sm text-muted-foreground">
-            <Loader2 className="size-4 animate-spin" /> Loading the public servers…
-          </p>
+          <div className="resend-glass-panel mt-4 flex items-center justify-center gap-2 rounded-2xl p-10 text-sm text-zinc-400">
+            <Loader2 className="size-4 animate-spin" /> Loading public servers...
+          </div>
         ) : community.length === 0 ? (
-          <p className="mt-4 rounded-xl bg-card p-8 text-center text-sm text-muted-foreground">
-            No public servers right now.
-          </p>
+          <div className="resend-glass-panel mt-4 rounded-2xl p-10 text-center text-sm text-zinc-400">
+            No public servers online right now.
+          </div>
         ) : (
-          <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="mt-4 grid gap-3.5 sm:grid-cols-2 lg:grid-cols-3">
             {community.map((item, index) => {
               const motd = stripColors(item.motd);
               const favicon = safeMinecraftFavicon(item.live?.favicon);
+              const tone = communityStatusTone(item.status);
               return (
                 <Reveal key={item.host} delay={Math.min(index * 40, 240)} className="h-full">
-                <Card className="h-full gap-0 p-4 shadow-none">
-                  <div className="flex items-start gap-3">
-                    {favicon ? (
-                      <img src={favicon} alt="" className="size-10 shrink-0 rounded-md border" />
-                    ) : (
-                      <div className="flex size-10 shrink-0 items-center justify-center rounded-md border bg-muted">
-                        <Server className="size-4 text-muted-foreground" />
-                      </div>
-                    )}
-                    <div className="min-w-0 flex-1">
-                      <div className="truncate text-sm font-medium">
-                        {item.domain ? `${item.host}.${item.domain}` : item.host}
-                      </div>
-                      <div className="mt-1">
-                        <Badge variant="outline" className={cn("font-normal", statusTone(item.status))}>
-                          {item.status || "OFFLINE"}
-                        </Badge>
+                  <div className="resend-glass-panel flex h-full flex-col rounded-2xl p-4">
+                    <div className="flex items-start gap-3">
+                      {favicon ? (
+                        <img
+                          src={favicon}
+                          alt=""
+                          className="size-10 shrink-0 rounded-xl bg-white/[0.04] ring-1 ring-white/[0.08]"
+                        />
+                      ) : (
+                        <div className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-white/[0.05] text-zinc-400">
+                          <Server className="size-4" />
+                        </div>
+                      )}
+                      <div className="min-w-0 flex-1">
+                        <div className="truncate font-mono text-xs font-medium text-white">
+                          {item.domain ? `${item.host}.${item.domain}` : item.host}
+                        </div>
+                        <div className="mt-1">
+                          <span className={cn("inline-flex items-center gap-1.5 font-mono text-[11px]", tone.text)}>
+                            <span className={cn("size-1.5 rounded-full", tone.dot)} />
+                            {item.status || "OFFLINE"}
+                          </span>
+                        </div>
                       </div>
                     </div>
+                    <p className="mt-3 line-clamp-2 min-h-8 text-xs leading-5 text-zinc-400">
+                      {motd || <span className="italic text-zinc-500">No MOTD set.</span>}
+                    </p>
+                    <div className="mt-auto flex flex-wrap items-center gap-x-2.5 gap-y-1 border-t border-white/[0.06] pt-3 font-mono text-[11px] tabular-nums text-zinc-500">
+                      <span className="text-zinc-300">
+                        {item.players_online ?? 0}/{item.players_max ?? 0} players
+                      </span>
+                      {item.live?.latency_ms != null ? <span>· {item.live.latency_ms} ms</span> : null}
+                      {item.version ? <span>· {item.version}</span> : null}
+                      {item.gamemode ? <span>· {item.gamemode}</span> : null}
+                      {item.owner?.mc_username ? <span>· {item.owner.mc_username}</span> : null}
+                    </div>
                   </div>
-                  <p className="mt-3 line-clamp-2 min-h-8 text-sm text-muted-foreground">
-                    {motd || <span className="italic">No message set.</span>}
-                  </p>
-                  <div className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground">
-                    <span>
-                      {item.players_online ?? 0} / {item.players_max ?? 0} players
-                    </span>
-                    {item.live?.latency_ms != null ? <span>{item.live.latency_ms} ms</span> : null}
-                    {item.version ? <span>{item.version}</span> : null}
-                    {item.gamemode ? <span>{item.gamemode}</span> : null}
-                    {item.owner?.mc_username ? <span>by {item.owner.mc_username}</span> : null}
-                  </div>
-                </Card>
                 </Reveal>
               );
             })}

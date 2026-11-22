@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from "react";
 import {
   ArrowLeft,
   CheckCircle2,
+  ChevronRight,
   LifeBuoy,
   Loader2,
   MessageSquare,
@@ -21,9 +22,6 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
 import {
   Dialog,
   DialogContent,
@@ -44,7 +42,8 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { api } from "@/lib/api";
 import type { DevExtension } from "@/developer/types";
-import { formatDateTime } from "@/developer/types";
+import { formatDateTime, statusDotClasses } from "@/developer/types";
+import { cn } from "@/lib/utils";
 
 interface Ticket {
   id: string;
@@ -66,13 +65,6 @@ interface Message {
   is_admin: boolean;
 }
 
-const STATUS_TONE: Record<string, string> = {
-  OPEN: "tone-pending",
-  IN_PROGRESS: "tone-pending",
-  RESOLVED: "tone-online",
-  CLOSED: "border-border bg-muted text-muted-foreground",
-};
-
 const ERROR_TEXT: Record<string, string> = {
   too_many_tickets: "You already have 5 open developer tickets. Wait for an answer or close one.",
   invalid_title: "Write a subject with at least 3 characters.",
@@ -84,6 +76,16 @@ const ERROR_TEXT: Record<string, string> = {
 function errorText(error: unknown): string {
   const message = error instanceof Error ? error.message : String(error);
   return ERROR_TEXT[message] || message;
+}
+
+function TicketStatusDot({ status }: { status: string }) {
+  const tone = statusDotClasses(status);
+  return (
+    <span className={cn("inline-flex shrink-0 items-center gap-1.5 font-mono text-[11px] font-medium", tone.text)}>
+      <span className={cn("size-1.5 rounded-full", tone.dot)} />
+      {status.replace(/_/g, " ")}
+    </span>
+  );
 }
 
 function NewTicketDialog({
@@ -144,31 +146,38 @@ function NewTicketDialog({
 
   return (
     <Dialog open={open} onOpenChange={(next) => (busy ? null : onOpenChange(next))}>
-      <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-xl">
+      <DialogContent className="max-h-[90vh] overflow-y-auto rounded-2xl border-zinc-200 bg-white text-zinc-950 dark:border-white/[0.1] dark:bg-[#0b0b0e] dark:text-white sm:max-w-xl">
         <DialogHeader>
-          <DialogTitle>Developer support</DialogTitle>
-          <DialogDescription>
-            No e-mail needed. Replies show up here, and in the KodaHosting app when this account is
-            linked to a device.
+          <DialogTitle className="font-display text-lg font-medium">New support ticket</DialogTitle>
+          <DialogDescription className="text-zinc-600 dark:text-zinc-400">
+            No e-mail needed. Replies show up here and in the KodaHosting app when this account is linked to a device.
           </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="ticket-title">Subject</Label>
+            <Label htmlFor="ticket-title" className="text-xs text-zinc-600 dark:text-zinc-400">
+              Subject
+            </Label>
             <Input
               id="ticket-title"
               value={title}
               maxLength={120}
               onChange={(event) => setTitle(event.target.value)}
               placeholder="For example: review rejected my theme"
+              className="rounded-xl border-zinc-200 bg-white dark:border-white/[0.09] dark:bg-white/[0.04]"
             />
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="ticket-extension">Extension</Label>
+            <Label htmlFor="ticket-extension" className="text-xs text-zinc-600 dark:text-zinc-400">
+              Extension
+            </Label>
             <Select value={extensionId} onValueChange={setExtensionId}>
-              <SelectTrigger id="ticket-extension" className="w-full">
+              <SelectTrigger
+                id="ticket-extension"
+                className="w-full rounded-xl border-zinc-200 bg-white dark:border-white/[0.09] dark:bg-white/[0.04]"
+              >
                 <SelectValue placeholder="Not about one extension" />
               </SelectTrigger>
               <SelectContent>
@@ -183,7 +192,9 @@ function NewTicketDialog({
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="ticket-message">Message</Label>
+            <Label htmlFor="ticket-message" className="text-xs text-zinc-600 dark:text-zinc-400">
+              Message
+            </Label>
             <Textarea
               id="ticket-message"
               value={message}
@@ -191,24 +202,35 @@ function NewTicketDialog({
               maxLength={4000}
               onChange={(event) => setMessage(event.target.value)}
               placeholder="What happened, which version, and what did you expect?"
+              className="rounded-xl border-zinc-200 bg-white dark:border-white/[0.09] dark:bg-white/[0.04]"
             />
           </div>
 
           {error ? (
-            <Alert variant="destructive">
+            <Alert variant="destructive" className="rounded-xl">
               <AlertDescription>{error}</AlertDescription>
             </Alert>
           ) : null}
         </div>
 
-        <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)} disabled={busy}>
+        <DialogFooter className="gap-2">
+          <button
+            type="button"
+            onClick={() => onOpenChange(false)}
+            disabled={busy}
+            className="koda-btn-pill h-9 px-4 text-xs disabled:opacity-50"
+          >
             Cancel
-          </Button>
-          <Button onClick={() => void submit()} disabled={busy}>
-            {busy ? <Loader2 className="size-4 animate-spin" /> : <MessageSquare className="size-4" />}
+          </button>
+          <button
+            type="button"
+            onClick={() => void submit()}
+            disabled={busy}
+            className="koda-btn-black h-9 px-4 text-xs disabled:opacity-50"
+          >
+            {busy ? <Loader2 className="size-3.5 animate-spin" /> : <MessageSquare className="size-3.5" />}
             Open ticket
-          </Button>
+          </button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
@@ -302,79 +324,99 @@ function TicketDetail({
         <button
           type="button"
           onClick={onBack}
-          className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground"
+          className="inline-flex items-center gap-1.5 text-xs text-zinc-500 transition-colors hover:text-zinc-950 dark:text-zinc-400 dark:hover:text-white"
         >
           <ArrowLeft className="size-3.5" /> All tickets
         </button>
         <div className="mt-3 flex flex-wrap items-start justify-between gap-3">
           <div>
-            <div className="flex flex-wrap items-center gap-2">
-              <h1 className="text-xl font-semibold tracking-tight">{ticket.title}</h1>
-              <Badge variant="outline" className={`font-normal ${STATUS_TONE[status] || ""}`}>
-                {status.replace("_", " ")}
-              </Badge>
+            <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+              <h1 className="font-display text-xl font-medium tracking-[-0.02em] text-zinc-950 dark:text-white">
+                {ticket.title}
+              </h1>
+              <TicketStatusDot status={status} />
             </div>
-            <p className="mt-1 text-xs text-muted-foreground">
+            <p className="mt-1 font-mono text-xs text-zinc-500">
               #{ticket.id.slice(0, 8)} · opened {formatDateTime(ticket.created_at)}
               {ticket.reference_id ? ` · ${ticket.reference_id}` : ""}
             </p>
           </div>
           <div className="flex items-center gap-2">
-            <Button size="sm" variant="ghost" onClick={() => void load()} disabled={loading}>
-              <RefreshCw className="size-4" /> Refresh
-            </Button>
+            <button
+              type="button"
+              onClick={() => void load()}
+              disabled={loading}
+              className="koda-btn-pill h-8 px-3 text-xs disabled:opacity-50"
+            >
+              <RefreshCw className="size-3.5" /> Refresh
+            </button>
             {status !== "CLOSED" ? (
-              <Button size="sm" variant="outline" onClick={() => setCloseOpen(true)}>
-                <XCircle className="size-4" /> Close
-              </Button>
+              <button
+                type="button"
+                onClick={() => setCloseOpen(true)}
+                className="koda-btn-pill h-8 px-3 text-xs text-red-600 dark:text-red-400"
+              >
+                <XCircle className="size-3.5" /> Close
+              </button>
             ) : null}
           </div>
         </div>
       </div>
 
-      <Card className="gap-0 p-0 shadow-none">
-        <div className="max-h-[420px] space-y-4 overflow-y-auto p-4">
+      <div className="resend-glass-panel overflow-hidden rounded-2xl">
+        <div className="max-h-[460px] space-y-3.5 overflow-y-auto p-5">
           {loading && messages.length === 0 ? (
-            <p className="flex items-center gap-2 text-sm text-muted-foreground">
-              <Loader2 className="size-4 animate-spin" /> Loading the conversation…
+            <p className="flex items-center gap-2 text-sm text-zinc-500 dark:text-zinc-400">
+              <Loader2 className="size-4 animate-spin" /> Loading the conversation...
             </p>
           ) : null}
           {messages.map((message) => (
             <div
               key={message.id}
-              className={`flex ${message.is_admin ? "justify-start" : "justify-end"}`}
+              className={cn("flex", message.is_admin ? "justify-start" : "justify-end")}
             >
               <div
-                className={`max-w-[85%] rounded-xl px-3.5 py-2.5 ${
+                className={cn(
+                  "max-w-[85%] rounded-2xl px-4 py-3 text-sm leading-6",
                   message.is_admin
-                    ? "border bg-muted/40"
-                    : "bg-brand text-white"
-                }`}
+                    ? "bg-zinc-100 text-zinc-900 ring-1 ring-black/[0.06] dark:bg-[#111115] dark:text-zinc-100 dark:ring-white/[0.07]"
+                    : "bg-zinc-900 text-white ring-1 ring-black/10 dark:bg-white/[0.11] dark:text-white dark:ring-white/[0.14]",
+                )}
               >
-                <p className="text-[11px] font-medium opacity-70">
-                  {message.is_admin ? "KodaHosting support" : "You"} ·{" "}
-                  {formatDateTime(message.created_at)}
-                </p>
-                <p className="mt-1 whitespace-pre-wrap text-sm leading-6">{message.message}</p>
+                <div className="mb-1 flex items-center justify-between gap-3 font-mono text-[10.5px]">
+                  <span
+                    className={
+                      message.is_admin
+                        ? "text-brand-ink"
+                        : "text-zinc-300"
+                    }
+                  >
+                    {message.is_admin ? "KodaHosting support" : "You"}
+                  </span>
+                  <span className={message.is_admin ? "text-zinc-500" : "text-zinc-400"}>
+                    {formatDateTime(message.created_at)}
+                  </span>
+                </div>
+                <p className="whitespace-pre-wrap text-[13.5px] leading-6">{message.message}</p>
               </div>
             </div>
           ))}
         </div>
 
-        <div className="border-t p-3">
+        <div className="border-t border-zinc-200/80 bg-zinc-50/70 p-4 dark:border-white/[0.06] dark:bg-white/[0.015]">
           {status === "CLOSED" ? (
-            <p className="flex items-center gap-2 text-sm text-muted-foreground">
+            <p className="flex items-center gap-2 text-xs text-zinc-500 dark:text-zinc-400">
               <CheckCircle2 className="size-4" /> This ticket is closed.
             </p>
           ) : (
-            <div className="flex items-end gap-2">
+            <div className="flex items-end gap-2.5">
               <Textarea
                 value={reply}
                 onChange={(event) => setReply(event.target.value)}
                 rows={2}
                 maxLength={4000}
-                placeholder="Write an answer…"
-                className="min-h-10"
+                placeholder="Write a reply..."
+                className="min-h-10 resize-none rounded-xl border-zinc-200 bg-white text-sm text-zinc-950 placeholder:text-zinc-400 dark:border-white/[0.09] dark:bg-white/[0.04] dark:text-white dark:placeholder:text-zinc-500"
                 onKeyDown={(event) => {
                   if (event.key === "Enter" && !event.shiftKey) {
                     event.preventDefault();
@@ -382,29 +424,36 @@ function TicketDetail({
                   }
                 }}
               />
-              <Button onClick={() => void sendReply()} disabled={busy || !reply.trim()}>
-                {busy ? <Loader2 className="size-4 animate-spin" /> : <Send className="size-4" />}
+              <button
+                type="button"
+                onClick={() => void sendReply()}
+                disabled={busy || !reply.trim()}
+                className="koda-btn-black h-10 shrink-0 px-4 text-xs disabled:opacity-45"
+              >
+                {busy ? <Loader2 className="size-3.5 animate-spin" /> : <Send className="size-3.5" />}
                 Send
-              </Button>
+              </button>
             </div>
           )}
-          {error ? <p className="mt-2 text-xs text-destructive">{error}</p> : null}
+          {error ? <p className="mt-2 text-xs text-red-600 dark:text-red-400">{error}</p> : null}
         </div>
-      </Card>
+      </div>
 
       <AlertDialog open={closeOpen} onOpenChange={(open) => (busy ? null : setCloseOpen(open))}>
-        <AlertDialogContent>
+        <AlertDialogContent className="rounded-2xl border-zinc-200 bg-white dark:border-white/[0.1] dark:bg-[#0b0b0e]">
           <AlertDialogHeader>
-            <AlertDialogTitle>Close this ticket?</AlertDialogTitle>
+            <AlertDialogTitle className="font-display">Close this ticket?</AlertDialogTitle>
             <AlertDialogDescription>
-              Support can still read it, but you cannot reply anymore. Open a new ticket if you need
-              more help.
+              Support can still read it, but you will not be able to reply anymore. Open a new ticket if you need more help.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel disabled={busy}>Keep it open</AlertDialogCancel>
+            <AlertDialogCancel disabled={busy} className="rounded-full">
+              Keep it open
+            </AlertDialogCancel>
             <AlertDialogAction
               disabled={busy}
+              className="rounded-full"
               onClick={(event) => {
                 event.preventDefault();
                 void closeTicket();
@@ -459,88 +508,102 @@ export function DeveloperSupport({ extensions }: { extensions: DevExtension[] })
     <div className="space-y-6">
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-semibold tracking-tight">Developer support</h1>
-          <p className="mt-1 text-sm text-muted-foreground">
-            Open a ticket from the browser. No e-mail needed, answers arrive here and in the app.
+          <h1 className="font-display text-2xl font-medium tracking-[-0.03em] text-zinc-950 dark:text-white">
+            Developer support
+          </h1>
+          <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
+            Open a ticket directly from the browser. Replies arrive right here and in the app.
           </p>
         </div>
         <div className="flex items-center gap-2">
-          <Button variant="ghost" size="sm" onClick={() => void load()} disabled={loading}>
-            <RefreshCw className="size-4" /> Refresh
-          </Button>
-          <Button onClick={() => setNewOpen(true)}>
-            <Plus className="size-4" /> New ticket
-          </Button>
+          <button
+            type="button"
+            onClick={() => void load()}
+            disabled={loading}
+            className="koda-btn-pill h-9 px-3.5 text-xs disabled:opacity-50"
+          >
+            <RefreshCw className="size-3.5" /> Refresh
+          </button>
+          <button type="button" onClick={() => setNewOpen(true)} className="koda-btn-black h-9 px-4 text-xs">
+            <Plus className="size-3.5" /> New ticket
+          </button>
         </div>
       </div>
 
       {error ? (
-        <Alert variant="destructive">
+        <Alert variant="destructive" className="rounded-2xl">
           <AlertDescription>{error}</AlertDescription>
         </Alert>
       ) : null}
 
       {loading ? (
-        <Card className="flex items-center justify-center gap-2 p-12 text-sm text-muted-foreground shadow-none">
-          <Loader2 className="size-4 animate-spin" /> Loading your tickets…
-        </Card>
+        <div className="resend-glass-panel flex items-center justify-center gap-2 rounded-2xl p-12 text-sm text-zinc-500 dark:text-zinc-400">
+          <Loader2 className="size-4 animate-spin" /> Loading your tickets...
+        </div>
       ) : tickets.length === 0 ? (
-        <Card className="gap-0 p-10 text-center shadow-none">
-          <LifeBuoy className="mx-auto size-6 text-muted-foreground" />
-          <p className="mt-3 text-sm font-medium">No tickets yet</p>
-          <p className="mx-auto mt-1 max-w-md text-sm text-muted-foreground">
-            Review decisions, a broken release, the API or the store listing: open a ticket and the
-            answer shows up in this console.
+        <div className="resend-glass-panel rounded-2xl p-12 text-center">
+          <div className="mx-auto mb-3 flex size-11 items-center justify-center rounded-xl bg-zinc-100 text-zinc-500 dark:bg-white/[0.05] dark:text-zinc-400">
+            <LifeBuoy className="size-5" />
+          </div>
+          <p className="font-display text-sm font-medium text-zinc-950 dark:text-white">
+            No tickets yet
           </p>
-          <Button size="sm" className="mt-4" onClick={() => setNewOpen(true)}>
-            <Plus className="size-4" /> Open the first one
-          </Button>
-        </Card>
+          <p className="mx-auto mt-1 max-w-md text-sm text-zinc-600 dark:text-zinc-400">
+            Review decisions, a broken release, API questions, or listing issues: open a ticket and the reply appears in this console.
+          </p>
+          <button
+            type="button"
+            onClick={() => setNewOpen(true)}
+            className="koda-btn-black mt-5 h-9 px-4 text-xs"
+          >
+            <Plus className="size-3.5" /> Open your first ticket
+          </button>
+        </div>
       ) : (
-        <Card className="gap-0 overflow-hidden p-0 shadow-none">
-          <ul className="divide-y">
+        <div className="resend-glass-panel overflow-hidden rounded-2xl">
+          <ul className="divide-y divide-zinc-200/70 dark:divide-white/[0.06]">
             {tickets.map((ticket) => (
               <li key={ticket.id}>
                 <button
                   type="button"
                   onClick={() => setSelected(ticket)}
-                  className="flex w-full items-start gap-3 p-4 text-left transition-colors hover:bg-accent/30"
+                  className="group flex w-full items-start gap-3.5 px-5 py-4 text-left transition-colors hover:bg-black/[0.025] dark:hover:bg-white/[0.03]"
                 >
-                  <div className="mt-0.5 flex size-8 shrink-0 items-center justify-center rounded-lg bg-muted">
-                    <MessageSquare className="size-4 text-muted-foreground" />
+                  <div className="mt-0.5 flex size-9 shrink-0 items-center justify-center rounded-xl bg-zinc-100 text-zinc-500 transition-colors group-hover:bg-zinc-200/80 group-hover:text-zinc-900 dark:bg-white/[0.05] dark:text-zinc-400 dark:group-hover:bg-white/[0.08] dark:group-hover:text-white">
+                    <MessageSquare className="size-4" />
                   </div>
                   <div className="min-w-0 flex-1">
-                    <div className="flex flex-wrap items-center gap-2">
-                      <p className="truncate text-sm font-medium">{ticket.title}</p>
-                      <Badge
-                        variant="outline"
-                        className={`font-normal ${STATUS_TONE[ticket.status] || ""}`}
-                      >
-                        {ticket.status.replace("_", " ")}
-                      </Badge>
-                      {ticket.last_message_admin ? (
-                        <Badge variant="outline" className="font-normal tone-online">
-                          Support answered
-                        </Badge>
-                      ) : ticket.awaiting_support ? (
-                        <Badge variant="outline" className="font-normal">
-                          Waiting for support
-                        </Badge>
-                      ) : null}
+                    <div className="flex flex-wrap items-center justify-between gap-2">
+                      <p className="truncate font-display text-sm font-medium text-zinc-950 dark:text-white">
+                        {ticket.title}
+                      </p>
+                      <div className="flex flex-wrap items-center gap-3">
+                        {ticket.last_message_admin ? (
+                          <span className="font-mono text-[11px] text-emerald-700 dark:text-emerald-400">
+                            Support answered
+                          </span>
+                        ) : ticket.awaiting_support ? (
+                          <span className="font-mono text-[11px] text-zinc-500">
+                            Waiting for support
+                          </span>
+                        ) : null}
+                        <TicketStatusDot status={ticket.status} />
+                      </div>
                     </div>
-                    <p className="mt-1 line-clamp-1 text-xs text-muted-foreground">
+                    <p className="mt-1 line-clamp-1 text-xs text-zinc-600 dark:text-zinc-400">
                       {ticket.last_message || "No message yet."}
                     </p>
-                    <p className="mt-1 text-[11px] text-muted-foreground">
+                    <p className="mt-1.5 font-mono text-[11px] text-zinc-500">
                       {ticket.reference_id ? `${ticket.reference_id} · ` : ""}
                       {formatDateTime(ticket.last_message_at || ticket.created_at)}
                     </p>
                   </div>
+                  <ChevronRight className="mt-2 size-4 shrink-0 text-zinc-400 transition-transform group-hover:translate-x-0.5 group-hover:text-zinc-700 dark:text-zinc-600 dark:group-hover:text-zinc-300" />
                 </button>
               </li>
             ))}
           </ul>
-        </Card>
+        </div>
       )}
 
       <NewTicketDialog
