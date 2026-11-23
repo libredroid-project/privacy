@@ -55,7 +55,7 @@ Because the servers run on your own hardware, uptime depends directly on your de
 
 5. Account Termination
 
-We reserve the right to suspend or terminate your account and access to the KodaHosting proxy infrastructure at any time, for any reason, particularly if you violate the Acceptable Use Policy. Upon termination, all data stored on your device remains yours; we do not retain server data after account deletion. We may also delete accounts that have been inactive for an extended period.
+We reserve the right to suspend or terminate your account and access to the KodaHosting proxy infrastructure at any time, for any reason, particularly if you violate the Acceptable Use Policy. A suspension applies to the device and account that caused it and can be appealed through the in-app ban appeal. If an appeal is rejected, another one can only be opened after 7 days. For severe abuse we may close ticket creation for an account completely. If a suspension lasts 14 days or more, the local servers of that device are hibernated; while suspended a server can only be downloaded (exported), and it can be started again after the suspension is lifted. Your server files remain on your device and are never uploaded to us; server records are kept as contract records for the statutory retention period described in the Privacy Policy. We may also delete accounts that have been inactive for an extended period.
 
 6. Disclaimer of Warranties
 

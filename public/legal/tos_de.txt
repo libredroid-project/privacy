@@ -55,7 +55,7 @@ Da die Server auf deiner eigenen Hardware laufen, hängt die Verfügbarkeit dire
 
 5. Kontobeendigung
 
-Wir behalten uns vor, dein Konto und den Zugriff auf die KodaHosting-Proxy-Infrastruktur jederzeit aus beliebigem Grund zu sperren oder zu beenden, insbesondere bei Verstoß gegen die Richtlinie zur zulässigen Nutzung. Nach der Beendigung bleiben alle auf deinem Gerät gespeicherten Daten dein Eigentum; Serverdaten werden nach der Kontolöschung nicht von uns gespeichert. Wir können auch Konten löschen, die über einen längeren Zeitraum inaktiv waren.
+Wir behalten uns vor, dein Konto und den Zugriff auf die KodaHosting-Proxy-Infrastruktur jederzeit aus beliebigem Grund zu sperren oder zu beenden, insbesondere bei Verstoß gegen die Richtlinie zur zulässigen Nutzung. Eine Sperre gilt für das Gerät und das Konto, das sie verursacht hat, und kann über den In-App-Einspruch angefochten werden. Wird ein Einspruch abgelehnt, kann erst nach 7 Tagen ein neuer geöffnet werden. Bei schwerem Missbrauch können wir die Ticketerstellung für ein Konto vollständig schließen. Dauert eine Sperre 14 Tage oder länger, werden die lokalen Server dieses Geräts hibernated; während der Sperre kann ein Server nur heruntergeladen (exportiert) werden, und nach Aufhebung der Sperre kann er wieder gestartet werden. Deine Serverdateien bleiben auf deinem Gerät und werden niemals zu uns hochgeladen; Serverdatensätze bleiben als Vertragsunterlagen für die in der Datenschutzerklärung genannte gesetzliche Aufbewahrungsfrist erhalten. Wir können auch Konten löschen, die über einen längeren Zeitraum inaktiv waren.
 
 6. Gewährleistungsausschluss
 
