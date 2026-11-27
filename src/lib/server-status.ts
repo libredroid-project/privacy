@@ -162,6 +162,8 @@ export interface Me {
   extension_count?: number;
   member_since?: string;
   linked_since?: string;
+  /** "control" = created only to run servers shared by other people */
+  account_type?: string | null;
 }
 
 export function avatarUrl(me: Me | null): string | null {

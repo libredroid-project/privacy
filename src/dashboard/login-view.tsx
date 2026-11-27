@@ -1,5 +1,5 @@
 import { useState, type FormEvent } from "react";
-import { ArrowLeft, Loader2, LogIn } from "lucide-react";
+import { ArrowLeft, KeyRound, Loader2, LogIn, UserRoundPlus } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { ErrorState } from "@/components/error-state";
@@ -10,11 +10,26 @@ interface Props {
   intent?: "dashboard" | "developer";
 }
 
+const USERNAME_PATTERN = /^[a-zA-Z0-9_]{3,20}$/;
+
+const modeLink =
+  "cursor-pointer font-medium text-zinc-200 underline decoration-white/25 underline-offset-4 transition-colors hover:text-white hover:decoration-brand";
+
+type LoginMode = "signin" | "signup" | "control";
+
 export function LoginView({ intent = "dashboard" }: Props) {
+  // coming from an invite link the visitor almost certainly needs a control
+  // account, so start there instead of on the generic sign-in form
+  const [invited] = useState(
+    () => (new URLSearchParams(window.location.search).get("invite") || "").trim().length > 0,
+  );
+  const [mode, setMode] = useState<LoginMode>(invited ? "control" : "signin");
+  const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [info, setInfo] = useState<string | null>(null);
 
   const isDev = intent === "developer";
 
@@ -22,15 +37,50 @@ export function LoginView({ intent = "dashboard" }: Props) {
     e.preventDefault();
     if (!email.trim() || !password) return;
     setError(null);
+    setInfo(null);
     setBusy(true);
     try {
+      if (mode === "signup" || mode === "control") {
+        const cleanName = username.trim();
+        if (mode === "signup" && cleanName && !USERNAME_PATTERN.test(cleanName)) {
+          throw new Error("Username: 3 to 20 characters, letters, numbers and underscore only.");
+        }
+        const metadata: Record<string, string> = {};
+        if (mode === "control") metadata.account_type = "control";
+        if (cleanName) metadata.nickname = cleanName;
+        const { data, error: authErr } = await supabase.auth.signUp({
+          email: email.trim(),
+          password,
+          options: {
+            emailRedirectTo: window.location.origin + "/dashboard",
+            data: Object.keys(metadata).length ? metadata : undefined,
+          },
+        });
+        if (authErr) throw authErr;
+        if (data.session) {
+          setInfo(
+            mode === "control"
+              ? "Control account created. Loading the dashboard…"
+              : "Account created. Loading the dashboard…",
+          );
+        } else {
+          setInfo(
+            mode === "control"
+              ? "Control account created. Check your inbox and confirm your email, then sign in and open the invite link again."
+              : "Account created. Check your inbox and confirm your email, then sign in here.",
+          );
+          setMode("signin");
+        }
+        return;
+      }
       const { error: authErr } = await supabase.auth.signInWithPassword({
         email: email.trim(),
         password,
       });
       if (authErr) throw authErr;
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Sign-in failed.");
+      const raw = err instanceof Error ? err.message : "Sign-in failed.";
+      setError(friendlyAuthError(raw, mode));
     } finally {
       setBusy(false);
     }
@@ -38,6 +88,7 @@ export function LoginView({ intent = "dashboard" }: Props) {
 
   async function handleGoogle(credential: string) {
     setError(null);
+    setInfo(null);
     setBusy(true);
     try {
       const { error: authErr } = await supabase.auth.signInWithIdToken({
@@ -45,11 +96,27 @@ export function LoginView({ intent = "dashboard" }: Props) {
         token: credential,
       });
       if (authErr) throw authErr;
+      if (mode === "control") {
+        // google cannot pass signup metadata, so the flag is set right after the
+        // session exists: the google account becomes a control account as well
+        try {
+          await supabase.auth.updateUser({ data: { account_type: "control" } });
+        } catch { /* the dashboard still works, only the banner would be missing */ }
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : "Google sign-in failed.");
     } finally {
       setBusy(false);
     }
+  }
+
+  const signUp = mode === "signup";
+  const control = mode === "control";
+
+  function switchMode(next: LoginMode) {
+    setMode(next);
+    setError(null);
+    setInfo(null);
   }
 
   return (
@@ -106,8 +173,10 @@ export function LoginView({ intent = "dashboard" }: Props) {
                 ? "Edit source files in the browser CodeMirror IDE, run preflight checks, and submit releases directly to the Extension Store."
                 : "Follow the live console, browse and edit local world files, manage extensions, and configure KodaDash MCP from any desktop browser."}
             </p>
-            <p className="mt-8 border-t border-white/15 pt-5 text-xs text-zinc-400">
-              Sign in with the same account created inside the KodaHosting Android app.
+            <p className="mt-8 border-t border-white/15 pt-5 text-xs leading-5 text-zinc-400">
+              Got a KodaDash control link instead? Just open it — it works without an account.
+              <br />
+              Invites to a shared server need an account, which you create right here.
             </p>
           </div>
 
@@ -115,19 +184,58 @@ export function LoginView({ intent = "dashboard" }: Props) {
             <div className="mx-auto w-full max-w-md rounded-3xl border border-white/[0.13] bg-[#070709]/88 p-6 shadow-[0_32px_90px_rgba(0,0,0,0.75)] backdrop-blur-xl sm:p-8">
               <div className="mb-6">
                 <div className="mb-4 flex size-10 items-center justify-center rounded-full border border-white/12 bg-white/[0.04]">
-                  <LogIn className="size-4 text-brand-ink" />
+                  {control ? (
+                    <KeyRound className="size-4 text-brand-ink" />
+                  ) : signUp ? (
+                    <UserRoundPlus className="size-4 text-brand-ink" />
+                  ) : (
+                    <LogIn className="size-4 text-brand-ink" />
+                  )}
                 </div>
                 <h2 className="font-display text-2xl font-normal tracking-[-0.02em] text-white">
-                  Sign in
+                  {control ? "Create control account" : signUp ? "Create account" : "Sign in"}
                 </h2>
                 <p className="mt-1.5 text-sm leading-6 text-zinc-400">
-                  {isDev
-                    ? "Sign in with your KodaHosting account to access the Developer Console."
-                    : "Sign in to view your servers, devices, and support tickets."}
+                  {control
+                    ? "One account, one purpose: controlling servers that other people share with you."
+                    : signUp
+                      ? "Create a KodaHosting account with email and password. You need one to accept server invites."
+                      : isDev
+                        ? "Sign in with your KodaHosting account to access the Developer Console."
+                        : "Sign in to view your servers, devices, and support tickets."}
                 </p>
               </div>
 
+              {control ? (
+                <div className="mb-6 rounded-2xl border border-amber-400/25 bg-amber-400/10 px-4 py-3.5 text-xs leading-5 text-amber-200">
+                  <span className="font-medium text-amber-100">This account has one purpose.</span>{" "}
+                  It can control servers that other people share with you, nothing else. You cannot
+                  create your own servers with it. It becomes a full account automatically as soon as
+                  you create your own server in the KodaHosting app.
+                  {invited
+                    ? " Create it here and the shared server appears in your dashboard right away."
+                    : null}
+                </div>
+              ) : null}
+
               <form onSubmit={onSubmit} className="space-y-4">
+                {signUp ? (
+                  <div className="space-y-1.5">
+                    <Label htmlFor="dash-username" className="text-zinc-300">
+                      Username <span className="text-zinc-500">(optional)</span>
+                    </Label>
+                    <Input
+                      id="dash-username"
+                      type="text"
+                      autoComplete="username"
+                      placeholder="Steve_01"
+                      value={username}
+                      onChange={(e) => setUsername(e.target.value)}
+                      disabled={busy}
+                      className="h-11 rounded-xl border-white/12 bg-black/75 text-white focus-visible:border-brand-ink"
+                    />
+                  </div>
+                ) : null}
                 <div className="space-y-1.5">
                   <Label htmlFor="dash-email" className="text-zinc-300">
                     Email
@@ -150,17 +258,34 @@ export function LoginView({ intent = "dashboard" }: Props) {
                   <Input
                     id="dash-password"
                     type="password"
-                    autoComplete="current-password"
+                    autoComplete={signUp ? "off" : "current-password"}
                     required
+                    minLength={signUp ? 8 : undefined}
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     disabled={busy}
                     className="h-11 rounded-xl border-white/12 bg-black/75 text-white focus-visible:border-brand-ink"
                   />
+                  {signUp ? (
+                    <p className="text-xs leading-5 text-zinc-500">
+                      At least 8 characters.
+                    </p>
+                  ) : null}
                 </div>
 
                 {error ? (
-                  <ErrorState compact title="Sign-in failed" detail={error} />
+                  <ErrorState
+                    compact
+                    title={
+                      control ? "Control account failed" : signUp ? "Sign-up failed" : "Sign-in failed"
+                    }
+                    detail={error}
+                  />
+                ) : null}
+                {info ? (
+                  <div className="rounded-xl border border-emerald-400/25 bg-emerald-400/10 px-3.5 py-3 text-xs leading-5 text-emerald-300">
+                    {info}
+                  </div>
                 ) : null}
 
                 <button
@@ -169,7 +294,11 @@ export function LoginView({ intent = "dashboard" }: Props) {
                   className="koda-btn-black h-11 w-full text-sm disabled:opacity-50"
                 >
                   {busy && <Loader2 className="size-4 animate-spin" />}
-                  Sign in with email
+                  {control
+                    ? "Create control account"
+                    : signUp
+                      ? "Create account"
+                      : "Sign in with email"}
                 </button>
               </form>
 
@@ -182,8 +311,30 @@ export function LoginView({ intent = "dashboard" }: Props) {
               <GoogleButton onCredential={handleGoogle} />
 
               <p className="mt-5 text-center text-xs leading-5 text-zinc-400">
-                No account yet? Create one inside the KodaHosting app under{" "}
-                <span className="font-medium text-zinc-200">Settings → Account</span>.
+                {control ? (
+                  <>
+                    Want your own servers later? The control account becomes a full account
+                    automatically.{" "}
+                    <button type="button" onClick={() => switchMode("signin")} className={modeLink}>
+                      Back to sign in
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    {signUp ? "Already have an account? " : "No account yet? "}
+                    <button
+                      type="button"
+                      onClick={() => switchMode(signUp ? "signin" : "signup")}
+                      className={modeLink}
+                    >
+                      {signUp ? "Sign in" : "Create one"}
+                    </button>
+                    {" · "}
+                    <button type="button" onClick={() => switchMode("control")} className={modeLink}>
+                      Only for a shared server? Control account
+                    </button>
+                  </>
+                )}
               </p>
             </div>
           </div>
@@ -196,4 +347,27 @@ export function LoginView({ intent = "dashboard" }: Props) {
       </div>
     </div>
   );
+}
+
+function friendlyAuthError(raw: string, mode: LoginMode): string {
+  const lower = raw.toLowerCase();
+  if (lower.includes("already registered") || lower.includes("already been registered")) {
+    return "This email already has an account. Sign in instead.";
+  }
+  if (lower.includes("signups not allowed") || lower.includes("sign-up is disabled")) {
+    return "Sign-up is currently disabled. Create your account in the KodaHosting app.";
+  }
+  if (lower.includes("email not confirmed") || lower.includes("not confirmed")) {
+    return "Confirm your email first — the link is in your inbox.";
+  }
+  if (lower.includes("invalid login credentials")) {
+    return "Wrong email or password.";
+  }
+  if (lower.includes("rate limit")) {
+    return "Too many attempts. Wait a moment and try again.";
+  }
+  if (mode !== "signin" && lower.includes("password")) {
+    return "Password: use at least 8 characters.";
+  }
+  return raw;
 }

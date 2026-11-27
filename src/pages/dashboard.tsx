@@ -192,24 +192,31 @@ function DashboardShell(props: ShellProps) {
     }
   }
 
-  const manageItems: AnimatedSidebarItem[] = useMemo(
-    () => [
-      ...MANAGE.map((item) => ({
+  const manageItems: AnimatedSidebarItem[] = useMemo(() => {
+    const isControl = props.me?.account_type === "control";
+    // control accounts exist only to run servers shared by other people: servers
+    // and account, nothing else. the mcp docs link is a normal-account extra too.
+    const items: AnimatedSidebarItem[] = [];
+    for (const item of MANAGE) {
+      if (isControl && item.id !== "servers" && item.id !== "account") continue;
+      items.push({
         id: item.id,
         label: item.label,
         icon: item.icon,
         onClick: () => switchTab(item.id),
-      })),
-      {
+      });
+    }
+    if (!isControl) {
+      items.push({
         id: "mcp",
         label: "KodaDash MCP",
         icon: Terminal,
         href: "/mcp",
-      },
-    ],
+      });
+    }
+    return items;
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [],
-  );
+  }, [props.me?.account_type]);
 
   const infoItems: AnimatedSidebarItem[] = useMemo(
     () =>
@@ -254,14 +261,16 @@ function DashboardShell(props: ShellProps) {
             </SidebarGroupContent>
           </SidebarGroup>
 
-          <SidebarGroup className="mt-6 p-0">
-            <SidebarGroupLabel className="mb-1 h-6 px-2.5 font-mono text-[10.5px] font-medium tracking-[0.08em] text-zinc-600 uppercase">
-              This device
-            </SidebarGroupLabel>
-            <SidebarGroupContent className="px-1">
-              <AppStatusCard status={props.appStatus} />
-            </SidebarGroupContent>
-          </SidebarGroup>
+          {props.me?.account_type !== "control" ? (
+            <SidebarGroup className="mt-6 p-0">
+              <SidebarGroupLabel className="mb-1 h-6 px-2.5 font-mono text-[10.5px] font-medium tracking-[0.08em] text-zinc-600 uppercase">
+                This device
+              </SidebarGroupLabel>
+              <SidebarGroupContent className="px-1">
+                <AppStatusCard status={props.appStatus} />
+              </SidebarGroupContent>
+            </SidebarGroup>
+          ) : null}
         </SidebarContent>
 
         <SidebarFooter className="border-t border-white/[0.06] p-2.5">
@@ -304,6 +313,13 @@ function DashboardShell(props: ShellProps) {
 
         <div className="p-4 md:p-8">
           <div key={tab} className="page-reveal mx-auto w-full max-w-5xl">
+            {props.me?.account_type === "control" ? (
+              <div className="mb-6 rounded-2xl border border-amber-400/25 bg-amber-400/[0.08] px-4 py-3.5 text-sm leading-6 text-amber-200">
+                <span className="font-medium text-amber-100">Control account.</span>{" "}
+                This account exists only to control servers shared with you. It becomes a full
+                account automatically as soon as you create your own server in the KodaHosting app.
+              </div>
+            ) : null}
             {renderTab()}
           </div>
         </div>

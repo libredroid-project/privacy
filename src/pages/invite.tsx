@@ -226,7 +226,9 @@ export function InvitePage() {
                     </a>
                     <p className="mt-2.5 max-w-md text-xs leading-5 text-zinc-500">
                       This invite carries control rights: the server appears in your dashboard under
-                      Servers, with Start, Stop and Restart. You will be asked to sign in first.
+                      Servers, with Start, Stop and Restart. You will be asked to sign in first — and
+                      you can create a control account right there. It exists only to control shared
+                      servers and becomes a full account automatically later.
                     </p>
                   </div>
                 ) : null}
