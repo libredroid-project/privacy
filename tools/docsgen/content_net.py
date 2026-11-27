@@ -165,12 +165,12 @@ bearer_token_env_var = "KODA_MCP_TOKEN"</code></pre>
   <tr><th>Area</th><th>Available tools</th></tr>
   <tr><td>Read</td><td>server status, MCP status, console tail, online players, playtime, stats history, files, logs, plugins, <code>server.properties</code>, schedules, and the backup index</td></tr>
   <tr><td>Console</td><td>run commands as the console sender (excluding start, stop, restart, and hibernate)</td></tr>
-  <tr><td>Files</td><td>list, read, write, rename, create directories, and delete</td></tr>
+  <tr><td>Files</td><td>list, read, write, rename, create directories, and delete. Files up to 16 MB go through <code>files_push</code> in one request; larger jars are assembled in ≤16 MB base64 chunks with <code>files_chunk_append</code> onto a <code>.part</code> name and swapped onto their final path with <code>files_replace_atomic</code>, so a failed transfer never leaves a half-written jar behind</td></tr>
   <tr><td>Server</td><td>read and edit <code>server.properties</code>, plus validated single-setting helpers for MOTD, max players, difficulty, gamemode, PvP, whitelist, online-mode, view distance, simulation distance, and spawn protection</td></tr>
   <tr><td>Plugins</td><td>list, enable, disable, install from a public HTTPS URL, search Modrinth, and install compatible Modrinth versions with SHA-512 verification</td></tr>
 </table>
 <p>An AI client can never start, stop, restart, or hibernate your server. Power controls stay strictly in human hands inside the app or dashboard, and KodaDash rejects those commands even if an AI tries sending them through the console.</p>
-<p>Dedicated helper tools include <code>mcp_status</code>, <code>modrinth_search</code>, <code>modrinth_install</code>, and <code>server_setting</code>.</p>
+<p>Dedicated helper tools include <code>mcp_status</code>, <code>modrinth_search</code>, <code>modrinth_install</code>, <code>server_setting</code>, and the big-file helpers <code>files_push</code>, <code>files_chunk_append</code>, and <code>files_replace_atomic</code>. The <code>tools/list</code> call always reflects the exact tool set of the installed KodaDash version, so newer plugins can add tools without a config change on your side.</p>
 <h4>Security guardrails</h4>
 <ul>
   <li><b>Read-only mode</b> hides every write tool completely. Great when you just want an AI to diagnose a lag spike or inspect logs.</li>
